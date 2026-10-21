@@ -1,0 +1,24 @@
+# Leak guard content rules for the public repo: a standalone gitleaks config
+# (https://github.com/gitleaks/gitleaks) with no default allowlist, so lockfiles
+# and assets are scanned too. Secrets use gitleaks-secrets.toml; denied paths
+# and file names are checked in xtask/src/leak_guard.rs (gitleaks path rules
+# miss renames and empty files). `cargo xtask leak-guard --self-test` proves all three.
+#
+# The patterns are written so this file doesn't match its own rules.
+# No internal hostnames exist yet; add a rule here when the first one does.
+# Known limit: gitleaks matches raw bytes, so text deliberately saved as UTF-16
+# isn't matched. It needs intent, not an accident; review is the backstop.
+
+title = "gitcko public-repo deny-list"
+
+[[rules]]
+id = "private-repo-name"
+description = "Name or env-var prefix of the private hosted-service repo"
+regex = '''(?i)gitcko[-_]cloud'''
+
+[[rules]]
+id = "hosted-service-env-var"
+description = "Environment variable of a hosted-service provider"
+# Upper-case, secret-shaped names only (…_KEY, …_TOKEN, …_SECRET), so ordinary code
+# like a lower-case width variable isn't blocked. A prefix before the provider is fine.
+regex = '''(^|[^A-Za-z0-9])(STRIPE|E2B|RAILWAY)_[A-Z0-9_]*(KEY|TOKEN|SECRET)'''

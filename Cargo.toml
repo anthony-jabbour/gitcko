@@ -1,0 +1,18 @@
+[workspace]
+resolver = "3"
+# Crates are added when their phase starts (see CONTRIBUTING.md); `cargo xtask layers` checks how they depend on each other.
+members = ["xtask"]
+
+[workspace.package]
+edition = "2024"
+# Latest stable minus two; the pinned toolchain is in rust-toolchain.toml.
+rust-version = "1.95"
+license = "AGPL-3.0-or-later"
+repository = "https://github.com/anthony-jabbour/gitcko"
+
+[workspace.dependencies]
+serde_json = "1"
+
+[workspace.lints.rust]
+# A crate that truly needs unsafe code goes through an RFC (CONTRIBUTING.md).
+unsafe_code = "forbid"

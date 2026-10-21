@@ -1,0 +1,4 @@
+#!/bin/sh
+# Enabled by `cargo xtask setup`. Git passes the remote name and URL as
+# arguments and the refs being pushed on stdin; leak-guard reads both.
+exec cargo xtask leak-guard --pre-push "$1" "$2"
