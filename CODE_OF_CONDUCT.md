@@ -37,7 +37,7 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported privately to the community leaders responsible for enforcement, the maintainers listed in [MAINTAINERS.md](MAINTAINERS.md), at the contact address given there. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported privately to the community leaders responsible for enforcement, the maintainers listed in [MAINTAINERS.md](MAINTAINERS.md), at the contact address given there. All complaints will be reviewed and investigated promptly and fairly. While the project has a single maintainer, a report about that maintainer can't yet go to anyone independent; an independent contact will be named as soon as the project has one.
 
 All community leaders are obligated to respect the privacy and security of the reporter of any incident.
 
