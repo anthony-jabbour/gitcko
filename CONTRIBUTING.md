@@ -71,7 +71,7 @@ The RFC covers the problem, the proposal, alternatives, migration and how it wil
 | Crate layering | `cargo xtask layers` | `Cargo.toml` changes |
 | CLA | CLA Assistant | all PRs |
 
-`cargo xtask check` runs the first three. More checks (golden review fixtures, eval smoke tests, schema compatibility, fuzzing) are added as the code they test lands. A PR isn't accepted just because it compiles.
+`cargo xtask check` runs the first three. Tests are deterministic: they use the fixtures described in [tests/fixtures/README.md](tests/fixtures/README.md) and replay recorded model responses as described in [tests/cassettes/README.md](tests/cassettes/README.md), never a live model or the network. More checks (golden review fixtures, eval smoke tests, schema compatibility, fuzzing) are added as the code they test lands. A PR isn't accepted just because it compiles.
 
 **Unsafe code** is forbidden across the workspace. A crate that truly needs it requires an RFC and maintainer approval.
 
