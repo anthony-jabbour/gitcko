@@ -1,0 +1,39 @@
+name: RFC
+description: Propose a design-level change (schemas, review behaviour, scoring, security defaults, risky dependencies).
+labels: ["type/rfc"]
+body:
+  - type: markdown
+    attributes:
+      value: "RFCs stay open for at least 7 days of discussion before a maintainer accepts or declines them. See CONTRIBUTING.md."
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: true
+  - type: textarea
+    id: migration
+    attributes:
+      label: Migration and compatibility
+      description: What breaks, and how users move over.
+    validations:
+      required: true
+  - type: textarea
+    id: testing
+    attributes:
+      label: How it will be tested
+      description: Tests, fixtures, and evals if review quality is affected.
+    validations:
+      required: true

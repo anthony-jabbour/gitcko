@@ -1,0 +1,13 @@
+Gitcko
+Copyright 2026 Anthony Jabbour
+
+This product is licensed under the GNU Affero General Public License,
+version 3 or later (see LICENSE), except for the integration components
+named in README.md, which are licensed under the Apache License,
+version 2.0 (see LICENSES/Apache-2.0.txt).
+
+"Gitcko" and the Gitcko logo are trademarks of Anthony Jabbour.
+See TRADEMARKS.md.
+
+Third-party components shipped with release builds, and their licences,
+are listed in the third-party licence file included with each release.
