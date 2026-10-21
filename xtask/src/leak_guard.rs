@@ -23,10 +23,13 @@ const SECRETS_CONFIG: &str = "xtask/gitleaks-secrets.toml";
 const CONTENT_CONFIG: &str = "xtask/leak-guard.toml";
 /// gitleaks exit code when it finds a leak, distinct from its error exits.
 const LEAK_EXIT: i32 = 42;
-/// What git sends for a ref that doesn't exist on one side of a push.
-const ZERO_SHA: &str = "0000000000000000000000000000000000000000";
+/// git sends an all-zero sha (40 or 64 digits) for a ref missing on one side of a push.
+fn is_zero_sha(sha: &str) -> bool {
+    !sha.is_empty() && sha.bytes().all(|b| b == b'0')
+}
 
-/// Folders that only exist in the private hosted-service repo, from the repo root.
+/// Folders that only exist in the private hosted-service repo, from the repo root
+/// (all deny-list comparisons are case-insensitive).
 const DENIED_ROOT_DIRS: &[&str] = &[
     "services/",
     "apps/web-cloud/",
@@ -38,9 +41,12 @@ const DENIED_ROOT_DIRS: &[&str] = &[
 /// Folders that are never public, at any depth: private research notes and
 /// local state of agent tools.
 const DENIED_ANY_DIRS: &[&str] = &["research/", ".serena/"];
-/// File names never allowed in any folder (compared case-insensitively):
-/// private planning docs, personal agent rules, and gitleaks ignore files.
-const DENIED_NAMES: &[&str] = &[
+/// Never allowed in any folder: personal agent rules, and gitleaks ignore files.
+const DENIED_NAMES_ANYWHERE: &[&str] = &["claude.local.md", ".gitleaksignore"];
+/// Private planning-doc names, denied at the repo root and anywhere under `docs/`,
+/// which is where a copied planning doc would land. Public docs there use other
+/// names (e.g. `architecture-overview.md`); fixtures and `.github/` are unaffected.
+const DENIED_DOC_NAMES: &[&str] = &[
     "Gitcko_PRD.md",
     "MVP.md",
     "ROADMAP.md",
@@ -77,31 +83,34 @@ const DENIED_NAMES: &[&str] = &[
     "OBSERVABILITY.md",
     "BRANDING.md",
     "design.md",
-    "CLAUDE.local.md",
-    ".gitleaksignore",
 ];
 /// Public root files that share a name with a private planning doc.
-const ALLOWED_ROOT_FILES: &[&str] = &["CONTRIBUTING.md", "SECURITY.md"];
+const ALLOWED_ROOT_FILES: &[&str] = &["contributing.md", "security.md"];
 
 /// Why `path` may not be committed here, or `None` if it may.
 fn denied_path(path: &str) -> Option<&'static str> {
-    if DENIED_ROOT_DIRS.iter().any(|d| path.starts_with(d)) {
+    // Case-insensitive, because macOS and Windows treat `Infra/` and `infra/` as one folder.
+    let path = path.to_ascii_lowercase();
+    let starts = |d: &str| path.starts_with(&d.to_ascii_lowercase());
+    if DENIED_ROOT_DIRS.iter().any(|d| starts(d)) {
         return Some("hosted-service folder");
     }
     if DENIED_ANY_DIRS
         .iter()
-        .any(|d| path.starts_with(d) || path.contains(&format!("/{d}")))
+        .any(|d| starts(d) || path.contains(&format!("/{d}")))
     {
         return Some("private or tool-state folder");
     }
-    let name = path.rsplit('/').next().unwrap_or(path);
-    if ALLOWED_ROOT_FILES.contains(&path) {
-        return None;
+    let name = path.rsplit('/').next().unwrap_or(&path);
+    if DENIED_NAMES_ANYWHERE.contains(&name) {
+        return Some("personal agent rules or gitleaks ignore file");
     }
-    DENIED_NAMES
+    let at_root_or_docs = !path.contains('/') || path.starts_with("docs/");
+    let is_doc_name = DENIED_DOC_NAMES
         .iter()
-        .any(|n| n.eq_ignore_ascii_case(name))
-        .then_some("private planning doc or ignore file")
+        .any(|n| n.eq_ignore_ascii_case(name));
+    (at_root_or_docs && is_doc_name && !ALLOWED_ROOT_FILES.contains(&path.as_str()))
+        .then_some("private planning doc")
 }
 
 /// Scans the commits selected by `log_opts` (git log arguments) in the current repo.
@@ -122,6 +131,8 @@ fn check_commits(repo: &Path, log_opts: &str) -> Result<bool> {
     // so resolve it ourselves first and fail if git can't.
     git_output(repo, &[&["rev-list", "--count"], &args[..]].concat())?;
 
+    // -z: unquoted, NUL-separated names (git quotes unusual names otherwise).
+    // --diff-merges=first-parent: also list what a merge commit itself changed.
     let files = git_output(
         repo,
         &[
@@ -129,7 +140,9 @@ fn check_commits(repo: &Path, log_opts: &str) -> Result<bool> {
                 "log",
                 "--format=",
                 "--name-only",
+                "-z",
                 "--no-renames",
+                "--diff-merges=first-parent",
                 "--diff-filter=d",
             ],
             &args[..],
@@ -137,7 +150,7 @@ fn check_commits(repo: &Path, log_opts: &str) -> Result<bool> {
         .concat(),
     )?;
     let mut blocked = false;
-    for path in files.lines().filter(|l| !l.is_empty()) {
+    for path in files.split(['\0', '\n']).filter(|p| !p.is_empty()) {
         if let Some(why) = denied_path(path) {
             eprintln!("leak-guard: {path}: {why}");
             blocked = true;
@@ -158,6 +171,8 @@ fn gitleaks(repo: &Path, config: &str, log_opts: &str) -> Result<bool> {
             "git",
             "--no-banner",
             "--redact",
+            // List each finding (file, line, rule), so "blocked" says why.
+            "--verbose",
             "--exit-code",
             &LEAK_EXIT.to_string(),
         ])
@@ -167,7 +182,8 @@ fn gitleaks(repo: &Path, config: &str, log_opts: &str) -> Result<bool> {
         .arg(here.join("xtask"))
         .arg("--config")
         .arg(here.join(config))
-        .arg(format!("--log-opts={log_opts}"))
+        // Scan what merge commits themselves change too, not only ordinary commits.
+        .arg(format!("--log-opts=--diff-merges=first-parent {log_opts}"))
         .arg(repo)
         .status()
         .map_err(|e| {
@@ -206,25 +222,38 @@ pub fn pre_push(remote: &str, url: &str) -> Result {
             "leak-guard: this checkout is the public `gitcko` repo, but the push goes to {url}"
         ));
     }
-    for line in std::io::stdin().lock().lines() {
-        let line = line.map_err(|e| e.to_string())?;
-        // <local ref> <local sha> <remote ref> <remote sha>
+    let lines: Vec<String> = std::io::stdin()
+        .lock()
+        .lines()
+        .collect::<std::io::Result<_>>()
+        .map_err(|e| e.to_string())?;
+    for range in push_ranges(remote, &lines) {
+        scan(&range)?;
+    }
+    Ok(())
+}
+
+/// The commits to scan for each ref git is pushing. Each stdin line is
+/// `<local ref> <local sha> <remote ref> <remote sha>`.
+fn push_ranges(remote: &str, lines: &[String]) -> Vec<String> {
+    let mut ranges = Vec::new();
+    for line in lines {
         let fields: Vec<&str> = line.split_whitespace().collect();
         let [_, local_sha, _, remote_sha] = fields[..] else {
             continue;
         };
-        if local_sha == ZERO_SHA {
+        if is_zero_sha(local_sha) {
             continue; // deleting a remote branch pushes no commits
         }
-        if remote_sha == ZERO_SHA {
+        if is_zero_sha(remote_sha) {
             // New branch: every commit the destination remote doesn't have yet.
             // Only that remote counts; history from other remotes is still scanned.
-            scan(&format!("{local_sha} --not --remotes={remote}"))?;
+            ranges.push(format!("{local_sha} --not --remotes={remote}"));
         } else {
-            scan(&format!("{remote_sha}..{local_sha}"))?;
+            ranges.push(format!("{remote_sha}..{local_sha}"));
         }
     }
-    Ok(())
+    ranges
 }
 
 /// The repo name at the end of a git URL, for both `git@host:owner/name.git`
@@ -245,6 +274,7 @@ pub fn self_test() -> Result {
     let fake_github_token = format!("ghp_{}", "Xq7vR2mK9pL4wZ8nB3jH6tY1cF5dG0sA2eUo");
     let allow_comment = format!("{private_name} # gitleaks:allow");
     let secret_line = format!("GITHUB_PAT={fake_github_token}");
+    let env_line = format!("export MY_{}_KEY=1", "STRIPE");
 
     let cases: &[SelfTestCase] = &[
         (
@@ -274,13 +304,33 @@ pub fn self_test() -> Result {
             true,
         ),
         (
-            "planning doc in any folder",
-            &[("notes/roadmap.md", "x")],
+            "planning doc under docs/",
+            &[("docs/research-notes/roadmap.md", "x")],
+            true,
+        ),
+        (
+            "planning-doc name in a fixture is fine",
+            &[("tests/fixtures/repo/SECURITY.md", "x")],
+            false,
+        ),
+        (
+            "non-ASCII name in a hosted-service folder",
+            &[("Infra/caf\u{e9}.tf", "")],
+            true,
+        ),
+        (
+            "quote in a planning-doc path",
+            &[("docs/a\"b/ROADMAP.md", "")],
             true,
         ),
         ("agent tool state", &[(".serena/project.yml", "x")], true),
         ("gitleaks ignore file", &[(".gitleaksignore", "x")], true),
         ("secret", &[("app.env", &secret_line)], true),
+        (
+            "provider env var with a prefix",
+            &[("app.env", &env_line)],
+            true,
+        ),
     ];
 
     let mut failures = Vec::new();
@@ -309,9 +359,38 @@ pub fn self_test() -> Result {
         true,
     );
 
+    // A merge commit can add files of its own (e.g. in a conflict resolution);
+    // both the path check and the content check must see them.
+    let result = temp_repo(&[("README.md", "x")]).and_then(|repo| {
+        let git = |args: &[&str]| git_output(&repo, &[&IDENTITY[..], args].concat());
+        let base = git(&["rev-parse", "HEAD"]).map(|s| s.trim().to_string());
+        let verdict = base.and_then(|base| {
+            git(&["checkout", "-q", "-b", "side"])?;
+            std::fs::write(repo.join("side.txt"), "x").map_err(|e| e.to_string())?;
+            git(&["add", "side.txt"])?;
+            git(&["commit", "-q", "-m", "side"])?;
+            git(&["checkout", "-q", "-"])?;
+            git(&["merge", "-q", "--no-ff", "--no-commit", "side"])?;
+            std::fs::create_dir_all(repo.join("infra")).map_err(|e| e.to_string())?;
+            std::fs::write(repo.join("infra/main.tf"), "").map_err(|e| e.to_string())?;
+            std::fs::write(repo.join("evil.txt"), &private_name).map_err(|e| e.to_string())?;
+            git(&["add", "."])?;
+            git(&["commit", "-q", "-m", "merge"])?;
+            check_commits(&repo, &format!("{base}..HEAD"))
+        });
+        let _ = std::fs::remove_dir_all(&repo);
+        verdict
+    });
+    record(
+        &mut failures,
+        "files added inside a merge commit",
+        result,
+        true,
+    );
+
     // A range git can't resolve must fail, not pass as "0 commits, clean".
     let bad_range = temp_repo(&[("README.md", "x")]).and_then(|repo| {
-        let verdict = check_commits(&repo, &format!("{ZERO_SHA}..HEAD"));
+        let verdict = check_commits(&repo, &format!("{}..HEAD", "0".repeat(40)));
         let _ = std::fs::remove_dir_all(&repo);
         verdict
     });
@@ -375,7 +454,7 @@ fn temp_repo(files: &[(&str, &str)]) -> Result<PathBuf> {
 
 #[cfg(test)]
 mod tests {
-    use super::{denied_path, repo_name};
+    use super::{denied_path, push_ranges, repo_name};
 
     #[test]
     fn repo_name_from_ssh_and_https_urls() {
@@ -415,6 +494,8 @@ mod tests {
             "ROADMAP.md",
             "docs/roadmap.md",
             "docs/CONTRIBUTING.md",
+            "Infra/main.tf",
+            "Research/x.md",
             "docs/SECURITY.md",
             "CLAUDE.local.md",
             "sub/.gitleaksignore",
@@ -433,8 +514,32 @@ mod tests {
             "crates/gitcko-git/src/infra.rs",
             "crates/x/infra/mod.rs",
             "web/apps/dashboard/page.tsx",
+            ".github/SECURITY.md",
+            "tests/fixtures/repo/ARCHITECTURE.md",
+            "docs/architecture-overview.md",
         ] {
             assert_eq!(denied_path(path), None, "{path} should be allowed");
         }
+    }
+
+    #[test]
+    fn push_ranges_cover_update_new_and_delete() {
+        let zero40 = "0".repeat(40);
+        let zero64 = "0".repeat(64);
+        let lines = [
+            "refs/heads/a aaa refs/heads/a bbb".to_string(),
+            format!("refs/heads/new ccc refs/heads/new {zero40}"),
+            format!("refs/heads/new256 ddd refs/heads/new256 {zero64}"),
+            format!("(delete) {zero40} refs/heads/gone eee"),
+            "garbage".to_string(),
+        ];
+        assert_eq!(
+            push_ranges("origin", &lines),
+            [
+                "bbb..aaa",
+                "ccc --not --remotes=origin",
+                "ddd --not --remotes=origin"
+            ]
+        );
     }
 }

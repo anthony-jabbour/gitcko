@@ -17,4 +17,5 @@ regex = '''(?i)gitcko[-_]cloud'''
 [[rules]]
 id = "hosted-service-env-var"
 description = "Environment variable of a hosted-service provider"
-regex = '''(?i)\b(STRIPE|E2B|RAILWAY)_[A-Z0-9_]+\b'''
+# The provider may appear anywhere in the name, including after a prefix.
+regex = '''(?i)(^|[^A-Z0-9])(STRIPE|E2B|RAILWAY)_[A-Z0-9_]+'''
