@@ -43,9 +43,8 @@ const DENIED_ROOT_DIRS: &[&str] = &[
 const DENIED_ANY_DIRS: &[&str] = &["research/", ".serena/"];
 /// Never allowed in any folder: personal agent rules, and gitleaks ignore files.
 const DENIED_NAMES_ANYWHERE: &[&str] = &["claude.local.md", ".gitleaksignore"];
-/// Private planning-doc names, denied at the repo root and anywhere under `docs/`,
-/// which is where a copied planning doc would land. Public docs there use other
-/// names (e.g. `architecture-overview.md`); fixtures and `.github/` are unaffected.
+/// Private planning-doc names, denied in every folder except the public files and
+/// test-data folders below. Public docs use other names (e.g. `docs/architecture-overview.md`).
 const DENIED_DOC_NAMES: &[&str] = &[
     "Gitcko_PRD.md",
     "MVP.md",
@@ -84,8 +83,15 @@ const DENIED_DOC_NAMES: &[&str] = &[
     "BRANDING.md",
     "design.md",
 ];
-/// Public root files that share a name with a private planning doc.
-const ALLOWED_ROOT_FILES: &[&str] = &["contributing.md", "security.md"];
+/// Public files that share a name with a private planning doc.
+const ALLOWED_DOC_FILES: &[&str] = &[
+    "contributing.md",
+    "security.md",
+    ".github/contributing.md",
+    ".github/security.md",
+];
+/// Folders holding test data, not docs, so planning-doc names are fine there.
+const ALLOWED_DOC_PLACES: &[&str] = &["tests/fixtures/", "evals/"];
 
 /// Why `path` may not be committed here, or `None` if it may.
 fn denied_path(path: &str) -> Option<&'static str> {
@@ -105,12 +111,12 @@ fn denied_path(path: &str) -> Option<&'static str> {
     if DENIED_NAMES_ANYWHERE.contains(&name) {
         return Some("personal agent rules or gitleaks ignore file");
     }
-    let at_root_or_docs = !path.contains('/') || path.starts_with("docs/");
     let is_doc_name = DENIED_DOC_NAMES
         .iter()
         .any(|n| n.eq_ignore_ascii_case(name));
-    (at_root_or_docs && is_doc_name && !ALLOWED_ROOT_FILES.contains(&path.as_str()))
-        .then_some("private planning doc")
+    let allowed = ALLOWED_DOC_FILES.contains(&path.as_str())
+        || ALLOWED_DOC_PLACES.iter().any(|d| path.starts_with(d));
+    (is_doc_name && !allowed).then_some("private planning doc")
 }
 
 /// Scans the commits selected by `log_opts` (git log arguments) in the current repo.
@@ -150,7 +156,8 @@ fn check_commits(repo: &Path, log_opts: &str) -> Result<bool> {
         .concat(),
     )?;
     let mut blocked = false;
-    for path in files.split(['\0', '\n']).filter(|p| !p.is_empty()) {
+    // Split on NUL only: a name may itself contain a newline.
+    for path in files.split('\0').filter(|p| !p.is_empty()) {
         if let Some(why) = denied_path(path) {
             eprintln!("leak-guard: {path}: {why}");
             blocked = true;
@@ -304,8 +311,8 @@ pub fn self_test() -> Result {
             true,
         ),
         (
-            "planning doc under docs/",
-            &[("docs/research-notes/roadmap.md", "x")],
+            "planning doc in any folder",
+            &[("notes/roadmap.md", "x")],
             true,
         ),
         (
@@ -321,6 +328,11 @@ pub fn self_test() -> Result {
         (
             "quote in a planning-doc path",
             &[("docs/a\"b/ROADMAP.md", "")],
+            true,
+        ),
+        (
+            "newline in a planning-doc path",
+            &[("notes/a\n/ROADMAP.md", "")],
             true,
         ),
         ("agent tool state", &[(".serena/project.yml", "x")], true),
@@ -496,6 +508,8 @@ mod tests {
             "docs/CONTRIBUTING.md",
             "Infra/main.tf",
             "Research/x.md",
+            "notes/ROADMAP.md",
+            "crates/x/ARCHITECTURE.md",
             "docs/SECURITY.md",
             "CLAUDE.local.md",
             "sub/.gitleaksignore",
