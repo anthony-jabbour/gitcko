@@ -96,11 +96,11 @@ jobs:
         # Only on lockfile changes, so a newly published advisory doesn't block unrelated PRs;
         # the dependency it names gets fixed in its own PR.
         run: |
-          set -o pipefail
           # Three dots: only what this PR changed, not what main changed since.
-          # Unknown BASE (see leak guard above): check advisories to be safe.
-          if ! git cat-file -e "${BASE}^{commit}" 2>/dev/null \
-             || git diff --name-only "${BASE}...${HEAD}" | grep -qx 'Cargo.lock'; then
+          # If git can't diff (unknown BASE), check advisories to be safe. The diff
+          # is captured first so grep exiting early can't turn a match into a skip.
+          changed=$(git diff --name-only "${BASE}...${HEAD}") || changed=Cargo.lock
+          if grep -qx 'Cargo.lock' <<<"${changed}"; then
             cargo deny check advisories
           else
             echo "Cargo.lock unchanged; advisories not checked in this PR"
