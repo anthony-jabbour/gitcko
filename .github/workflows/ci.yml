@@ -11,8 +11,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
-  # Never cancel runs on main: each push's leak-guard scan covers only that push's commits.
+  # PRs share a group per branch, so a new push cancels the stale run. Each push to
+  # main gets its own group and is never cancelled or replaced, because its
+  # leak-guard scan covers only that push's commits.
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
