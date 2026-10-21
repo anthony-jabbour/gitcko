@@ -2,3 +2,5 @@
 .DS_Store
 # Personal agent rules; never committed
 CLAUDE.local.md
+# Local state of code-analysis tools used by agents
+.serena/

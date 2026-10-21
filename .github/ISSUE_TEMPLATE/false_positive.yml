@@ -3,7 +3,7 @@ description: A review flagged something that isn't a problem, or missed a real o
 body:
   - type: markdown
     attributes:
-      value: "These reports become test cases. Use only code you're allowed to share publicly; never private or customer code."
+      value: "These reports become test cases. Use only code you're allowed to share publicly; never private or customer code. If the missed bug is a security vulnerability in Gitcko itself, don't file it here: use [private reporting](https://github.com/anthony-jabbour/gitcko/security/advisories/new)."
   - type: dropdown
     id: kind
     attributes:
