@@ -40,7 +40,7 @@ fn main() -> ExitCode {
         ["leak-guard"] => leak_guard::scan("origin/main..HEAD"),
         ["leak-guard", "--range", range] => leak_guard::scan(range),
         ["leak-guard", "--self-test"] => leak_guard::self_test(),
-        ["leak-guard", "--pre-push", _remote, url] => leak_guard::pre_push(url),
+        ["leak-guard", "--pre-push", remote, url] => leak_guard::pre_push(remote, url),
         ["spdx"] => spdx::check(),
         ["layers"] => layers::check(),
         _ => Err(USAGE.to_string()),

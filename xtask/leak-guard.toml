@@ -1,14 +1,13 @@
-# Leak guard for the public repo: a gitleaks config (https://github.com/gitleaks/gitleaks).
-# It keeps gitleaks' default secret rules and adds rules for things that must never
-# land here: names, paths and settings of the private hosted service, and private
-# planning docs. Run with `cargo xtask leak-guard`; `--self-test` proves it blocks them.
+# Leak guard content rules for the public repo: a standalone gitleaks config
+# (https://github.com/gitleaks/gitleaks) with no default allowlist, so lockfiles
+# and assets are scanned too. Secrets use gitleaks-secrets.toml; denied paths
+# and file names are checked in xtask/src/leak_guard.rs (gitleaks path rules
+# miss renames and empty files). `cargo xtask leak-guard --self-test` proves all three.
 #
-# The patterns below are written so this file doesn't match its own rules.
+# The patterns are written so this file doesn't match its own rules.
+# No internal hostnames exist yet; add a rule here when the first one does.
 
-title = "gitcko public-repo leak guard"
-
-[extend]
-useDefault = true
+title = "gitcko public-repo deny-list"
 
 [[rules]]
 id = "private-repo-name"
@@ -18,19 +17,4 @@ regex = '''(?i)gitcko[-_]cloud'''
 [[rules]]
 id = "hosted-service-env-var"
 description = "Environment variable of a hosted-service provider"
-regex = '''\b(STRIPE|E2B|RAILWAY)_[A-Z0-9_]+\b'''
-
-[[rules]]
-id = "hosted-service-path"
-description = "Folder that only exists in the private hosted-service repo"
-path = '''^(services|apps/web-cloud|apps/site|infra|migrations/cloud|vendor)/'''
-
-[[rules]]
-id = "planning-doc"
-description = "Private planning doc; public docs are written fresh under other names"
-path = '''(^|/)research/|^docs/(Gitcko_PRD|MVP|ROADMAP|ARCHITECTURE|CLOUD_ARCHITECTURE|DATABASE|REVIEW_ENGINE|REVIEW_RULES|INDEXING|SECURITY|THREAT_MODEL|PRIVACY|INCIDENT_RESPONSE|MODEL_ROUTING|EVALS|SCORING|TESTING|DEVELOPMENT|AI_DEVELOPMENT|CODEBASE|CONFIGURATION|CONTRIBUTING|LICENSE_STRATEGY|LOCAL_DEPLOYMENT|SELF_HOSTING|RUNTIME_VERIFICATION|SCM_INTEGRATION|MCP_SPEC|CLI_SPEC|API_SPEC|TUI_SPEC|DASHBOARD|ANALYTICS|OBSERVABILITY|BRANDING|design)\.md$'''
-
-[[rules]]
-id = "personal-agent-rules"
-description = "Personal agent rules file; it is git-ignored and must stay local"
-path = '''(^|/)CLAUDE\.local\.md$'''
+regex = '''(?i)\b(STRIPE|E2B|RAILWAY)_[A-Z0-9_]+\b'''
