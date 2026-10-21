@@ -2,7 +2,7 @@
 
 > **DRAFT, not yet in force.** This text is waiting for legal review. Its structure follows the Apache Software Foundation's Corporate CLA. Until the reviewed version is published, contributions can't be merged under it.
 
-This agreement is between the company or organisation named below (the "Corporation") and Anthony Jabbour, or any successor entity he assigns this agreement to (the "Licensor"). It lets the Corporation's employees and contractors listed in Schedule A ("Designated Employees") contribute to projects the Licensor owns or manages, including the `anthony-jabbour/gitcko` repository (the "Project"), on the Corporation's behalf.
+This agreement is between the company or organisation named below (the "Corporation") and Anthony Jabbour, or any successor entity he assigns this agreement to (the "Licensor"). It lets the Corporation's employees and contractors listed in Schedule A ("Designated Employees") contribute to the `anthony-jabbour/gitcko` repository (the "Project") on the Corporation's behalf.
 
 ## 1. Definitions
 
