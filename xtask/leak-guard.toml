@@ -34,3 +34,8 @@ path = '''(^|/)research/|^docs/(Gitcko_PRD|MVP|ROADMAP|ARCHITECTURE|CLOUD_ARCHIT
 id = "personal-agent-rules"
 description = "Personal agent rules file; it is git-ignored and must stay local"
 path = '''(^|/)CLAUDE\.local\.md$'''
+
+[[rules]]
+id = "agent-tool-state"
+description = "Local state of agent and code-analysis tools (paths, memories); keep it local"
+path = '''(^|/)\.serena/'''

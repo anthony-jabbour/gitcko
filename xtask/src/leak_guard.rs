@@ -102,11 +102,12 @@ pub fn self_test() -> Result {
     let private_name = ["gitcko", "cloud"].join("-");
     let fake_github_token = format!("ghp_{}", "Xq7vR2mK9pL4wZ8nB3jH6tY1cF5dG0sA2eUo");
 
-    let cases: [(&str, &str, &str, bool); 5] = [
+    let cases: [(&str, &str, &str, bool); 6] = [
         ("clean", "README.md", "hello", false),
         ("private repo name", "notes.txt", &private_name, true),
         ("hosted-service folder", "infra/main.tf", "x", true),
         ("planning doc", "docs/ROADMAP.md", "x", true),
+        ("agent tool state", ".serena/project.yml", "x", true),
         (
             "secret",
             "app.env",
