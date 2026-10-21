@@ -1,0 +1,7 @@
+# The `ci` profile: run everything, flag hangs, and write JUnit for the CI summary.
+[profile.ci]
+fail-fast = false
+slow-timeout = { period = "30s", terminate-after = 4 }
+
+[profile.ci.junit]
+path = "junit.xml"

@@ -1,0 +1,43 @@
+# Dependency policy, enforced by `cargo deny check` on every Cargo.lock change.
+# Copyleft is denied even though the core is AGPL, so the Apache-2.0 integrations
+# and a commercial licence stay possible. Exceptions need a maintainer's approval
+# and a reason next to them.
+
+[advisories]
+ignore = []
+
+[licenses]
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "CC0-1.0",
+    "0BSD",
+    "BSL-1.0",
+    "MPL-2.0",
+]
+confidence-threshold = 0.8
+# The allow-list is policy, so licences no dependency uses yet are expected.
+unused-allowed-license = "allow"
+# Our own published AGPL crates get an exception each as they are created.
+exceptions = []
+
+[licenses.private]
+# Unpublished workspace crates (xtask) are ours, not dependencies.
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# Path dependencies between our own unpublished crates have no version; that is fine.
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Enabled by `cargo xtask setup` (git config core.hooksPath .githooks).
+set -e
+cargo fmt --check
+cargo xtask spdx
