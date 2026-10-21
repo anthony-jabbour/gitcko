@@ -107,10 +107,10 @@ fn denied_path(path: &str) -> Option<&'static str> {
     if DENIED_ROOT_DIRS.iter().any(|d| starts(d)) {
         return Some("hosted-service folder");
     }
-    if DENIED_ANY_DIRS
-        .iter()
-        .any(|d| starts(d) || path.contains(&format!("/{d}")))
-    {
+    if DENIED_ANY_DIRS.iter().any(|d| {
+        let bare = d.trim_end_matches('/');
+        starts(d) || path.contains(&format!("/{d}")) || path.ends_with(&format!("/{bare}"))
+    }) {
         return Some("private or tool-state folder");
     }
     let name = path.rsplit('/').next().unwrap_or(&path);
@@ -560,6 +560,8 @@ mod tests {
             "Infra/main.tf",
             "Research/x.md",
             "services",
+            "docs/research",
+            "crates/x/.serena",
             "notes/ROADMAP.md",
             "crates/x/ARCHITECTURE.md",
             "docs/SECURITY.md",
