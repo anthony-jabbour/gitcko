@@ -6,7 +6,8 @@
 //! 1. **Paths**: every file a commit adds, renames or copies is matched against
 //!    the deny-list below. Done here rather than as gitleaks path rules, because
 //!    those only fire on added lines, so renames, empty and binary files slip by.
-//! 2. **Secrets**: gitleaks with its default rules (`xtask/gitleaks-secrets.toml`).
+//! 2. **Secrets**: gitleaks with its default rules (`xtask/gitleaks-secrets.toml`),
+//!    copied without their path allowlist so lockfiles and assets are scanned too.
 //! 3. **Private content**: gitleaks with our deny-list rules only
 //!    (`xtask/leak-guard.toml`), without gitleaks' default allowlist, so
 //!    lockfiles and assets are scanned too.
@@ -295,7 +296,7 @@ pub fn self_test() -> Result {
     let allow_comment = format!("{private_name} # gitleaks:allow");
     let secret_line = format!("GITHUB_PAT={fake_github_token}");
     let env_line = format!("export MY_{}_KEY=1", "STRIPE");
-    let binary_blob = format!("AB\0\0{private_name}\0");
+    let binary_blob = format!("AB\0\0{secret_line}\0");
 
     let cases: &[SelfTestCase] = &[
         (
@@ -350,7 +351,7 @@ pub fn self_test() -> Result {
             true,
         ),
         (
-            "private name in a binary file",
+            "secret in a binary file",
             &[("blob.bin", &binary_blob)],
             true,
         ),
@@ -374,6 +375,17 @@ pub fn self_test() -> Result {
             true,
         ),
         ("secret", &[("app.env", &secret_line)], true),
+        (
+            "secret in a lockfile",
+            &[("web/package-lock.json", &secret_line)],
+            true,
+        ),
+        ("secret in an image", &[("logo.png", &secret_line)], true),
+        (
+            "secret in a lookalike of the secrets config",
+            &[("docs/xtask/gitleaks-secrets.toml", &secret_line)],
+            true,
+        ),
         (
             "provider env var with a prefix",
             &[("app.env", &env_line)],
