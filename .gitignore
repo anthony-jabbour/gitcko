@@ -4,9 +4,10 @@
 CLAUDE.local.md
 # Local state of code-analysis tools used by agents
 .serena/
-# Environment files can hold secrets; only key templates are committed
-.env
-.env.*
-!.env.example
-!.env.sample
-!.env.template
+# Environment files can hold secrets; only key templates are committed.
+# Letter classes make this case-insensitive on every OS, like the leak guard.
+.[eE][nN][vV]
+.[eE][nN][vV].*
+!.[eE][nN][vV].[eE][xX][aA][mM][pP][lL][eE]
+!.[eE][nN][vV].[sS][aA][mM][pP][lL][eE]
+!.[eE][nN][vV].[tT][eE][mM][pP][lL][aA][tT][eE]
