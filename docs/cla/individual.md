@@ -2,12 +2,11 @@
 
 > **DRAFT, not yet in force.** This text is waiting for legal review. Its structure follows the Apache Software Foundation's Individual CLA. Until the reviewed version is published, contributions can't be merged under it.
 
-This agreement is between you ("You") and Anthony Jabbour, or any successor entity he assigns this agreement to (the "Licensor"). It covers every Contribution You submit to any project the Licensor owns or manages, including the `anthony-jabbour/gitcko` repository (the "Project").
+This agreement is between you ("You") and Anthony Jabbour, or any successor entity he assigns this agreement to (the "Licensor"). It covers every Contribution You submit to the `anthony-jabbour/gitcko` repository (the "Project").
 
 ## 1. Definitions
 
 - **"Contribution"**: any original work of authorship, including changes or additions to existing work, that You intentionally submit to the Project, through a pull request, an issue, a patch or any other means. Anything You clearly mark as "Not a Contribution" when You submit it is excluded.
-- **"Submit"**: any form of electronic, verbal or written communication sent to the Licensor or the Project's maintainers to discuss or improve the Project.
 
 ## 2. Copyright licence
 

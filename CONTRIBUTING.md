@@ -6,7 +6,7 @@ Gitcko is pre-alpha. The build tooling and CI are being set up first; the engine
 
 ## Quick start
 
-You need [rustup](https://rustup.rs) and Git 2.40 or newer, on macOS or Windows. Linux is tested in CI.
+You need [rustup](https://rustup.rs) and Git 2.40 or newer. macOS and Windows are the supported development platforms. Linux is fully tested in CI and builds the same way, but it isn't an officially supported development platform yet; a ready-made Linux dev container is planned.
 
 ```bash
 git clone https://github.com/anthony-jabbour/gitcko && cd gitcko
@@ -81,13 +81,13 @@ The RFC covers the problem, the proposal, alternatives, migration and how it wil
 
 The core is **AGPL-3.0-or-later**. Integrations (schemas and the crate they're generated from, agent plugins and skills, the GitHub Action, config import) are **Apache-2.0**. Each source file starts with an `SPDX-License-Identifier` line for its folder's licence.
 
-Before your first PR is merged, you sign a **Contributor License Agreement** once, through the CLA Assistant check on the PR. There's an [individual](docs/cla/individual.md) and a [corporate](docs/cla/corporate.md) version. You keep the copyright in your contribution. You give the project the right to use, sublicense and relicense it; this is what lets the hosted Gitcko Cloud build on the core.
+Before your first PR is merged, you sign a **Contributor License Agreement** once, through the CLA Assistant check on the PR. There's an [individual](docs/cla/individual.md) and a [corporate](docs/cla/corporate.md) version. **Both are drafts awaiting legal review. Until the final text is published and the CLA check is switched on, pull requests from outside contributors can't be merged.** You keep the copyright in your contribution. You give the project the right to use, sublicense and relicense it; this is what lets the hosted Gitcko Cloud build on the core.
 
 **Our promise:** what you contribute stays available in this repository under AGPL-3.0 or a more permissive licence.
 
 ## AI-assisted contributions
 
-AI tools are welcome. In the PR template, say which tools helped (for example: "Claude Code drafted the parser; I rewrote the tests").
+AI tools are welcome. In the PR template, say which tools helped (for example: "used Copilot for the first draft of `parse_hunk`, then wrote the edge-case tests myself").
 
 - **You are responsible for every line you submit**, whoever or whatever typed it. Read it, run it, and be ready to explain it in review.
 - A test you add must fail before your fix and pass after it, even if an AI wrote it.
@@ -96,7 +96,7 @@ AI tools are welcome. In the PR template, say which tools helped (for example: "
 ## Review, merge and releases
 
 - Every PR gets a maintainer review. Once Gitcko can review code, it reviews every PR too; its findings are advisory and maintainers decide.
-- Approvals: 1 maintainer. 2 for security-labelled PRs, runtime-verification changes, and PRs that implement an RFC.
+- Approvals: 1 maintainer. Security-labelled PRs, runtime-verification changes and PRs that implement an RFC need 2 once the project has two maintainers; until then the lead maintainer approves them.
 - First maintainer response within 5 business days.
 - Pull requests from forks run CI without access to any secrets. Workflows use read-only permissions by default and pin third-party actions by commit.
 - Releases follow semver. `CHANGELOG.md` is generated from Conventional Commits. Tags are signed, and release artifacts come with checksums, signatures and build provenance.
