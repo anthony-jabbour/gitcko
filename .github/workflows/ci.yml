@@ -12,7 +12,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel runs on main: each push's leak-guard scan covers only that push's commits.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   CARGO_TERM_COLOR: always
@@ -40,6 +41,13 @@ jobs:
         with:
           tool: cargo-nextest@${{ env.NEXTEST_VERSION }}
       - run: cargo xtask check
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: junit-${{ matrix.os }}
+          path: target/nextest/ci/junit.xml
+          if-no-files-found: ignore
 
   # Repo policy: leak guard, licence headers, crate layers, dependency licences.
   policy:
@@ -67,7 +75,14 @@ jobs:
           # Commits in the PR, or the commits a push to main added.
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: cargo xtask leak-guard --range "${BASE}..${HEAD}"
+        # If BASE is unknown here (first push, or a force push whose old tip isn't
+        # fetched), scan all history instead of an empty range.
+        run: |
+          if git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            cargo xtask leak-guard --range "${BASE}..${HEAD}"
+          else
+            cargo xtask leak-guard --range "${HEAD}"
+          fi
       - name: Licence headers
         run: cargo xtask spdx
       - name: Crate layers
@@ -81,7 +96,11 @@ jobs:
         # Only on lockfile changes, so a newly published advisory doesn't block unrelated PRs;
         # the dependency it names gets fixed in its own PR.
         run: |
-          if git diff --name-only "${BASE}" "${HEAD}" | grep -qx 'Cargo.lock'; then
+          set -o pipefail
+          # Three dots: only what this PR changed, not what main changed since.
+          # Unknown BASE (see leak guard above): check advisories to be safe.
+          if ! git cat-file -e "${BASE}^{commit}" 2>/dev/null \
+             || git diff --name-only "${BASE}...${HEAD}" | grep -qx 'Cargo.lock'; then
             cargo deny check advisories
           else
             echo "Cargo.lock unchanged; advisories not checked in this PR"
