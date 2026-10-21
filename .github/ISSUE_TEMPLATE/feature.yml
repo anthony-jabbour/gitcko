@@ -1,0 +1,16 @@
+name: Feature
+description: A problem you want Gitcko to solve.
+labels: ["type/feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what gets in the way today? Describe the problem, not a solution.
+    validations:
+      required: true
+  - type: textarea
+    id: ideas
+    attributes:
+      label: Ideas (optional)
+      description: Possible approaches or workarounds you've tried.

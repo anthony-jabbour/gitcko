@@ -1,0 +1,42 @@
+name: False positive / missed bug
+description: A review flagged something that isn't a problem, or missed a real one.
+labels: ["type/false-positive"]
+body:
+  - type: markdown
+    attributes:
+      value: "These reports become test cases. Use only code you're allowed to share publicly; never private or customer code."
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - False positive (flagged, but not a real problem)
+        - Missed bug (a real problem was not flagged)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Gitcko version and model
+      placeholder: "gitcko 0.1.0, ollama:<model>"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal repro
+      description: Link to a small public repo or commit, or paste a minimal diff.
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: The finding (or the bug that was missed)
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it's wrong
+    validations:
+      required: true

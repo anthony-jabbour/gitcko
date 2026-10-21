@@ -1,0 +1,41 @@
+name: Bug
+description: Gitcko does something wrong.
+labels: ["type/bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Security problem? Don't file it here. Use [private reporting](https://github.com/anthony-jabbour/gitcko/security/advisories/new). Never paste secrets, keys or private source code into an issue."
+  - type: input
+    id: version
+    attributes:
+      label: Gitcko version
+      description: Output of `gitcko --version`, or the commit you built from.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: macOS 15 arm64 / Windows 11 x64 / Ubuntu 24.04
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command you ran
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+      description: Include error output. Remove anything private first.
+    validations:
+      required: true
