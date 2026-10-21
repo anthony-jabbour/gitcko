@@ -14,7 +14,7 @@ cargo xtask setup      # pinned tools and git hooks
 cargo xtask check      # format, lint, tests: the same as CI
 ```
 
-Then pick an issue labelled `good first issue` or `help wanted`, comment that you're taking it, and open a draft PR early.
+Looking for a first task? Issues labelled `good first issue` or `help wanted` are ready to pick up. Leave a comment so nobody else starts on it, and open a draft PR as soon as you have something to show.
 
 ## What belongs here
 
@@ -32,7 +32,7 @@ Use the issue forms:
 | Form | For |
 |---|---|
 | **Bug** | Wrong behaviour: version, OS, command, expected vs actual |
-| **False positive / missed bug** | A review got it wrong: a minimal repro, the finding, and why it's wrong. These become test cases |
+| **False positive / missed bug** | Gitcko flagged something harmless or missed a real problem. Include a minimal repro, the finding (or the missed bug) and your reasoning. We turn these into test cases |
 | **Feature** | A problem you want solved (not a solution) |
 | **RFC** | A design-level change (see below) |
 
@@ -49,12 +49,12 @@ Open an RFC issue **before** a PR that changes:
 - a security default or trust boundary;
 - dependencies, by adding one with network, native or `unsafe` code.
 
-The RFC covers the problem, the proposal, alternatives, migration and how it will be tested. After at least 7 days of discussion a maintainer marks it `accepted` or `declined`, with reasons. The PR then updates the docs it affects together with the code. Small fixes, docs and tests don't need an RFC.
+The RFC covers the problem, the proposal, alternatives, migration and how it will be tested. After at least 7 days of discussion a maintainer marks it `accepted` or `declined`, with reasons. The PR then updates the docs it affects together with the code. Bug fixes, docs and tests can skip the RFC step.
 
 ## Branches, commits and pull requests
 
 - Fork, then branch from `main`: `fix/…`, `feat/…`, `docs/…`, `lang/<name>`, `rfc/<n>-…`.
-- Use [Conventional Commits](https://www.conventionalcommits.org): `fix(index): …`, `feat(cli): …`. Breaking changes use `!` and a `BREAKING CHANGE:` footer.
+- Use [Conventional Commits](https://www.conventionalcommits.org): `fix(index): …`, `feat(cli): …`. Mark a breaking change with `!` after the type and explain it in a `BREAKING CHANGE:` footer.
 - One logical change per PR. Rebase on `main`; no merge commits. PRs are squash-merged.
 - Fill in the PR template: the problem and scope, linked issue or RFC, tests added (or why none), security and data-flow impact, compatibility notes, a changelog line, and any AI assistance used.
 
@@ -89,9 +89,9 @@ Before your first PR is merged, you sign a **Contributor License Agreement** onc
 
 AI tools are welcome. In the PR template, say which tools helped (for example: "Claude Code drafted the parser; I rewrote the tests").
 
-- **A human author owns every line.** You have read it, run it, and can explain it in review.
-- Tests written with AI must still fail without the fix.
-- PRs that look like unreviewed bulk generation (large, untested, unexplained, or ignoring review comments) are closed with a note.
+- **You are responsible for every line you submit**, whoever or whatever typed it. Read it, run it, and be ready to explain it in review.
+- A test you add must fail before your fix and pass after it, even if an AI wrote it.
+- We close PRs that look like unchecked machine output, such as large changes with no tests or explanation, or that ignore review feedback, and say why.
 
 ## Review, merge and releases
 
@@ -108,4 +108,4 @@ Maintainers, listed in [MAINTAINERS.md](MAINTAINERS.md), decide merges, RFCs and
 
 ## Code of conduct
 
-Everyone taking part follows the [Contributor Covenant 2.1](CODE_OF_CONDUCT.md). Conduct reports go privately to the maintainers and are handled by maintainers not involved in the incident.
+Everyone taking part follows the [Contributor Covenant 2.1](CODE_OF_CONDUCT.md). Report conduct problems privately to the maintainers in [MAINTAINERS.md](MAINTAINERS.md). While the project has a single maintainer, a report about that maintainer can't yet go to anyone independent; we'll name an independent contact as soon as the project has one.

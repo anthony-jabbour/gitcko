@@ -2,7 +2,7 @@
 
 <!-- The problem and the scope of this change. -->
 
-Closes #<!-- issue --> · RFC: <!-- link, if this needs one -->
+<!-- Closes #123 · RFC: #456 (if this change needs one) -->
 
 ## Tests
 
@@ -26,6 +26,7 @@ Closes #<!-- issue --> · RFC: <!-- link, if this needs one -->
 
 ## Checklist
 
+- [ ] This PR targets `anthony-jabbour/gitcko`, the public repo
 - [ ] `cargo xtask check` passes
 - [ ] `cargo xtask leak-guard` passes: no secrets, no private or hosted-service code
 - [ ] Every new source file has its `SPDX-License-Identifier` header
