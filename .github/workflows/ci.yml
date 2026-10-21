@@ -1,0 +1,88 @@
+# PR gate. Fork PRs run here too, so: read-only token, no secrets, actions pinned
+# by commit, and nothing from the PR is interpolated into a shell command.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  NEXTEST_VERSION: 0.9.149
+  DENY_VERSION: 0.20.2
+  GITLEAKS_VERSION: 8.30.1
+  GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+
+jobs:
+  # fmt, clippy and tests on every OS we ship (rustup installs the toolchain
+  # pinned in rust-toolchain.toml on first use).
+  check:
+    name: check (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: cargo-nextest@${{ env.NEXTEST_VERSION }}
+      - run: cargo xtask check
+
+  # Repo policy: leak guard, licence headers, crate layers, dependency licences.
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the leak guard scans the PR's commits
+          persist-credentials: false
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: cargo-deny@${{ env.DENY_VERSION }}
+      - name: Install gitleaks (checksum-verified)
+        run: |
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSLO "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${tarball}"
+          echo "${GITLEAKS_SHA256}  ${tarball}" | sha256sum --check
+          tar -xzf "${tarball}" gitleaks
+          sudo install gitleaks /usr/local/bin/gitleaks
+      - name: Leak guard self-test
+        run: cargo xtask leak-guard --self-test
+      - name: Leak guard
+        env:
+          # Commits in the PR, or the commits a push to main added.
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: cargo xtask leak-guard --range "${BASE}..${HEAD}"
+      - name: Licence headers
+        run: cargo xtask spdx
+      - name: Crate layers
+        run: cargo xtask layers
+      - name: Dependency licences, bans and sources
+        run: cargo deny check licenses bans sources
+      - name: Security advisories (when Cargo.lock changes)
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        # Only on lockfile changes, so a newly published advisory doesn't block unrelated PRs;
+        # the dependency it names gets fixed in its own PR.
+        run: |
+          if git diff --name-only "${BASE}" "${HEAD}" | grep -qx 'Cargo.lock'; then
+            cargo deny check advisories
+          else
+            echo "Cargo.lock unchanged; advisories not checked in this PR"
+          fi
