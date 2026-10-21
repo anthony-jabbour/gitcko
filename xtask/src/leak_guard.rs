@@ -46,6 +46,10 @@ const DENIED_ROOT_DIRS: &[&str] = &[
 const DENIED_ANY_DIRS: &[&str] = &["research/", ".serena/"];
 /// Never allowed in any folder: personal agent rules, and gitleaks ignore files.
 const DENIED_NAMES_ANYWHERE: &[&str] = &["claude.local.md", ".gitleaksignore"];
+/// Templates that document `.env` keys without real values; every other `.env`
+/// or `.env.*` file is denied by name, because gitleaks' rules miss plain
+/// passwords and key formats it doesn't know.
+const ALLOWED_ENV_TEMPLATES: &[&str] = &[".env.example", ".env.sample", ".env.template"];
 /// Private planning-doc names, denied in every folder except the public files and
 /// test-data folders below. Public docs use other names (e.g. `docs/architecture-overview.md`).
 const DENIED_DOC_NAMES: &[&str] = &[
@@ -117,6 +121,9 @@ fn denied_path(path: &str) -> Option<&'static str> {
     let name = path.rsplit('/').next().unwrap_or(&path);
     if DENIED_NAMES_ANYWHERE.contains(&name) {
         return Some("personal agent rules or gitleaks ignore file");
+    }
+    if (name == ".env" || name.starts_with(".env.")) && !ALLOWED_ENV_TEMPLATES.contains(&name) {
+        return Some("environment file (may hold secrets)");
     }
     let is_doc_name = DENIED_DOC_NAMES
         .iter()
@@ -369,6 +376,17 @@ pub fn self_test() -> Result {
             true,
         ),
         ("agent tool state", &[(".serena/project.yml", "x")], true),
+        ("env file", &[(".env", "ADMIN_PASSWORD=x")], true),
+        (
+            "env file variant in a subfolder",
+            &[("config/.env.production", "x")],
+            true,
+        ),
+        (
+            "env template",
+            &[(".env.example", "ADMIN_PASSWORD=")],
+            false,
+        ),
         (
             "gitleaks ignore file",
             &[("sub/.gitleaksignore", "x")],
@@ -579,6 +597,10 @@ mod tests {
             "docs/SECURITY.md",
             "CLAUDE.local.md",
             "sub/.gitleaksignore",
+            ".env",
+            ".ENV",
+            "web/.env.local",
+            "config/.env.production",
         ] {
             assert!(denied_path(path).is_some(), "{path} should be denied");
         }
@@ -598,6 +620,11 @@ mod tests {
             ".github/SECURITY.md",
             "tests/fixtures/repo/ARCHITECTURE.md",
             "docs/architecture-overview.md",
+            ".env.example",
+            "web/.env.sample",
+            ".env.template",
+            "src/environment.rs",
+            "app.env.rs",
         ] {
             assert_eq!(denied_path(path), None, "{path} should be allowed");
         }
