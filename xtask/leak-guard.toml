@@ -17,5 +17,6 @@ regex = '''(?i)gitcko[-_]cloud'''
 [[rules]]
 id = "hosted-service-env-var"
 description = "Environment variable of a hosted-service provider"
-# The provider may appear anywhere in the name, including after a prefix.
-regex = '''(?i)(^|[^A-Z0-9])(STRIPE|E2B|RAILWAY)_[A-Z0-9_]+'''
+# Upper-case, secret-shaped names only (…_KEY, …_TOKEN, …_SECRET), so ordinary code
+# like a lower-case width variable isn't blocked. A prefix before the provider is fine.
+regex = '''(^|[^A-Za-z0-9])(STRIPE|E2B|RAILWAY)_[A-Z0-9_]*(KEY|TOKEN|SECRET)'''

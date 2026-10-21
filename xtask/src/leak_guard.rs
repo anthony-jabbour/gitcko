@@ -11,8 +11,10 @@
 //!    (`xtask/leak-guard.toml`), without gitleaks' default allowlist, so
 //!    lockfiles and assets are scanned too.
 //!
-//! Inline `gitleaks:allow` comments and `.gitleaksignore` files are ignored, so
-//! nothing in a commit can switch the guard off.
+//! Inline `gitleaks:allow` comments are ignored, a committed `.gitleaksignore`
+//! is a denied path, and an untracked one at the repo root stops the scan
+//! (gitleaks would read it), so nothing in the repo can switch the guard off.
+//! Diffs are scanned as text, so binary or `-diff` files aren't skipped.
 
 use crate::Result;
 use std::io::BufRead;
@@ -97,7 +99,11 @@ const ALLOWED_DOC_PLACES: &[&str] = &["tests/fixtures/", "evals/"];
 fn denied_path(path: &str) -> Option<&'static str> {
     // Case-insensitive, because macOS and Windows treat `Infra/` and `infra/` as one folder.
     let path = path.to_ascii_lowercase();
-    let starts = |d: &str| path.starts_with(&d.to_ascii_lowercase());
+    // A bare `infra` (no slash) is a symlink or submodule with a denied name.
+    let starts = |d: &str| {
+        let d = d.to_ascii_lowercase();
+        path.starts_with(&d) || path == d.trim_end_matches('/')
+    };
     if DENIED_ROOT_DIRS.iter().any(|d| starts(d)) {
         return Some("hosted-service folder");
     }
@@ -136,6 +142,11 @@ fn check_commits(repo: &Path, log_opts: &str) -> Result<bool> {
     // gitleaks scans nothing and reports "clean" for a range git can't resolve,
     // so resolve it ourselves first and fail if git can't.
     git_output(repo, &[&["rev-list", "--count"], &args[..]].concat())?;
+    if repo.join(".gitleaksignore").exists() {
+        return Err(
+            "leak-guard: remove .gitleaksignore from the repo root; it would hide findings".into(),
+        );
+    }
 
     // -z: unquoted, NUL-separated names (git quotes unusual names otherwise).
     // --diff-merges=first-parent: also list what a merge commit itself changed.
@@ -184,13 +195,15 @@ fn gitleaks(repo: &Path, config: &str, log_opts: &str) -> Result<bool> {
             &LEAK_EXIT.to_string(),
         ])
         .arg("--ignore-gitleaks-allow")
-        // A folder we control, so a committed .gitleaksignore can't hide findings.
+        // A folder we control for ignore files; the repo root is checked above.
         .arg("--gitleaks-ignore-path")
         .arg(here.join("xtask"))
         .arg("--config")
         .arg(here.join(config))
-        // Scan what merge commits themselves change too, not only ordinary commits.
-        .arg(format!("--log-opts=--diff-merges=first-parent {log_opts}"))
+        // Scan what merge commits themselves change, and binary or `-diff` files as text.
+        .arg(format!(
+            "--log-opts=--diff-merges=first-parent --text {log_opts}"
+        ))
         .arg(repo)
         .status()
         .map_err(|e| {
@@ -282,6 +295,7 @@ pub fn self_test() -> Result {
     let allow_comment = format!("{private_name} # gitleaks:allow");
     let secret_line = format!("GITHUB_PAT={fake_github_token}");
     let env_line = format!("export MY_{}_KEY=1", "STRIPE");
+    let binary_blob = format!("AB\0\0{private_name}\0");
 
     let cases: &[SelfTestCase] = &[
         (
@@ -335,8 +349,30 @@ pub fn self_test() -> Result {
             &[("notes/a\n/ROADMAP.md", "")],
             true,
         ),
+        (
+            "private name in a binary file",
+            &[("blob.bin", &binary_blob)],
+            true,
+        ),
+        (
+            "private name in a -diff file",
+            &[
+                (".gitattributes", "x.txt -diff\n"),
+                ("x.txt", &private_name),
+            ],
+            true,
+        ),
+        (
+            "symlink-style bare hosted-service name",
+            &[("infra", "")],
+            true,
+        ),
         ("agent tool state", &[(".serena/project.yml", "x")], true),
-        ("gitleaks ignore file", &[(".gitleaksignore", "x")], true),
+        (
+            "gitleaks ignore file",
+            &[("sub/.gitleaksignore", "x")],
+            true,
+        ),
         ("secret", &[("app.env", &secret_line)], true),
         (
             "provider env var with a prefix",
@@ -347,6 +383,10 @@ pub fn self_test() -> Result {
 
     let mut failures = Vec::new();
     for (label, files, should_block) in cases {
+        // `"` and newlines can't be in Windows file names; unit tests cover that logic there.
+        if cfg!(windows) && files.iter().any(|(f, _)| f.contains(['"', '\n'])) {
+            continue;
+        }
         let result = temp_repo(files).and_then(|repo| {
             let verdict = check_commits(&repo, "HEAD");
             let _ = std::fs::remove_dir_all(&repo);
@@ -409,6 +449,17 @@ pub fn self_test() -> Result {
     match bad_range {
         Err(_) => println!("self-test ok: unresolvable range fails"),
         Ok(_) => failures.push("unresolvable range: expected an error, got a verdict".into()),
+    }
+
+    // gitleaks reads a .gitleaksignore at the repo root, so its presence must stop the scan.
+    let root_ignore = temp_repo(&[(".gitleaksignore", "x")]).and_then(|repo| {
+        let verdict = check_commits(&repo, "HEAD");
+        let _ = std::fs::remove_dir_all(&repo);
+        verdict
+    });
+    match root_ignore {
+        Err(_) => println!("self-test ok: root .gitleaksignore stops the scan"),
+        Ok(_) => failures.push("root .gitleaksignore: expected an error, got a verdict".into()),
     }
 
     if failures.is_empty() {
@@ -508,6 +559,7 @@ mod tests {
             "docs/CONTRIBUTING.md",
             "Infra/main.tf",
             "Research/x.md",
+            "services",
             "notes/ROADMAP.md",
             "crates/x/ARCHITECTURE.md",
             "docs/SECURITY.md",
@@ -527,6 +579,7 @@ mod tests {
             "docs/install.md",
             "crates/gitcko-git/src/infra.rs",
             "crates/x/infra/mod.rs",
+            "infrastructure.md",
             "web/apps/dashboard/page.tsx",
             ".github/SECURITY.md",
             "tests/fixtures/repo/ARCHITECTURE.md",
