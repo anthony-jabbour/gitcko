@@ -27,14 +27,16 @@ fn header_problem(path: &str, first_line: &str) -> Option<String> {
 
 pub fn check() -> Result {
     // Tracked and staged files only, so build output and scratch files are skipped.
-    let files = output("git", &["ls-files", "--cached", "--", "*.rs"])?;
+    // -z: unquoted, NUL-separated names, so non-ASCII file names work.
+    let files = output("git", &["ls-files", "-z", "--cached", "--", "*.rs"])?;
+    let files: Vec<&str> = files.split('\0').filter(|p| !p.is_empty()).collect();
     let mut problems = Vec::new();
-    for path in files.lines() {
+    for path in &files {
         let text = std::fs::read_to_string(path).map_err(|e| format!("{path}: {e}"))?;
         problems.extend(header_problem(path, text.lines().next().unwrap_or("")));
     }
     if problems.is_empty() {
-        println!("spdx: {} files ok", files.lines().count());
+        println!("spdx: {} files ok", files.len());
         Ok(())
     } else {
         Err(problems.join("\n"))

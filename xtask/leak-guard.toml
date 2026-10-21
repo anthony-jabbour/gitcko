@@ -6,6 +6,8 @@
 #
 # The patterns are written so this file doesn't match its own rules.
 # No internal hostnames exist yet; add a rule here when the first one does.
+# Known limit: gitleaks matches raw bytes, so text deliberately saved as UTF-16
+# isn't matched. It needs intent, not an accident; review is the backstop.
 
 title = "gitcko public-repo deny-list"
 
