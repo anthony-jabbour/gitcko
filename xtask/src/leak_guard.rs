@@ -243,8 +243,9 @@ fn git_output(repo: &Path, args: &[&str]) -> Result<String> {
 }
 
 /// Git pre-push hook: refuse to push anywhere but a repo named `gitcko`, and
-/// scan the commits being pushed (git sends them on stdin).
-pub fn pre_push(remote: &str, url: &str) -> Result {
+/// scan the commits being pushed (git sends them on stdin). `url` is the push
+/// URL after `pushurl` and `insteadOf` rewrites, so aliases can't hide it.
+pub fn pre_push(url: &str) -> Result {
     if repo_name(url) != Some("gitcko") {
         return Err(format!(
             "leak-guard: this checkout is the public `gitcko` repo, but the push goes to {url}"
@@ -255,7 +256,7 @@ pub fn pre_push(remote: &str, url: &str) -> Result {
         .lines()
         .collect::<std::io::Result<_>>()
         .map_err(|e| e.to_string())?;
-    for range in push_ranges(remote, &lines) {
+    for range in push_ranges(&lines) {
         scan(&range)?;
     }
     Ok(())
@@ -263,7 +264,7 @@ pub fn pre_push(remote: &str, url: &str) -> Result {
 
 /// The commits to scan for each ref git is pushing. Each stdin line is
 /// `<local ref> <local sha> <remote ref> <remote sha>`.
-fn push_ranges(remote: &str, lines: &[String]) -> Vec<String> {
+fn push_ranges(lines: &[String]) -> Vec<String> {
     let mut ranges = Vec::new();
     for line in lines {
         let fields: Vec<&str> = line.split_whitespace().collect();
@@ -274,9 +275,10 @@ fn push_ranges(remote: &str, lines: &[String]) -> Vec<String> {
             continue; // deleting a remote branch pushes no commits
         }
         if is_zero_sha(remote_sha) {
-            // New branch: every commit the destination remote doesn't have yet.
-            // Only that remote counts; history from other remotes is still scanned.
-            ranges.push(format!("{local_sha} --not --remotes={remote}"));
+            // New branch: all of its history. Local `refs/remotes/*` can be stale or
+            // describe another URL (e.g. a separate pushurl), so they can't prove
+            // the destination already has a commit.
+            ranges.push(local_sha.to_string());
         } else {
             ranges.push(format!("{remote_sha}..{local_sha}"));
         }
@@ -470,6 +472,37 @@ pub fn self_test() -> Result {
         true,
     );
 
+    // A new branch is scanned in full: a secret under a cached remote ref (which
+    // may describe another URL than the push goes to) must still block.
+    let result = temp_repo(&[("app.env.txt", &secret_line)]).and_then(|repo| {
+        let git = |args: &[&str]| git_output(&repo, &[&IDENTITY[..], args].concat());
+        let remote = repo.with_extension("remote.git");
+        let verdict = (|| {
+            git(&["init", "-q", "--bare", &remote.to_string_lossy()])?;
+            git(&["remote", "add", "origin", &remote.to_string_lossy()])?;
+            git(&["push", "-q", "origin", "HEAD:refs/heads/main"])?;
+            std::fs::write(repo.join("README.md"), "x").map_err(|e| e.to_string())?;
+            git(&["add", "README.md"])?;
+            git(&["commit", "-q", "-m", "clean"])?;
+            let head = git(&["rev-parse", "HEAD"])?;
+            let line = format!(
+                "refs/heads/new {} refs/heads/new {}",
+                head.trim(),
+                "0".repeat(40)
+            );
+            check_commits(&repo, &push_ranges(&[line])[0])
+        })();
+        let _ = std::fs::remove_dir_all(&repo);
+        let _ = std::fs::remove_dir_all(&remote);
+        verdict
+    });
+    record(
+        &mut failures,
+        "new branch push ignores cached remote refs",
+        result,
+        true,
+    );
+
     // A range git can't resolve must fail, not pass as "0 commits, clean".
     let bad_range = temp_repo(&[("README.md", "x")]).and_then(|repo| {
         let verdict = check_commits(&repo, &format!("{}..HEAD", "0".repeat(40)));
@@ -641,13 +674,6 @@ mod tests {
             format!("(delete) {zero40} refs/heads/gone eee"),
             "garbage".to_string(),
         ];
-        assert_eq!(
-            push_ranges("origin", &lines),
-            [
-                "bbb..aaa",
-                "ccc --not --remotes=origin",
-                "ddd --not --remotes=origin"
-            ]
-        );
+        assert_eq!(push_ranges(&lines), ["bbb..aaa", "ccc", "ddd"]);
     }
 }
