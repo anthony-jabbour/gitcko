@@ -1,0 +1,643 @@
+---
+source: crates/gitcko-diff/tests/parse.rs
+expression: changes
+---
+ChangeSet {
+    files: [
+        FileDiff {
+            old_path: None,
+            new_path: Some(
+                RepoPath(
+                    "all.diff",
+                ),
+            ),
+            change: Added,
+            old_mode: None,
+            new_mode: Some(
+                Mode(100644),
+            ),
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 0,
+                    old_lines: 0,
+                    new_start: 1,
+                    new_lines: 96,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/added.txt b/added.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "new file mode 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index 0000000..fa49b07",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "--- /dev/null",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+++ b/added.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -0,0 +1 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+new file",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/blob.bin b/blob.bin",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index 366fd40..7a621bf 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "Binary files a/blob.bin and b/blob.bin differ",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/copy_src.txt b/copy_dst.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "similarity index 57%",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "copy from copy_src.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "copy to copy_dst.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index 814f4a4..4cb29ea 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "--- a/copy_src.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+++ b/copy_dst.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -1,2 +1,3 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " one",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " two",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+three",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/deleted.txt b/deleted.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "deleted file mode 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index 286c5f5..0000000",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "--- a/deleted.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+++ /dev/null",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -1 +0,0 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "-gone",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/nonl.txt b/nonl.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index c54071e..adde431 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "--- a/nonl.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+++ b/nonl.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -1,2 +1,2 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " keep",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "-last",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "\\ No newline at end of file",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+last",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/numbers.txt b/numbers.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index e8823e1..6451a5b 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "--- a/numbers.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+++ b/numbers.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -2,7 +2,7 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 2",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 3",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 4",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "-5",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+five",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 6",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 7",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 8",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -10,6 +10,7 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 10",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 11",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 12",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+inserted",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 13",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 14",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 15",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -22,7 +23,7 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 22",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 23",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 24",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "-25",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+twenty-five",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 26",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 27",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " 28",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/rename_me.txt b/renamed.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "similarity index 70%",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "rename from rename_me.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "rename to renamed.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index 85c3040..e50310a 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "--- a/rename_me.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+++ b/renamed.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -1,3 +1,3 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " alpha",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "-beta",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+BETA",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: " gamma",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/run.sh b/run.sh",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "old mode 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "new mode 100755",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git a/with space.txt b/with space.txt",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index 587be6b..975fbec 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "--- a/with space.txt\t",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+++ b/with space.txt\t",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -1 +1 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "-x",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+y",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "diff --git \"a/\\303\\274n\\303\\257code.txt\" \"b/\\303\\274n\\303\\257code.txt\"",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "index 4ae8ef0..110ed9b 100644",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "--- \"a/\\303\\274n\\303\\257code.txt\"",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+++ \"b/\\303\\274n\\303\\257code.txt\"",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "@@ -1 +1 @@",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "-u",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "+v",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "blob.bin",
+                ),
+            ),
+            new_path: None,
+            change: Deleted,
+            old_mode: Some(
+                Mode(100644),
+            ),
+            new_mode: None,
+            binary: true,
+            hunks: [],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "copy_dst.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "copy_dst.txt",
+                ),
+            ),
+            change: Modified,
+            old_mode: Some(
+                Mode(100644),
+            ),
+            new_mode: Some(
+                Mode(100755),
+            ),
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 1,
+                    old_lines: 3,
+                    new_start: 1,
+                    new_lines: 4,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Context,
+                            text: "one",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "two",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "three",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "four",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: None,
+            new_path: Some(
+                RepoPath(
+                    "empty.txt",
+                ),
+            ),
+            change: Added,
+            old_mode: None,
+            new_mode: Some(
+                Mode(100644),
+            ),
+            binary: false,
+            hunks: [],
+        },
+        FileDiff {
+            old_path: None,
+            new_path: Some(
+                RepoPath(
+                    "link.txt",
+                ),
+            ),
+            change: Added,
+            old_mode: None,
+            new_mode: Some(
+                Mode(120000),
+            ),
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 0,
+                    old_lines: 0,
+                    new_start: 1,
+                    new_lines: 1,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Added,
+                            text: "renamed.txt",
+                            missing_newline: true,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "numbers.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "moved/numbers.txt",
+                ),
+            ),
+            change: Renamed {
+                similarity: 100,
+            },
+            old_mode: None,
+            new_mode: None,
+            binary: false,
+            hunks: [],
+        },
+    ],
+}

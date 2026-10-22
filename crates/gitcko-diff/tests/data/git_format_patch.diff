@@ -1,0 +1,31 @@
+From 920fc7c4d2496b78056fe4cc62e88fe467b4e27d Mon Sep 17 00:00:00 2001
+From: Fixture Author <author@fixture.invalid>
+Date: Thu, 1 Jan 2026 00:00:00 +0000
+Subject: [PATCH] change two files
+
+A commit message body, which the parser must skip.
+---
+ a.txt | 2 +-
+ b.txt | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+ create mode 100644 b.txt
+
+diff --git a/a.txt b/a.txt
+index 4cb29ea..ddc897f 100644
+--- a/a.txt
++++ b/a.txt
+@@ -1,3 +1,3 @@
+ one
+-two
++TWO
+ three
+diff --git a/b.txt b/b.txt
+new file mode 100644
+index 0000000..3e75765
+--- /dev/null
++++ b/b.txt
+@@ -0,0 +1 @@
++new
+-- 
+2.55.0
+

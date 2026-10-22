@@ -1,0 +1,475 @@
+---
+source: crates/gitcko-diff/tests/parse.rs
+expression: changes
+---
+ChangeSet {
+    files: [
+        FileDiff {
+            old_path: None,
+            new_path: Some(
+                RepoPath(
+                    "added.txt",
+                ),
+            ),
+            change: Added,
+            old_mode: None,
+            new_mode: Some(
+                Mode(100644),
+            ),
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 0,
+                    old_lines: 0,
+                    new_start: 1,
+                    new_lines: 1,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Added,
+                            text: "new file",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "blob.bin",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "blob.bin",
+                ),
+            ),
+            change: Modified,
+            old_mode: None,
+            new_mode: None,
+            binary: true,
+            hunks: [],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "copy_src.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "copy_dst.txt",
+                ),
+            ),
+            change: Copied {
+                similarity: 57,
+            },
+            old_mode: None,
+            new_mode: None,
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 1,
+                    old_lines: 2,
+                    new_start: 1,
+                    new_lines: 3,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Context,
+                            text: "one",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "two",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "three",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "deleted.txt",
+                ),
+            ),
+            new_path: None,
+            change: Deleted,
+            old_mode: Some(
+                Mode(100644),
+            ),
+            new_mode: None,
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 1,
+                    old_lines: 1,
+                    new_start: 0,
+                    new_lines: 0,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Removed,
+                            text: "gone",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "nonl.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "nonl.txt",
+                ),
+            ),
+            change: Modified,
+            old_mode: None,
+            new_mode: None,
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 1,
+                    old_lines: 2,
+                    new_start: 1,
+                    new_lines: 2,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Context,
+                            text: "keep",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Removed,
+                            text: "last",
+                            missing_newline: true,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "last",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "numbers.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "numbers.txt",
+                ),
+            ),
+            change: Modified,
+            old_mode: None,
+            new_mode: None,
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 2,
+                    old_lines: 7,
+                    new_start: 2,
+                    new_lines: 7,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Context,
+                            text: "2",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "3",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "4",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Removed,
+                            text: "5",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "five",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "6",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "7",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "8",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+                Hunk {
+                    old_start: 10,
+                    old_lines: 6,
+                    new_start: 10,
+                    new_lines: 7,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Context,
+                            text: "10",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "11",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "12",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "inserted",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "13",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "14",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "15",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+                Hunk {
+                    old_start: 22,
+                    old_lines: 7,
+                    new_start: 23,
+                    new_lines: 7,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Context,
+                            text: "22",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "23",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "24",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Removed,
+                            text: "25",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "twenty-five",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "26",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "27",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "28",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "rename_me.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "renamed.txt",
+                ),
+            ),
+            change: Renamed {
+                similarity: 70,
+            },
+            old_mode: None,
+            new_mode: None,
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 1,
+                    old_lines: 3,
+                    new_start: 1,
+                    new_lines: 3,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Context,
+                            text: "alpha",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Removed,
+                            text: "beta",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "BETA",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "gamma",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "run.sh",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "run.sh",
+                ),
+            ),
+            change: Modified,
+            old_mode: Some(
+                Mode(100644),
+            ),
+            new_mode: Some(
+                Mode(100755),
+            ),
+            binary: false,
+            hunks: [],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "with space.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "with space.txt",
+                ),
+            ),
+            change: Modified,
+            old_mode: None,
+            new_mode: None,
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 1,
+                    old_lines: 1,
+                    new_start: 1,
+                    new_lines: 1,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Removed,
+                            text: "x",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "y",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "ünïcode.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "ünïcode.txt",
+                ),
+            ),
+            change: Modified,
+            old_mode: None,
+            new_mode: None,
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 1,
+                    old_lines: 1,
+                    new_start: 1,
+                    new_lines: 1,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Removed,
+                            text: "u",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "v",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+}

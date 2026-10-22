@@ -11,3 +11,8 @@ CLAUDE.local.md
 !.[eE][nN][vV].[eE][xX][aA][mM][pP][lL][eE]
 !.[eE][nN][vV].[sS][aA][mM][pP][lL][eE]
 !.[eE][nN][vV].[tT][eE][mM][pP][lL][aA][tT][eE]
+# cargo-fuzz output: build dir, the growing corpus and crash inputs
+/fuzz/target/
+/fuzz/corpus/
+/fuzz/artifacts/
+/fuzz/coverage/

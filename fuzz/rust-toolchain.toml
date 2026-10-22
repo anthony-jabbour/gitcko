@@ -1,0 +1,5 @@
+# Fuzzing needs nightly (sanitizers). Pinned so CI and laptops build the same thing;
+# `cargo xtask fuzz` reads this file. Only fuzz/ uses it.
+[toolchain]
+channel = "nightly-2026-10-15"
+profile = "minimal"

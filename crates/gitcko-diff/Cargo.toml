@@ -1,0 +1,19 @@
+[package]
+name = "gitcko-diff"
+version = "0.0.0"
+description = "Git unified-diff parsing and old/new line mapping for Gitcko"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+thiserror.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+proptest.workspace = true
+
+[lints]
+workspace = true

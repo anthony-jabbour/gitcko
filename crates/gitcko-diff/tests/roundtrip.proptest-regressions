@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc d4fe33178c0f7cfdf4a52fe5e3db111e67ce4b5065bf1649c9ecda5f6f6c24c6 # shrinks to files = [FileDiff { old_path: None, new_path: Some(RepoPath("a")), change: Added, old_mode: None, new_mode: Some(Mode(100644)), binary: false, hunks: [Hunk { old_start: 0, old_lines: 0, new_start: 1, new_lines: 1, section: "", lines: [Line { kind: Added, text: "", missing_newline: true }] }] }]

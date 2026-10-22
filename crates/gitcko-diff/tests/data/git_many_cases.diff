@@ -1,0 +1,96 @@
+diff --git a/added.txt b/added.txt
+new file mode 100644
+index 0000000..fa49b07
+--- /dev/null
++++ b/added.txt
+@@ -0,0 +1 @@
++new file
+diff --git a/blob.bin b/blob.bin
+index 366fd40..7a621bf 100644
+Binary files a/blob.bin and b/blob.bin differ
+diff --git a/copy_src.txt b/copy_dst.txt
+similarity index 57%
+copy from copy_src.txt
+copy to copy_dst.txt
+index 814f4a4..4cb29ea 100644
+--- a/copy_src.txt
++++ b/copy_dst.txt
+@@ -1,2 +1,3 @@
+ one
+ two
++three
+diff --git a/deleted.txt b/deleted.txt
+deleted file mode 100644
+index 286c5f5..0000000
+--- a/deleted.txt
++++ /dev/null
+@@ -1 +0,0 @@
+-gone
+diff --git a/nonl.txt b/nonl.txt
+index c54071e..adde431 100644
+--- a/nonl.txt
++++ b/nonl.txt
+@@ -1,2 +1,2 @@
+ keep
+-last
+\ No newline at end of file
++last
+diff --git a/numbers.txt b/numbers.txt
+index e8823e1..6451a5b 100644
+--- a/numbers.txt
++++ b/numbers.txt
+@@ -2,7 +2,7 @@
+ 2
+ 3
+ 4
+-5
++five
+ 6
+ 7
+ 8
+@@ -10,6 +10,7 @@
+ 10
+ 11
+ 12
++inserted
+ 13
+ 14
+ 15
+@@ -22,7 +23,7 @@
+ 22
+ 23
+ 24
+-25
++twenty-five
+ 26
+ 27
+ 28
+diff --git a/rename_me.txt b/renamed.txt
+similarity index 70%
+rename from rename_me.txt
+rename to renamed.txt
+index 85c3040..e50310a 100644
+--- a/rename_me.txt
++++ b/renamed.txt
+@@ -1,3 +1,3 @@
+ alpha
+-beta
++BETA
+ gamma
+diff --git a/run.sh b/run.sh
+old mode 100644
+new mode 100755
+diff --git a/with space.txt b/with space.txt
+index 587be6b..975fbec 100644
+--- a/with space.txt	
++++ b/with space.txt	
+@@ -1 +1 @@
+-x
++y
+diff --git "a/\303\274n\303\257code.txt" "b/\303\274n\303\257code.txt"
+index 4ae8ef0..110ed9b 100644
+--- "a/\303\274n\303\257code.txt"
++++ "b/\303\274n\303\257code.txt"
+@@ -1 +1 @@
+-u
++v

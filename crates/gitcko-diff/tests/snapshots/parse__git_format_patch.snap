@@ -1,0 +1,85 @@
+---
+source: crates/gitcko-diff/tests/parse.rs
+expression: changes
+---
+ChangeSet {
+    files: [
+        FileDiff {
+            old_path: Some(
+                RepoPath(
+                    "a.txt",
+                ),
+            ),
+            new_path: Some(
+                RepoPath(
+                    "a.txt",
+                ),
+            ),
+            change: Modified,
+            old_mode: None,
+            new_mode: None,
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 1,
+                    old_lines: 3,
+                    new_start: 1,
+                    new_lines: 3,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Context,
+                            text: "one",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Removed,
+                            text: "two",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Added,
+                            text: "TWO",
+                            missing_newline: false,
+                        },
+                        Line {
+                            kind: Context,
+                            text: "three",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+        FileDiff {
+            old_path: None,
+            new_path: Some(
+                RepoPath(
+                    "b.txt",
+                ),
+            ),
+            change: Added,
+            old_mode: None,
+            new_mode: Some(
+                Mode(100644),
+            ),
+            binary: false,
+            hunks: [
+                Hunk {
+                    old_start: 0,
+                    old_lines: 0,
+                    new_start: 1,
+                    new_lines: 1,
+                    section: "",
+                    lines: [
+                        Line {
+                            kind: Added,
+                            text: "new",
+                            missing_newline: false,
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
+}
