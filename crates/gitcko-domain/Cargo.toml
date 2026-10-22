@@ -1,0 +1,20 @@
+[package]
+name = "gitcko-domain"
+version = "0.0.0"
+description = "Gitcko's validated core types: repository paths, confidence, review and finding ids"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gix-validate.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+gitcko-test-support = { path = "../gitcko-test-support" }
+proptest.workspace = true
+
+[lints]
+workspace = true
