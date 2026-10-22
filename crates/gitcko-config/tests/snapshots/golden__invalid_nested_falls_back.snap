@@ -1,0 +1,41 @@
+---
+source: crates/gitcko-config/tests/golden.rs
+expression: "format!(\"# repo\\n{}\\n# user\\n{}\", repo.explain(), user.explain())"
+---
+# repo
+auto_approve.enabled = false  <- default
+auto_approve.risk_ceiling = "low"  <- default
+auto_review = ["open"]  <- default
+check_run = true  <- default
+comment_types = ["logic","syntax","style"]  <- default
+exclude_authors = ["dependabot[bot]","renovate[bot]"]  <- default
+fix_links = true  <- default
+hide_footer = false  <- default
+ignore = ["*.lock","package-lock.json","pnpm-lock.yaml","yarn.lock","go.sum","vendor/","dist/","*.min.*"]  <- default
+review_drafts = false  <- default
+schema_version = 1  <- .gitcko/config.toml:1
+skip_auto_review = false  <- default
+strictness = 3  <- .gitcko/config.toml:2
+summary.diagram.collapsible = true  <- default
+summary.diagram.default_open = false  <- default
+summary.diagram.included = true  <- default
+summary.files_table.collapsible = true  <- default
+summary.files_table.default_open = false  <- default
+summary.files_table.included = true  <- default
+summary.overview.collapsible = false  <- default
+summary.overview.default_open = true  <- default
+summary.overview.included = true  <- default
+summary.score.included = true  <- default
+summary.security.included = true  <- default
+summary_only = false  <- default
+update_description = false  <- default
+warning: pkg/.gitcko/config.toml:1: strictness: wrong type or value; expected u8; using the parent folder's config
+reason_code: config_invalid
+
+# user
+api_url = "https://api.gitcko.dev"  <- default
+review.context = 15  <- default
+review.layout = "comments"  <- default
+review.output = "auto"  <- default
+telemetry = false  <- default
+web_url = "https://app.gitcko.dev"  <- default

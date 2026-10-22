@@ -1,0 +1,2 @@
+# A sibling folder: must not apply to packages/api.
+strictness = 3

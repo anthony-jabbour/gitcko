@@ -1,0 +1,5 @@
+# DO_NOT_TRACK turns telemetry off even when the user file and a flag opt in.
+reviewed = "a.txt"
+user = "telemetry = true"
+env = { DO_NOT_TRACK = "1" }
+flags = { telemetry = true }

@@ -1,0 +1,2 @@
+# No .gitcko/ at all: every value comes from the built-in defaults.
+reviewed = "src/main.rs"

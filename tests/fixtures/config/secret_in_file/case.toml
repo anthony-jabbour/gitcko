@@ -1,0 +1,4 @@
+# The error names the key, never the value. The repo file is written by the test from
+# a canary, so no fake secret is committed.
+reviewed = "a.txt"
+expect_error = ".gitcko/config.toml:2: instructions: looks like a secret"

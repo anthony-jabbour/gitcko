@@ -1,0 +1,3 @@
+# A broken nested config fails only reviews under it: they use the parent's config and
+# are marked config_invalid (CONFIGURATION §11).
+reviewed = "pkg/a.txt"

@@ -1,0 +1,3 @@
+schema_version = 1
+strictness = 3
+comment_types = ["logic"]

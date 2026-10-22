@@ -1,0 +1,24 @@
+schema_version = 1
+strictness = 2
+comment_types = ["logic", "syntax", "style"]
+instructions = "Root instructions."
+
+[summary.overview]
+included = true
+collapsible = true
+
+[[rules]]
+id = "no-console"
+rule = "No console.log in production code."
+severity = "P2"
+
+[[rules]]
+id = "errors"
+rule = "Handle every error."
+severity = "P1"
+
+[[rules]]
+rule = "A rule with no id can't be disabled below."
+
+[[context.files]]
+path = "docs/architecture.md"
