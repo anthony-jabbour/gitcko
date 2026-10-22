@@ -81,6 +81,12 @@ fn git_helper_reads_no_user_or_system_config() {
         .args(["config", "--list", "--show-scope"])
         .output()
         .unwrap();
+    // A failing git call prints nothing, which would otherwise look like a pass.
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
     let listed = String::from_utf8_lossy(&out.stdout);
     let foreign: Vec<_> = listed.lines().filter(|l| !l.starts_with("local")).collect();
     assert!(foreign.is_empty(), "{foreign:?}");
