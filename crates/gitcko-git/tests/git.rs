@@ -351,3 +351,43 @@ fn worktree_reads_refuse_a_git_dir_under_any_name() {
         assert!(err.to_string().contains("git metadata"), "{inside}: {err}");
     }
 }
+
+#[test]
+fn submodules_are_diffed_as_commit_ids_and_never_followed() {
+    // A gitlink names a commit in another repository, which isn't here to read. git
+    // shows it as a `Subproject commit` line; read_blob finds no file there.
+    let dir = TempDir::new("submodule");
+    let d = dir.path();
+    git_out(d, &["init", "-q", "-b", "main"]);
+    let commit = |link: &str, msg: &str| {
+        let entry = format!("160000,{link},vendor/lib");
+        git_out(d, &["update-index", "--add", "--cacheinfo", &entry]);
+        git_out(
+            d,
+            &[
+                "-c",
+                "user.name=F",
+                "-c",
+                "user.email=f@fixture.invalid",
+                "commit",
+                "-q",
+                "-m",
+                msg,
+            ],
+        );
+        git_out(d, &["rev-parse", "HEAD"]).trim().to_string()
+    };
+    let base = commit(&"1".repeat(40), "add submodule");
+    let head = commit(&"2".repeat(40), "bump submodule");
+    let repo = Repo::open(d).unwrap();
+    let (base, head) = (repo.resolve(&base).unwrap(), repo.resolve(&head).unwrap());
+    let ours = repo.diff(base, head).unwrap();
+    let theirs = parse(&git_out(
+        d,
+        &["diff", "-M", &base.to_string(), &head.to_string()],
+    ))
+    .unwrap();
+    assert_eq!(ours, theirs);
+    assert_eq!(ours.files.len(), 1);
+    assert_eq!(repo.read_blob(head, &path("vendor/lib")).unwrap(), None);
+}

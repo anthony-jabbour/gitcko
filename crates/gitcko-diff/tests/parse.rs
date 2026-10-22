@@ -304,3 +304,26 @@ fn patch_appended_after_a_binary_payload_is_rejected() {
     let ok = "diff --git a/b.bin b/b.bin\nindex 1..2 100644\nGIT binary patch\nliteral 5\nMcmZ?b1\n\nliteral 0\nHcmV?d00001\n\n";
     assert!(parse(ok).unwrap().files[0].binary);
 }
+
+#[test]
+fn canary_parse_errors_never_echo_the_diff_text() {
+    // Diff text is untrusted and can hold anything, so an error names the line number
+    // and what was expected, never the text itself (OBSERVABILITY §6).
+    for canary in gitcko_redact::canaries() {
+        let c = canary.as_str();
+        let head = "diff --git a/f b/f\n";
+        for text in [
+            format!("{head}{c}\n"),
+            format!("{head}--- a/f\n+++ b/f\n@@ -{c} +1 @@\n a\n"),
+            format!("{head}--- a/f\n+++ b/f\n@@ -99999999999 +1 @@ {c}\n a\n"),
+            format!("{head}old mode {c}\nnew mode 100755\n"),
+            format!("diff --git a/f b/g\nsimilarity index {c}\nrename from f\nrename to g\n"),
+            format!("{head}--- x/{c}\n+++ b/f\n@@ -1 +1 @@\n-a\n+b\n"),
+            format!("diff --git a/{c}/../../x b/{c}/../../x\n"),
+        ] {
+            let err = parse(&text).expect_err(&text);
+            let shown = format!("{err} {err:?}");
+            assert!(!shown.contains(c), "{shown}");
+        }
+    }
+}

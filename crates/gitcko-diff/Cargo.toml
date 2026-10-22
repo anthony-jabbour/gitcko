@@ -12,6 +12,7 @@ gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
 thiserror.workspace = true
 
 [dev-dependencies]
+gitcko-redact = { path = "../gitcko-redact" }
 insta.workspace = true
 proptest.workspace = true
 

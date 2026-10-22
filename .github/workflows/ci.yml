@@ -54,10 +54,13 @@ jobs:
             canaries:
               - 'crates/**'
               - 'xtask/**'
+            # The fuzz targets and every crate they build on.
             fuzz:
               - 'crates/gitcko-diff/**'
               - 'crates/gitcko-config/**'
               - 'crates/gitcko-domain/**'
+              - 'crates/gitcko-protocol/**'
+              - 'crates/gitcko-redact/**'
               - 'fuzz/**'
               - 'xtask/src/fuzz.rs'
 
