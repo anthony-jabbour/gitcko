@@ -143,12 +143,15 @@ jobs:
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
+        # Put back the commit actions/checkout chose (the PR merged into its base), so
+        # the policy steps after this one check the tree that will land.
         run: |
+          checked_out=$(git rev-parse HEAD)
           git checkout -q --detach "${BASE}"
           git merge --squash -q "${HEAD}"
           git -c user.name=ci -c user.email=ci@ci.invalid commit -q --allow-empty -m squashed
           cargo xtask leak-guard --range "${BASE}..HEAD"
-          git checkout -q "${HEAD}"
+          git checkout -q --detach "${checked_out}"
       - name: Licence headers
         run: cargo xtask spdx
       - name: Crate layers
