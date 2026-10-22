@@ -304,3 +304,53 @@ fn patch_appended_after_a_binary_payload_is_rejected() {
     let ok = "diff --git a/b.bin b/b.bin\nindex 1..2 100644\nGIT binary patch\nliteral 5\nMcmZ?b1\n\nliteral 0\nHcmV?d00001\n\n";
     assert!(parse(ok).unwrap().files[0].binary);
 }
+
+#[test]
+fn canary_parse_errors_never_echo_the_diff_text() {
+    // Diff text is untrusted and can hold anything, so an error names the line number
+    // and what was expected, never the text itself (OBSERVABILITY §6). Each input is
+    // paired with the error it must hit, so every message that used to quote is covered.
+    for canary in gitcko_redact::canaries() {
+        // One line of text: a newline or space would split the input differently.
+        let c: String = canary.split_whitespace().collect();
+        let c = c.as_str();
+        let head = "diff --git a/f b/f\n";
+        let files = "--- a/f\n+++ b/f\n";
+        for (text, expected) in [
+            (format!("{head}{c}\n"), "unexpected line in a file header"),
+            (
+                format!("{head}{files}@@ -{c} +1 @@\n a\n"),
+                "invalid hunk header",
+            ),
+            (
+                format!("{head}{files}@@ -4294967295,{c} +1 @@\n a\n"),
+                "invalid hunk header",
+            ),
+            (
+                format!("{head}{files}@@ -4294967295,1 +1 @@ {c}\n-a\n+b\n"),
+                "hunk range too large",
+            ),
+            (
+                format!("{head}old mode {c}\nnew mode 100755\n"),
+                "invalid file mode",
+            ),
+            (
+                format!("diff --git a/f b/g\nsimilarity index {c}\nrename from f\nrename to g\n"),
+                "invalid similarity",
+            ),
+            (
+                format!("{head}--- x/{c}\n+++ b/f\n@@ -1 +1 @@\n-a\n+b\n"),
+                "expected the path to start with",
+            ),
+            (
+                format!("diff --git a/{c}/../../x b/{c}/../../x\n"),
+                "invalid repository path",
+            ),
+        ] {
+            let err = parse(&text).expect_err(&text);
+            let shown = format!("{err} {err:?}");
+            assert!(shown.contains(expected), "expected {expected:?}: {shown}");
+            assert!(!shown.contains(c), "{shown}");
+        }
+    }
+}

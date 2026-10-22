@@ -12,7 +12,8 @@ use gitcko_domain::RepoPath;
 use crate::render::quote;
 use crate::{Change, ChangeSet, FileDiff, Hunk, Line, LineKind, Mode, Side};
 
-/// Why diff text couldn't be parsed, and the 1-based line where it went wrong.
+/// Why diff text couldn't be parsed, and the 1-based line where it went wrong. The
+/// message never quotes the diff, which is untrusted and may hold secrets.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 #[error("diff line {line}: {message}")]
 pub struct ParseError {
@@ -27,6 +28,11 @@ fn error<T>(line: usize, message: impl Into<String>) -> Result<T> {
         line,
         message: message.into(),
     })
+}
+
+/// Names the problem, not the path: the path is untrusted diff text.
+fn path_error<T>(line: usize, e: gitcko_domain::PathError) -> Result<T> {
+    error(line, format!("invalid repository path: {}", e.problem))
 }
 
 /// Parses diff text into a [`ChangeSet`]. An empty string is an empty change set.
@@ -169,7 +175,7 @@ fn parse_file(lines: &[&str], start: usize) -> Result<(FileDiff, usize)> {
         } else if line.starts_with("@@ ") {
             return error(n, "hunk before the file's `---`/`+++` lines");
         } else {
-            return error(n, format!("unexpected line in a file header: {line:?}"));
+            return error(n, "unexpected line in a file header");
         }
         at += 1;
     }
@@ -204,7 +210,7 @@ fn build(h: Header, hunks: Vec<Hunk>, line: usize) -> Result<FileDiff> {
         h.plus.as_ref().and_then(Option::as_ref),
     ];
     for path in supplied.into_iter().flatten() {
-        RepoPath::parse(path).or_else(|e| error(line, e.to_string()))?;
+        RepoPath::parse(path).or_else(|e| path_error(line, e))?;
     }
     let renamed_or_copied = h.renamed_or_copied();
     let added = h.new_file.is_some() || h.minus == Some(None);
@@ -223,7 +229,7 @@ fn build(h: Header, hunks: Vec<Hunk>, line: usize) -> Result<FileDiff> {
         let Some(path) = path else {
             return error(line, "can't tell which file this is");
         };
-        RepoPath::parse(&path).or_else(|e| error(line, e.to_string()))
+        RepoPath::parse(&path).or_else(|e| path_error(line, e))
     };
     let (old_path, new_path) = match change {
         Change::Added => (None, Some(checked(new)?)),
@@ -367,7 +373,7 @@ fn mark_missing_newline(hunk: &mut Hunk, line: usize) -> Result<()> {
 
 /// `@@ -os[,ol] +ns[,nl] @@[ section]`.
 fn hunk_header(line: &str, n: usize) -> Result<Hunk> {
-    let bad = || error(n, format!("invalid hunk header {line:?}"));
+    let bad = || error(n, "invalid hunk header");
     let Some(rest) = line.strip_prefix("@@ -") else {
         return bad();
     };
@@ -398,7 +404,7 @@ fn hunk_header(line: &str, n: usize) -> Result<Hunk> {
     // for an empty side), so checking that once here rules out overflow everywhere.
     let fits = |start: u32, lines: u32| start.checked_add(lines.max(1)).is_some();
     if !fits(old_start, old_lines) || !fits(new_start, new_lines) {
-        return error(n, format!("hunk range too large in {line:?}"));
+        return error(n, "hunk range too large");
     }
     Ok(Hunk {
         old_start,
@@ -413,14 +419,14 @@ fn hunk_header(line: &str, n: usize) -> Result<Hunk> {
 fn mode(text: &str, n: usize) -> Result<Mode> {
     match u32::from_str_radix(text, 8) {
         Ok(value) if text.len() == 6 => Ok(Mode(value)),
-        _ => error(n, format!("invalid file mode {text:?}")),
+        _ => error(n, "invalid file mode"),
     }
 }
 
 fn percent(text: &str, n: usize) -> Result<u8> {
     match text.strip_suffix('%').and_then(|t| t.parse::<u8>().ok()) {
         Some(value) if value <= 100 => Ok(value),
-        _ => error(n, format!("invalid similarity {text:?}")),
+        _ => error(n, "invalid similarity"),
     }
 }
 
@@ -474,10 +480,7 @@ fn side_path(rest: &str, prefix: &str, n: usize) -> Result<Option<String>> {
     };
     match path.strip_prefix(prefix) {
         Some(path) => Ok(Some(path.to_string())),
-        None => error(
-            n,
-            format!("expected the path to start with {prefix:?}: {path:?}"),
-        ),
+        None => error(n, format!("expected the path to start with {prefix:?}")),
     }
 }
 

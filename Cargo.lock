@@ -396,6 +396,7 @@ name = "gitcko-diff"
 version = "0.0.0"
 dependencies = [
  "gitcko-domain",
+ "gitcko-redact",
  "insta",
  "proptest",
  "thiserror",
