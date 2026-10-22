@@ -377,6 +377,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-config"
+version = "0.0.0"
+dependencies = [
+ "gitcko-domain",
+ "gitcko-protocol",
+ "gitcko-redact",
+ "gitcko-test-support",
+ "insta",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "toml",
+]
+
+[[package]]
 name = "gitcko-diff"
 version = "0.0.0"
 dependencies = [

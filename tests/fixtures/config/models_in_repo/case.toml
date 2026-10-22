@@ -1,0 +1,2 @@
+reviewed = "a.txt"
+expect_error = "models can't be set in repository config"

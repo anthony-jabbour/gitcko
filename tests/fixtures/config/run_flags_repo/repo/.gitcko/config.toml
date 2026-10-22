@@ -1,0 +1,3 @@
+schema_version = 1
+fail_on = "P2"
+instructions = "Repo instructions."

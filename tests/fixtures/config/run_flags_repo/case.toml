@@ -1,0 +1,3 @@
+# Run flags may set tier and fail_on and add instructions (CONFIGURATION §2).
+reviewed = "a.txt"
+flags = { fail_on = "P0", instructions = "Focus on retries." }

@@ -1,0 +1,15 @@
+comment_types = ["logic"]
+instructions = "API instructions."
+disabled_rules = ["no-console"]
+
+[summary.overview]
+collapsible = false
+
+[[rules]]
+id = "api-auth"
+rule = "Every route checks auth."
+scope = ["src/**"]
+severity = "P1"
+
+[[context.files]]
+path = "openapi.yaml"
