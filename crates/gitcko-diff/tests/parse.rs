@@ -275,7 +275,7 @@ fn patch_text_hidden_in_skipped_parts_is_rejected() {
     for text in [
         format!("Subject: x\n\n{hidden}{real}"),
         format!("{real}-- \n2.55.0\n\n{hidden}"),
-        format!("{real}-- \n2.55.0\nIndex: evil\n"),
+        format!("{real}-- \n2.55.0\n*** a/evil\n--- b/evil\n"),
     ] {
         let err = parse(&text).unwrap_err();
         assert!(
@@ -283,4 +283,12 @@ fn patch_text_hidden_in_skipped_parts_is_rejected() {
             "{err}\n{text}"
         );
     }
+}
+
+#[test]
+fn commit_message_prose_that_starts_like_a_patch_is_fine() {
+    // Only patch structure is rejected, not words: a line starting with `diff ` or
+    // `Index: ` alone can't be applied.
+    let text = "Subject: diff parser changes\n\ndiff output is now stricter.\nIndex: notes below\n--- \n\ndiff --git a/f b/f\n--- a/f\n+++ b/f\n@@ -1 +1 @@\n-a\n+b\n";
+    assert_eq!(parse(text).unwrap().files.len(), 1);
 }

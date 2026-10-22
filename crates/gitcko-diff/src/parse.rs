@@ -48,30 +48,26 @@ pub fn parse(text: &str) -> Result<ChangeSet> {
 }
 
 /// Fails if text the parser skips (a commit message, mail headers, a signature)
-/// contains patch-shaped lines. `git apply` accepts patches without a `diff --git` line,
-/// so such text could change files without ever being parsed and reviewed. `first` is
-/// the index of `skipped[0]` in the whole text, for the line number.
+/// holds patch structure. `git apply` accepts patches without a `diff --git` line, so
+/// such text could change files without ever being parsed and reviewed. Only
+/// structure counts, not words: commit messages often start lines with "diff " or
+/// "Index: ". `first` is the index of `skipped[0]` in the whole text, for the line
+/// number.
 fn reject_hidden_patches(skipped: &[&str], first: usize) -> Result<()> {
-    const PATCH_LIKE: [&str; 8] = [
-        "--- ",
-        "+++ ",
-        "@@ ",
-        "diff ",
-        "Index: ",
-        "*** ",
-        "GIT binary patch",
-        "Binary files ",
-    ];
-    match skipped
-        .iter()
-        .position(|l| PATCH_LIKE.iter().any(|p| l.starts_with(p)))
-    {
-        Some(i) => error(
-            first + i + 1,
-            "patch-like line outside a `diff --git` section",
-        ),
-        None => Ok(()),
+    for (i, line) in skipped.iter().enumerate() {
+        let next = skipped.get(i + 1).copied().unwrap_or("");
+        let structure = (line.starts_with("--- ") && next.starts_with("+++ "))
+            || (line.starts_with("*** ") && next.starts_with("--- "))
+            || line.starts_with("@@ -")
+            || *line == "GIT binary patch";
+        if structure {
+            return error(
+                first + i + 1,
+                "patch-like line outside a `diff --git` section",
+            );
+        }
     }
+    Ok(())
 }
 
 /// What a file's header lines say, before deciding paths and change kind.
