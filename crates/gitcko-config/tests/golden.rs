@@ -130,3 +130,37 @@ fn canary_secret_in_a_config_file_is_an_error_that_never_shows_it() {
         assert!(!shown.contains(canary.as_str()), "{shown}");
     }
 }
+
+#[test]
+fn config_paths_must_be_plain_paths_inside_their_folder() {
+    for bad in [
+        "~/secrets",
+        "C:/Windows/x",
+        "a//b",
+        ".git/config",
+        "docs/../../x",
+        "/etc/passwd",
+        "a\\b",
+    ] {
+        let text = format!(
+            "schema_version = 1\n[[context.files]]\npath = {}\n",
+            toml::Value::String(bad.into())
+        );
+        let files = RepoFiles {
+            folders: vec![FolderConfig {
+                folder: None,
+                config_toml: Some(text),
+                rules_md: None,
+            }],
+            legacy_root_file: false,
+        };
+        let reviewed = RepoPath::parse("a.txt").unwrap();
+        let err = resolve_repo(&files, &reviewed, &RunFlags::default(), &Ceilings::local())
+            .expect_err(bad);
+        assert!(
+            err.to_string()
+                .contains(".gitcko/config.toml:3: context.files.path"),
+            "{bad}: {err}"
+        );
+    }
+}

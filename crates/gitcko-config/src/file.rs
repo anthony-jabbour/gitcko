@@ -176,9 +176,15 @@ fn typed<T: serde::de::DeserializeOwned>(parsed: &Parsed, text: &str) -> Result<
     })
 }
 
-/// A path or glob in a repo file is relative to its folder and can't leave it.
+/// A path or glob in a repo file must be a plain repository path relative to its
+/// folder: everything `RepoPath` requires (no `..`, empty parts, control characters or
+/// `.git`), plus no `\\`, no leading `~` and no drive letter, so it can't name a file
+/// outside the folder on any OS. Glob characters are allowed.
 fn escapes(path: &str) -> bool {
-    path.starts_with('/') || path.contains('\\') || path.split('/').any(|part| part == "..")
+    gitcko_domain::RepoPath::parse(path).is_err()
+        || path.contains('\\')
+        || path.starts_with('~')
+        || path.chars().nth(1) == Some(':')
 }
 
 pub(crate) fn load_repo(label: &str, text: &str, is_root: bool) -> Result<Items, ConfigError> {
