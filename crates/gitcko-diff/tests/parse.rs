@@ -292,3 +292,15 @@ fn commit_message_prose_that_starts_like_a_patch_is_fine() {
     let text = "Subject: diff parser changes\n\ndiff output is now stricter.\nIndex: notes below\n--- \n\ndiff --git a/f b/f\n--- a/f\n+++ b/f\n@@ -1 +1 @@\n-a\n+b\n";
     assert_eq!(parse(text).unwrap().files.len(), 1);
 }
+
+#[test]
+fn patch_appended_after_a_binary_payload_is_rejected() {
+    // The binary payload is skipped, so a text patch hidden after it would be applied
+    // by git but missing from the review.
+    let text = "diff --git a/b.bin b/b.bin\nindex 1..2 100644\nGIT binary patch\nliteral 5\nMcmZ?b1\n\nliteral 0\nHcmV?d00001\n\n--- a/evil\n+++ b/evil\n@@ -1 +1 @@\n-a\n+b\n";
+    let err = parse(text).unwrap_err();
+    assert!(err.to_string().contains("outside a `diff --git`"), "{err}");
+    // A real binary patch on its own is fine.
+    let ok = "diff --git a/b.bin b/b.bin\nindex 1..2 100644\nGIT binary patch\nliteral 5\nMcmZ?b1\n\nliteral 0\nHcmV?d00001\n\n";
+    assert!(parse(ok).unwrap().files[0].binary);
+}

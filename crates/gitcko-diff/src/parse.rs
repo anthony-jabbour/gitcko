@@ -146,9 +146,13 @@ fn parse_file(lines: &[&str], start: usize) -> Result<(FileDiff, usize)> {
         } else if line == "GIT binary patch" {
             h.binary = true;
             at += 1;
+            let payload = at;
             while at < lines.len() && !lines[at].starts_with("diff --git ") {
                 at += 1; // the encoded content isn't kept
             }
+            // Payload lines start with a letter (a base85 length) or are
+            // `literal`/`delta`/blank, so patch structure here was appended to it.
+            reject_hidden_patches(&lines[payload..at], payload)?;
             break;
         } else if let Some(rest) = line.strip_prefix("--- ") {
             h.minus = Some(side_path(rest, "a/", n)?);
