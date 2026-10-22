@@ -331,3 +331,23 @@ fn a_corrupt_tree_is_an_error_not_a_missing_file() {
         "a corrupt tree must not read as a missing file"
     );
 }
+
+#[test]
+fn worktree_reads_refuse_a_git_dir_under_any_name() {
+    // `git init --separate-git-dir meta` keeps the metadata in an ordinary-looking
+    // folder inside the working tree, where no link or `.git` rule would catch it.
+    let dir = TempDir::new("separate-git-dir");
+    git_out(
+        dir.path(),
+        &["init", "-q", "--separate-git-dir", "meta", "."],
+    );
+    let repo = Repo::open(dir.path()).unwrap();
+    for inside in ["meta/config", "meta/HEAD", "META/config"] {
+        let err = repo.read_worktree_file(&path(inside)).unwrap_err();
+        // Case-insensitive disks reach `meta` through `META` too.
+        if inside == "META/config" && !dir.path().join("META").exists() {
+            continue;
+        }
+        assert!(err.to_string().contains("git metadata"), "{inside}: {err}");
+    }
+}

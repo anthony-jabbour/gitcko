@@ -32,6 +32,8 @@ pub enum GitError {
     NoWorktree,
     #[error("{path}: goes through a symbolic link or junction, which isn't followed")]
     Link { path: RepoPath },
+    #[error("{path}: inside git metadata, which isn't review content")]
+    GitMetadata { path: RepoPath },
     #[error("{path}: not a regular file")]
     NotRegularFile { path: RepoPath },
     #[error("{path}: unsafe to open on Windows ({problem})")]
@@ -68,6 +70,10 @@ pub struct Repo {
     repo: gix::Repository,
     /// The working tree, canonical, when there is one.
     workdir: Option<PathBuf>,
+    /// The git dir and common dir, canonical. Either can sit inside the working tree
+    /// under any name (`git init --separate-git-dir meta`), so reads compare against
+    /// them, not against the name `.git`.
+    metadata: Vec<PathBuf>,
 }
 
 /// gix's error text can include local paths (a loose object's file, for one), so only
@@ -81,7 +87,15 @@ impl Repo {
         let repo =
             gix::open_opts(path, gix::open::Options::isolated()).map_err(|_| GitError::Open)?;
         let workdir = repo.workdir().and_then(|dir| dir.canonicalize().ok());
-        Ok(Repo { repo, workdir })
+        let metadata = [repo.git_dir(), repo.common_dir()]
+            .iter()
+            .filter_map(|dir| dir.canonicalize().ok())
+            .collect();
+        Ok(Repo {
+            repo,
+            workdir,
+            metadata,
+        })
     }
 
     /// Resolves a branch, tag, `HEAD`, `HEAD~1` or hash to the commit it names, so a
@@ -199,17 +213,18 @@ impl Repo {
                 problem,
             });
         }
-        read_without_links(root, path)
+        read_without_links(root, path, &self.metadata)
     }
 }
 
 /// Opens each folder from the repository root with `O_NOFOLLOW`, then the file the same
 /// way, and checks the opened handle. Nothing is looked up twice, so another process
 /// swapping a part of the path for a link can't redirect the read (no check-then-use
-/// gap).
+/// gap). Each opened folder is compared with the git metadata folders by device and
+/// inode, so no spelling of their names (`META` on a case-insensitive disk) gets in.
 #[cfg(unix)]
-fn read_without_links(root: &Path, path: &RepoPath) -> Result<Vec<u8>> {
-    use rustix::fs::{FileType, Mode, OFlags, fstat, open, openat};
+fn read_without_links(root: &Path, path: &RepoPath, metadata: &[PathBuf]) -> Result<Vec<u8>> {
+    use rustix::fs::{FileType, Mode, OFlags, fstat, open, openat, stat};
     use std::io::Read;
 
     let error = |e: rustix::io::Errno| match e {
@@ -227,9 +242,18 @@ fn read_without_links(root: &Path, path: &RepoPath) -> Result<Vec<u8>> {
     let (file_name, folders) = parts
         .split_last()
         .expect("a RepoPath has at least one part");
+    let metadata: Vec<_> = metadata
+        .iter()
+        .filter_map(|dir| stat(dir).ok())
+        .map(|st| (st.st_dev, st.st_ino))
+        .collect();
     let mut dir = open(root, dir_flags, Mode::empty()).map_err(error)?;
     for folder in folders {
         dir = openat(&dir, *folder, dir_flags | OFlags::NOFOLLOW, Mode::empty()).map_err(error)?;
+        let st = fstat(&dir).map_err(error)?;
+        if metadata.contains(&(st.st_dev, st.st_ino)) {
+            return Err(GitError::GitMetadata { path: path.clone() });
+        }
     }
     let file_flags = OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::CLOEXEC;
     let fd = openat(&dir, *file_name, file_flags, Mode::empty()).map_err(error)?;
@@ -250,7 +274,7 @@ fn read_without_links(root: &Path, path: &RepoPath) -> Result<Vec<u8>> {
 /// file is read, and the parts are checked again. A swap and swap-back between those
 /// checks isn't caught; Unix has no such window.
 #[cfg(not(unix))]
-fn read_without_links(root: &Path, path: &RepoPath) -> Result<Vec<u8>> {
+fn read_without_links(root: &Path, path: &RepoPath, metadata: &[PathBuf]) -> Result<Vec<u8>> {
     let read_error = |e: std::io::Error| GitError::Read {
         path: path.clone(),
         reason: e.kind().to_string(),
@@ -270,6 +294,11 @@ fn read_without_links(root: &Path, path: &RepoPath) -> Result<Vec<u8>> {
         Ok(at)
     };
     let full = check()?;
+    // Canonical paths fold case and short names on Windows, so any spelling matches.
+    let canonical = full.canonicalize().map_err(read_error)?;
+    if metadata.iter().any(|dir| canonical.starts_with(dir)) {
+        return Err(GitError::GitMetadata { path: path.clone() });
+    }
     if !std::fs::symlink_metadata(&full)
         .map_err(read_error)?
         .is_file()
