@@ -181,3 +181,19 @@ fn canary_repeated_bearer_keyword_still_hides_the_token() {
     let out = Redactor::new().redact("Authorization: Bearer Bearer CanaryT0ken123");
     assert!(!out.contains("CanaryT0ken123"), "{out}");
 }
+
+#[test]
+fn nested_paths_get_the_most_specific_label_in_any_order() {
+    let home = Path::new("/home/ana");
+    let repo = Path::new("/home/ana/work/shop");
+    for redactor in [
+        Redactor::new().path(home, "home").path(repo, "repo"),
+        Redactor::new().path(repo, "repo").path(home, "home"),
+    ] {
+        assert_eq!(
+            redactor.redact("/home/ana/work/shop/src/a.rs"),
+            "<repo>/src/a.rs"
+        );
+        assert_eq!(redactor.redact("/home/ana/.cache"), "<home>/.cache");
+    }
+}

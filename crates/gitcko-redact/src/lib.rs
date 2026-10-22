@@ -94,7 +94,9 @@ impl Redactor {
         if spans.is_empty() {
             return Cow::Borrowed(text);
         }
-        spans.sort_by_key(|&(start, _, _)| start);
+        // At the same start the longest span comes first, so the most specific label
+        // (e.g. `<repo>` over `<home>`) names the merged span.
+        spans.sort_by_key(|&(start, end, _)| (start, std::cmp::Reverse(end)));
         let mut out = String::with_capacity(text.len());
         let mut copied = 0;
         let mut i = 0;
