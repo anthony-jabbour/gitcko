@@ -175,3 +175,9 @@ fn canary_debug_output_hides_registered_values() {
         "{shown}"
     );
 }
+
+#[test]
+fn canary_repeated_bearer_keyword_still_hides_the_token() {
+    let out = Redactor::new().redact("Authorization: Bearer Bearer CanaryT0ken123");
+    assert!(!out.contains("CanaryT0ken123"), "{out}");
+}
