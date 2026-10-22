@@ -141,3 +141,37 @@ fn canary_url_userinfo_of_any_shape_is_dropped() {
         assert_eq!(Redactor::new().redact(text), want);
     }
 }
+
+#[test]
+fn canary_registered_value_inside_a_shaped_token_takes_the_whole_token() {
+    // Replacing the registered part first would break the Bearer shape and leave the
+    // rest of the token readable.
+    let redactor = Redactor::new().secret("abc123def456");
+    let out = redactor.redact("Authorization: Bearer ghi789abc123def456jkl012");
+    assert_eq!(out, "Authorization: Bearer <secret>");
+}
+
+#[test]
+fn canary_short_and_password_only_credentials_are_redacted() {
+    let redactor = Redactor::new();
+    assert_eq!(
+        redactor.redact("Authorization: Bearer aB3dE5fG7hJ9"),
+        "Authorization: Bearer <secret>"
+    );
+    assert_eq!(
+        redactor.redact("redis://:CanaryPassw0rd@localhost:6379"),
+        "redis://<secret>@localhost:6379"
+    );
+}
+
+#[test]
+fn canary_debug_output_hides_registered_values() {
+    let redactor = Redactor::new()
+        .secret("CanaryDebugSecret99")
+        .path(Path::new("/home/canaryuser"), "home");
+    let shown = format!("{redactor:?}");
+    assert!(
+        !shown.contains("CanaryDebugSecret99") && !shown.contains("canaryuser"),
+        "{shown}"
+    );
+}

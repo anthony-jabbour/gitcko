@@ -21,11 +21,18 @@ use regex::Regex;
 const SECRET: &str = "<secret>";
 
 /// Replaces registered values and credential-shaped text.
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct Redactor {
-    /// `(value, replacement)`, longest value first so a secret is never partly replaced
-    /// by a shorter one that is its prefix.
+    /// `(value, replacement)` pairs: secrets and local paths.
     values: Vec<(String, String)>,
+}
+
+/// Shows how many values are registered, never the values: printing a `Redactor` in a
+/// debug message must not leak what it protects.
+impl std::fmt::Debug for Redactor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Redactor {{ {} registered values }}", self.values.len())
+    }
 }
 
 impl Redactor {
@@ -49,35 +56,55 @@ impl Redactor {
             .with(shown, placeholder)
     }
 
-    /// Every occurrence of every registered value is found in the original text first
-    /// and overlapping matches are merged, then all are replaced in one pass. Replacing
-    /// one value at a time would cut an overlapping second secret in half and leak its
-    /// tail.
-    fn redact_known<'a>(&self, text: &'a str) -> Cow<'a, str> {
-        let mut matches: Vec<(usize, usize, &str)> = Vec::new();
+    fn with(mut self, value: String, replacement: String) -> Redactor {
+        if !value.is_empty() && !self.values.iter().any(|(v, _)| *v == value) {
+            self.values.push((value, replacement));
+        }
+        self
+    }
+
+    /// Finds every registered value and every credential shape in the **original** text,
+    /// merges spans that overlap, then replaces them in one pass. Replacing one match at
+    /// a time would let an earlier replacement break a later match, leaving pieces of a
+    /// secret readable (an overlapping second secret, or a registered value inside a
+    /// longer token).
+    pub fn redact<'a>(&self, text: &'a str) -> Cow<'a, str> {
+        let mut spans: Vec<(usize, usize, &str)> = Vec::new();
         for (value, replacement) in &self.values {
             let mut from = 0;
             while let Some(offset) = text[from..].find(value.as_str()) {
                 let start = from + offset;
-                matches.push((start, start + value.len(), replacement));
+                spans.push((start, start + value.len(), replacement));
                 // Step one character, not one match, so overlapping repeats are found.
                 from = start + value.chars().next().map_or(1, char::len_utf8);
             }
         }
-        if matches.is_empty() {
+        for shape in SHAPES.iter() {
+            for found in shape.captures_iter(text) {
+                // A shape may name the part to hide (`secret`) to keep its context,
+                // e.g. the scheme and host of a URL.
+                let part = found
+                    .name("secret")
+                    .unwrap_or_else(|| found.get(0).unwrap());
+                if !part.is_empty() {
+                    spans.push((part.start(), part.end(), SECRET));
+                }
+            }
+        }
+        if spans.is_empty() {
             return Cow::Borrowed(text);
         }
-        matches.sort_by_key(|&(start, _, _)| start);
+        spans.sort_by_key(|&(start, _, _)| start);
         let mut out = String::with_capacity(text.len());
         let mut copied = 0;
         let mut i = 0;
-        while i < matches.len() {
-            let (start, mut end, mut replacement) = matches[i];
+        while i < spans.len() {
+            let (start, mut end, mut replacement) = spans[i];
             i += 1;
-            while i < matches.len() && matches[i].0 < end {
-                end = end.max(matches[i].1);
-                // A span that includes any secret is shown as a secret.
-                if matches[i].2 == SECRET {
+            while i < spans.len() && spans[i].0 < end {
+                end = end.max(spans[i].1);
+                // A merged span that includes any secret is shown as a secret.
+                if spans[i].2 == SECRET {
                     replacement = SECRET;
                 }
                 i += 1;
@@ -89,58 +116,34 @@ impl Redactor {
         out.push_str(&text[copied..]);
         Cow::Owned(out)
     }
-
-    fn with(mut self, value: String, replacement: String) -> Redactor {
-        if !value.is_empty() && !self.values.iter().any(|(v, _)| *v == value) {
-            self.values.push((value, replacement));
-            self.values.sort_by_key(|(v, _)| std::cmp::Reverse(v.len()));
-        }
-        self
-    }
-
-    pub fn redact<'a>(&self, text: &'a str) -> Cow<'a, str> {
-        let mut out = self.redact_known(text);
-        for (shape, replacement) in SHAPES.iter() {
-            if shape.is_match(&out) {
-                out = Cow::Owned(shape.replace_all(&out, *replacement).into_owned());
-            }
-        }
-        out
-    }
 }
 
-/// Credential formats, from each provider's published token format. Deliberately few
-/// and specific: a pattern that also matches ordinary text would hide real output.
-static SHAPES: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
+/// Credential formats, from each provider's published token format. No word boundaries
+/// anywhere: glued to other text, a secret must still go. Where hiding a little too
+/// much and hiding too little conflict, these hide too much.
+static SHAPES: LazyLock<Vec<Regex>> = LazyLock::new(|| {
     [
         // PEM private keys: the whole block, or everything base64 after BEGIN when the
         // END line is missing (a cut-off log line or error message).
-        (
-            r"-----BEGIN [A-Z ]*PRIVATE KEY-----(?:[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----|[A-Za-z0-9+/=\s]*)",
-            SECRET,
-        ),
+        r"-----BEGIN [A-Z ]*PRIVATE KEY-----(?:[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----|[A-Za-z0-9+/=\s]*)",
         // GitHub tokens: classic (ghp_, gho_, ghu_, ghs_, ghr_) and fine-grained.
-        (r"gh[pousr]_[A-Za-z0-9]{36,}", SECRET),
-        (r"github_pat_[A-Za-z0-9_]{50,}", SECRET),
+        r"gh[pousr]_[A-Za-z0-9]{36,}",
+        r"github_pat_[A-Za-z0-9_]{50,}",
         // `sk-` API keys: OpenAI, Anthropic (`sk-ant-`), OpenRouter (`sk-or-`).
-        (r"sk-[A-Za-z0-9_-]{20,}", SECRET),
-        // AWS access key ids. No word boundaries: a key glued to other text must still go.
-        (r"(?:AKIA|ASIA)[0-9A-Z]{16}", SECRET),
+        r"sk-[A-Za-z0-9_-]{20,}",
+        // AWS access key ids.
+        r"(?:AKIA|ASIA)[0-9A-Z]{16}",
         // Slack tokens.
-        (r"xox[abposr]-[A-Za-z0-9-]{10,}", SECRET),
-        // `Authorization: Bearer …` and similar.
-        (r"(?i)(bearer\s+)[A-Za-z0-9._~+/=-]{16,}", "${1}<secret>"),
-        // Credentials inside a URL: keep the scheme and host, drop everything up to the
-        // last `@`, so a token without a password, or a password holding `/` or `@`,
-        // goes too. This may also hide an `@` later in the path; hiding too much is the
-        // safe side. No word boundaries: glued to other text, a secret must still go.
-        (
-            r"(?i)([a-z][a-z0-9+.-]*://)\S*@",
-            "${1}<secret>@",
-        ),
+        r"xox[abposr]-[A-Za-z0-9-]{10,}",
+        // `Authorization: Bearer …`, any length: short tokens are still credentials.
+        r"(?i)bearer\s+(?P<secret>[A-Za-z0-9._~+/=-]+)",
+        // Credentials inside a URL: keep the scheme and host, hide everything up to the
+        // last `@`, so an empty username, a token with no password, or a password
+        // holding `/` or `@` all go. An `@` later in the path may hide part of the path.
+        r"(?i)[a-z][a-z0-9+.-]*://(?P<secret>\S*)@",
     ]
     .into_iter()
-    .map(|(pattern, replacement)| (Regex::new(pattern).expect("valid pattern"), replacement))
+    .map(|pattern| Regex::new(pattern).expect("valid pattern"))
     .collect()
 });
 
