@@ -9,6 +9,12 @@ use std::path::Path;
 use gitcko_redact::{Redactor, canaries};
 use proptest::prelude::*;
 
+/// A PEM `BEGIN … PRIVATE KEY` line, built at run time: written out, two of them in
+/// one file look like a real key to the repository's own secret scan.
+fn pem_begin(kind: &str) -> String {
+    format!("-----{} {kind}PRIVATE KEY-----", "BEGIN")
+}
+
 #[test]
 fn canary_every_canary_is_redacted_by_shape_alone() {
     // No canary is registered as a known secret here: each must be caught by its shape,
@@ -121,8 +127,11 @@ fn canary_overlapping_secrets_leave_no_piece_behind() {
 #[test]
 fn canary_truncated_private_key_is_still_redacted() {
     // An error message or a cut-off log line can hold a key with no END line.
-    let out = Redactor::new()
-        .redact("bad key: -----BEGIN PRIVATE KEY-----\nMIICanaryCanaryCanaryQQQQ\nMIIC");
+    let text = format!(
+        "bad key: {}\nMIICanaryCanaryCanaryQQQQ\nMIIC",
+        pem_begin("")
+    );
+    let out = Redactor::new().redact(&text);
     assert_eq!(out, "bad key: <secret>");
 }
 
@@ -200,8 +209,11 @@ fn nested_paths_get_the_most_specific_label_in_any_order() {
 
 #[test]
 fn canary_truncated_encrypted_private_key_is_redacted_to_the_end() {
-    let text = "bad key: -----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,CANARY00\n\nMIICanaryEncryptedBody";
-    let out = Redactor::new().redact(text);
+    let text = format!(
+        "bad key: {}\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,CANARY00\n\nMIICanaryEncryptedBody",
+        pem_begin("RSA ")
+    );
+    let out = Redactor::new().redact(&text);
     assert!(
         !out.contains("CanaryEncryptedBody") && !out.contains("DEK-Info"),
         "{out}"

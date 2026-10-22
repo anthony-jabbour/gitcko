@@ -135,6 +135,23 @@ jobs:
       # a snapshot file no test uses any more.
       - name: Snapshots (none pending or unreferenced)
         run: cargo insta test --check --unreferenced=reject
+      # A squash merge lands the whole PR as one new commit, which the step above never
+      # saw: patterns spanning several commits only appear together there (it let a
+      # false positive reach main in #11). Scan the PR squashed onto its base too.
+      - name: Leak guard (the PR squashed, as it will land)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        # Put back the commit actions/checkout chose (the PR merged into its base), so
+        # the policy steps after this one check the tree that will land.
+        run: |
+          checked_out=$(git rev-parse HEAD)
+          git checkout -q --detach "${BASE}"
+          git merge --squash -q "${HEAD}"
+          git -c user.name=ci -c user.email=ci@ci.invalid commit -q --allow-empty -m squashed
+          cargo xtask leak-guard --range "${BASE}..HEAD"
+          git checkout -q --detach "${checked_out}"
       - name: Licence headers
         run: cargo xtask spdx
       - name: Crate layers
