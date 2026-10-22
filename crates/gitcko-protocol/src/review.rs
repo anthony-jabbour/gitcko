@@ -49,6 +49,7 @@ pub struct Review {
     pub findings: Vec<Finding>,
     /// Questions are not findings: they carry no severity and never count toward the
     /// score, `fail_on` or precision (REVIEW_RULES §8). At most two per review.
+    #[schemars(length(max = 2))]
     pub questions: Vec<Question>,
     pub coverage: Coverage,
     pub versions: Versions,

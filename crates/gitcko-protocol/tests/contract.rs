@@ -123,3 +123,14 @@ fn every_schema_is_draft_2020_12_with_a_stable_id() {
         );
     }
 }
+
+#[test]
+fn review_schema_caps_questions_at_two() {
+    // REVIEW_RULES §8: at most two questions per review, so tools that validate output
+    // against the schema can enforce it too.
+    let (_, schema) = gitcko_protocol::schemas()
+        .into_iter()
+        .find(|(name, _)| *name == "review-1")
+        .unwrap();
+    assert_eq!(schema.to_value()["properties"]["questions"]["maxItems"], 2);
+}

@@ -49,7 +49,8 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/Question"
-      }
+      },
+      "maxItems": 2
     },
     "reason_codes": {
       "description": "Machine-readable reasons for a non-complete status, e.g. `config_invalid`.",
