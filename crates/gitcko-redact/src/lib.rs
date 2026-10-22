@@ -125,9 +125,11 @@ impl Redactor {
 /// much and hiding too little conflict, these hide too much.
 static SHAPES: LazyLock<Vec<Regex>> = LazyLock::new(|| {
     [
-        // PEM private keys: the whole block, or everything base64 after BEGIN when the
-        // END line is missing (a cut-off log line or error message).
-        r"-----BEGIN [A-Z ]*PRIVATE KEY-----(?:[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----|[A-Za-z0-9+/=\s]*)",
+        // PEM private keys: the whole block, or everything after BEGIN when the END line
+        // is missing (a cut-off log line or error message). Encrypted keys have header
+        // lines like `Proc-Type:` before the body, so stopping at the first
+        // non-base64 character would leak the body.
+        r"-----BEGIN [A-Z ]*PRIVATE KEY-----(?:[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----|[\s\S]*)",
         // GitHub tokens: classic (ghp_, gho_, ghu_, ghs_, ghr_) and fine-grained.
         r"gh[pousr]_[A-Za-z0-9]{36,}",
         r"github_pat_[A-Za-z0-9_]{50,}",
@@ -135,8 +137,8 @@ static SHAPES: LazyLock<Vec<Regex>> = LazyLock::new(|| {
         r"sk-[A-Za-z0-9_-]{20,}",
         // AWS access key ids.
         r"(?:AKIA|ASIA)[0-9A-Z]{16}",
-        // Slack tokens.
-        r"xox[abposr]-[A-Za-z0-9-]{10,}",
+        // Slack tokens, including app-level (`xapp-`) and refresh (`xoxe-`) tokens.
+        r"(?:xox[abposre]|xapp)-[A-Za-z0-9-]{10,}",
         // `Authorization: Bearer …`, any length: short tokens are still credentials. A
         // repeated `Bearer` must not be taken for the token.
         r"(?i)(?:bearer\s+)+(?P<secret>[A-Za-z0-9._~+/=-]+)",
@@ -169,6 +171,7 @@ pub fn canaries() -> Vec<String> {
         format!("sk-{}-{}", "ant", run('C', 40)),
         format!("AKIA{}", "CANARYCANARY0000"),
         format!("xoxb-{}-{}", "000000000", run('c', 24)),
+        format!("xapp-1-{}-{}", "A0CANARY", run('c', 24)),
         format!("Bearer {}", run('C', 32)),
         format!(
             "postgres://gitcko:{}@db.example.invalid:5432/app",

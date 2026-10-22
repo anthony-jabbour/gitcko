@@ -197,3 +197,27 @@ fn nested_paths_get_the_most_specific_label_in_any_order() {
         assert_eq!(redactor.redact("/home/ana/.cache"), "<home>/.cache");
     }
 }
+
+#[test]
+fn canary_truncated_encrypted_private_key_is_redacted_to_the_end() {
+    let text = "bad key: -----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,CANARY00\n\nMIICanaryEncryptedBody";
+    let out = Redactor::new().redact(text);
+    assert!(
+        !out.contains("CanaryEncryptedBody") && !out.contains("DEK-Info"),
+        "{out}"
+    );
+}
+
+#[test]
+fn canary_slack_app_and_refresh_tokens_are_redacted() {
+    // Built at run time so the repository's own secret scan doesn't flag this file.
+    let tokens = [
+        format!("{}-1-A0CANARY-{}", "xapp", "1234567890-abcdef0123"),
+        format!("{}-1-{}", "xoxe", "CanaryRefreshToken0123"),
+    ];
+    for token in tokens {
+        let text = format!("token={token}");
+        let out = Redactor::new().redact(&text);
+        assert_eq!(out, "token=<secret>", "{token}");
+    }
+}
