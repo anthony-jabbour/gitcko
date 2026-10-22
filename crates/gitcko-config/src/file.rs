@@ -6,6 +6,7 @@
 use std::collections::BTreeMap;
 
 use gitcko_protocol::config::{RepoConfig, UserConfig};
+use gitcko_protocol::review::Tier;
 use serde_json::Value;
 use toml::de::{DeTable, DeValue};
 
@@ -159,21 +160,68 @@ fn reject_secrets(parsed: &Parsed, path: &str, value: &Value) -> Result<(), Conf
 fn typed<T: serde::de::DeserializeOwned>(parsed: &Parsed, text: &str) -> Result<T, ConfigError> {
     toml::from_str(text).map_err(|e: toml::de::Error| {
         let line = e.span().map(|s| line_of(text, s.start));
-        // Unknown keys are named in the message; otherwise use the key on that line.
-        let named = e.message().split('`').nth(1).map(str::to_string);
-        let at_line = parsed
+        // The key is the one on the error's line (the deepest, if a line has several),
+        // never a word taken from the message, which can quote the value.
+        let key = parsed
             .lines
             .iter()
             .filter(|(_, l)| Some(**l) == line)
             .map(|(k, _)| k.clone())
-            .next_back();
+            .max_by_key(|k| k.len());
         ConfigError {
             file: parsed.label.clone(),
             line,
-            key: named.or(at_line).map(|k| strip_indices(&k)),
-            message: e.message().to_string(),
+            key: key.map(|k| strip_indices(&k)),
+            message: value_free(e.message()),
         }
     })
+}
+
+/// serde's message without the value it quotes ("invalid type: string \"x\"" could be
+/// anything the file holds). What was expected comes from our own types, so it's kept.
+pub(crate) fn value_free(message: &str) -> String {
+    let expected = message.split_once(", expected ").map(|(_, e)| e);
+    if message.starts_with("unknown field") {
+        "unknown key".into()
+    } else if message.starts_with("missing field") {
+        message.to_string()
+    } else if let Some(expected) = expected {
+        if message.starts_with("unknown variant") {
+            format!("not an allowed value; expected {expected}")
+        } else {
+            format!("wrong type or value; expected {expected}")
+        }
+    } else {
+        "invalid value".into()
+    }
+}
+
+/// Limits the types can't express, shared by files and run flags.
+pub(crate) fn check_repo_values(config: &RepoConfig) -> Result<(), (&'static str, &'static str)> {
+    if config.strictness.is_some_and(|s| !(1..=3).contains(&s)) {
+        return Err(("strictness", "must be 1, 2 or 3"));
+    }
+    if config
+        .instructions
+        .as_ref()
+        .is_some_and(|i| i.chars().count() > 4000)
+    {
+        return Err(("instructions", "longer than 4,000 characters"));
+    }
+    Ok(())
+}
+
+/// Limits for user settings, shared by the user file and run flags.
+pub(crate) fn check_user_values(config: &UserConfig) -> Result<(), (&'static str, &'static str)> {
+    if let Some(review) = &config.review {
+        if review.context.is_some_and(|c| c > 60) {
+            return Err(("review.context", "must be 0 to 60"));
+        }
+        if review.width.is_some_and(|w| !(40..=240).contains(&w)) {
+            return Err(("review.width", "must be 40 to 240"));
+        }
+    }
+    Ok(())
 }
 
 /// A path or glob in a repo file must be a plain repository path relative to its
@@ -187,7 +235,12 @@ fn escapes(path: &str) -> bool {
         || path.chars().nth(1) == Some(':')
 }
 
-pub(crate) fn load_repo(label: &str, text: &str, is_root: bool) -> Result<Items, ConfigError> {
+pub(crate) fn load_repo(
+    label: &str,
+    text: &str,
+    is_root: bool,
+    max_tier: Tier,
+) -> Result<Items, ConfigError> {
     let parsed = parse(label, text)?;
     if parsed.json.get("models").is_some() {
         return Err(parsed.error(
@@ -211,15 +264,14 @@ pub(crate) fn load_repo(label: &str, text: &str, is_root: bool) -> Result<Items,
         }
         _ => {}
     }
-    if config.strictness.is_some_and(|s| !(1..=3).contains(&s)) {
-        return Err(parsed.error(Some("strictness"), "must be 1, 2 or 3"));
-    }
+    check_repo_values(&config).map_err(|(key, message)| parsed.error(Some(key), message))?;
+    // Checked per file, so a nested config above the ceiling falls back to its parent
+    // like any other invalid nested config.
     if config
-        .instructions
-        .as_ref()
-        .is_some_and(|i| i.chars().count() > 4000)
+        .tier
+        .is_some_and(|t| crate::tier_rank(t) > crate::tier_rank(max_tier))
     {
-        return Err(parsed.error(Some("instructions"), "longer than 4,000 characters"));
+        return Err(parsed.error(Some("tier"), crate::above_ceiling(max_tier)));
     }
     // Every path and glob, with the key it lives under.
     let mut paths: Vec<(String, &String)> = Vec::new();
@@ -305,14 +357,7 @@ pub(crate) fn load_repo(label: &str, text: &str, is_root: bool) -> Result<Items,
 pub(crate) fn load_user(text: &str) -> Result<Items, ConfigError> {
     let parsed = parse(USER_FILE, text)?;
     let config: UserConfig = typed(&parsed, text)?;
-    if let Some(review) = &config.review {
-        if review.context.is_some_and(|c| c > 60) {
-            return Err(parsed.error(Some("review.context"), "must be 0 to 60"));
-        }
-        if review.width.is_some_and(|w| !(40..=240).contains(&w)) {
-            return Err(parsed.error(Some("review.width"), "must be 40 to 240"));
-        }
-    }
+    check_user_values(&config).map_err(|(key, message)| parsed.error(Some(key), message))?;
     for key in ["api_url", "web_url"] {
         if let Some(url) = parsed.json.get(key).and_then(Value::as_str) {
             check_url(key, url, &parsed.source(Layer::User, key))?;
@@ -327,27 +372,10 @@ pub(crate) fn load_user(text: &str) -> Result<Items, ConfigError> {
         .collect())
 }
 
-/// `api_url`/`web_url`: an `https://` origin with no path; plain `http://` only for this
-/// machine (CONFIGURATION §6).
+/// `api_url`/`web_url`: an `https://` origin (host and optional port, nothing after
+/// but an optional `/`); plain `http://` only for this machine (CONFIGURATION §6).
 pub(crate) fn check_url(key: &str, url: &str, source: &Source) -> Result<(), ConfigError> {
-    let origin_only = |rest: &str| {
-        let rest = rest.strip_suffix('/').unwrap_or(rest);
-        !rest.is_empty() && !rest.contains(['/', '?', '#', '@'])
-    };
-    let loopback = |rest: &str| {
-        let host = if rest.starts_with('[') {
-            rest.split(']').next().map(|h| format!("{h}]"))
-        } else {
-            rest.split([':', '/']).next().map(str::to_string)
-        };
-        matches!(host.as_deref(), Some("localhost" | "127.0.0.1" | "[::1]"))
-    };
-    let ok = match (url.strip_prefix("https://"), url.strip_prefix("http://")) {
-        (Some(rest), _) => origin_only(rest),
-        (_, Some(rest)) => origin_only(rest) && loopback(rest),
-        _ => false,
-    };
-    if ok {
+    if valid_origin(url) {
         return Ok(());
     }
     Err(ConfigError {
@@ -356,4 +384,47 @@ pub(crate) fn check_url(key: &str, url: &str, source: &Source) -> Result<(), Con
         key: Some(key.to_string()),
         message: "must be an https:// origin with no path (plain http only for localhost)".into(),
     })
+}
+
+fn valid_origin(url: &str) -> bool {
+    let (authority, https) = match (url.strip_prefix("https://"), url.strip_prefix("http://")) {
+        (Some(rest), _) => (rest, true),
+        (_, Some(rest)) => (rest, false),
+        _ => return false,
+    };
+    let authority = authority.strip_suffix('/').unwrap_or(authority);
+    // `[v6]:port` or `host:port`, the port optional.
+    let (host, port) = match authority.strip_prefix('[') {
+        Some(v6) => match v6.split_once(']') {
+            Some((inner, tail))
+                if !inner.is_empty()
+                    && inner.chars().all(|c| c.is_ascii_hexdigit() || c == ':') =>
+            {
+                match tail.strip_prefix(':') {
+                    Some(port) => (format!("[{inner}]"), Some(port)),
+                    None if tail.is_empty() => (format!("[{inner}]"), None),
+                    None => return false,
+                }
+            }
+            _ => return false,
+        },
+        None => match authority.rsplit_once(':') {
+            Some((host, port)) => (host.to_string(), Some(port)),
+            None => (authority.to_string(), None),
+        },
+    };
+    let host_ok = host.starts_with('[')
+        || (!host.is_empty()
+            && !host.starts_with(['.', '-'])
+            && !host.ends_with(['.', '-'])
+            && host
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-'));
+    let port_ok = port.is_none_or(|p| {
+        !p.is_empty()
+            && p.chars().all(|c| c.is_ascii_digit())
+            && p.parse::<u16>().is_ok_and(|n| n > 0)
+    });
+    let local = matches!(host.as_str(), "localhost" | "127.0.0.1" | "[::1]");
+    host_ok && port_ok && (https || local)
 }

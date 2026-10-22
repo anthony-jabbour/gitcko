@@ -29,7 +29,7 @@ summary.score.included = true  <- default
 summary.security.included = true  <- default
 summary_only = false  <- default
 update_description = false  <- default
-warning: pkg/.gitcko/config.toml:1: strictness: invalid type: string "loud", expected u8; using the parent folder's config
+warning: pkg/.gitcko/config.toml:1: strictness: wrong type or value; expected u8; using the parent folder's config
 reason_code: config_invalid
 
 # user

@@ -154,8 +154,29 @@ impl RunFlags {
                 ));
             }
         }
+        // Each flag gets the checks a file value would: its type, then its limits.
+        for (key, value) in &flags.repo {
+            let config: RepoConfig = serde_json::from_value(nest(key, value))
+                .map_err(|e| flag_error(Some(key.clone()), file::value_free(&e.to_string())))?;
+            file::check_repo_values(&config)
+                .map_err(|(k, m)| flag_error(Some(k.into()), m.into()))?;
+        }
+        for (key, value) in &flags.user {
+            let config: UserConfig = serde_json::from_value(nest(key, value))
+                .map_err(|e| flag_error(Some(key.clone()), file::value_free(&e.to_string())))?;
+            file::check_user_values(&config)
+                .map_err(|(k, m)| flag_error(Some(k.into()), m.into()))?;
+        }
         Ok(flags)
     }
+}
+
+/// `{"a": {"b": value}}` from `"a.b"`.
+fn nest(key: &str, value: &Value) -> Value {
+    key.rsplit('.').fold(
+        value.clone(),
+        |inner, part| serde_json::json!({ part: inner }),
+    )
 }
 
 fn flag_error(key: Option<String>, message: String) -> ConfigError {
@@ -365,7 +386,7 @@ pub fn resolve_repo(
             .map_or(String::new(), |p| format!("{}/", p.as_str()));
         if let Some(text) = &folder.config_toml {
             let label = format!("{prefix}.gitcko/config.toml");
-            match file::load_repo(&label, text, folder.folder.is_none()) {
+            match file::load_repo(&label, text, folder.folder.is_none(), ceilings.max_tier) {
                 Ok(values) => resolved.apply(values),
                 // A broken nested config fails only reviews under it, which fall back to
                 // the parent's config (CONFIGURATION §11). A broken root is fatal.
@@ -408,7 +429,7 @@ pub fn resolve_repo(
     Ok(resolved)
 }
 
-fn tier_rank(tier: Tier) -> u8 {
+pub(crate) fn tier_rank(tier: Tier) -> u8 {
     match tier {
         Tier::Base => 0,
         Tier::Plus => 1,
@@ -416,6 +437,10 @@ fn tier_rank(tier: Tier) -> u8 {
         // Auto picks a tier per PR, which needs Cloud's higher tiers.
         Tier::Auto => 3,
     }
+}
+
+pub(crate) fn above_ceiling(max: Tier) -> String {
+    format!("above this deployment's ceiling ({max:?}); higher tiers need Gitcko Cloud")
 }
 
 fn check_ceiling(resolved: &Resolved, ceilings: &Ceilings) -> Result<(), ConfigError> {
