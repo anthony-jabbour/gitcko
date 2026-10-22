@@ -70,6 +70,7 @@ The RFC covers the problem, the proposal, alternatives, migration and how it wil
 | Dependency policy | `cargo deny check` | `Cargo.lock` changes |
 | Crate layering | `cargo xtask layers` | `Cargo.toml` changes |
 | Snapshots | `cargo insta test --check --unreferenced=reject` (review changes with `cargo insta review`) | all PRs |
+| Redaction canaries | `cargo xtask canaries` | changes to `crates/` or `xtask/` |
 | Schema compatibility | `cargo xtask schema-check` (regenerate with `cargo xtask schema-gen`) | changes to `crates/gitcko-protocol/` or `integrations/schemas/` |
 | CLA | CLA Assistant | all PRs |
 

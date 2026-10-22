@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+//! Canary tests: fake secrets and source markers pushed through redaction must never come
+//! out the other side. `cargo xtask canaries` runs every test whose name contains
+//! `canary`, in every crate.
+
+use std::path::Path;
+
+use gitcko_redact::{Redactor, canaries};
+use proptest::prelude::*;
+
+#[test]
+fn canary_every_canary_is_redacted_by_shape_alone() {
+    // No canary is registered as a known secret here: each must be caught by its shape,
+    // the way an unknown key in a model's output or an error message would be.
+    let redactor = Redactor::new();
+    for canary in canaries() {
+        let text = format!("request failed: token={canary} (retrying)");
+        let out = redactor.redact(&text);
+        assert!(!out.contains(canary.as_str()), "{canary:?} survived: {out}");
+        assert!(
+            out.contains("request failed") && out.contains("retrying"),
+            "{out}"
+        );
+    }
+}
+
+#[test]
+fn canary_there_is_one_per_secret_shape() {
+    // A canary list that shrank would quietly weaken every sink test that uses it.
+    assert!(canaries().len() >= 8);
+}
+
+#[test]
+fn canary_registered_secret_is_redacted_whatever_its_shape() {
+    let redactor = Redactor::new().secret("correct horse battery staple");
+    let out = redactor.redact("password is correct horse battery staple, ok");
+    assert_eq!(out, "password is <secret>, ok");
+}
+
+#[test]
+fn longer_secrets_win_over_their_prefixes() {
+    let redactor = Redactor::new()
+        .secret("abcd1234")
+        .secret("abcd1234efgh5678");
+    assert_eq!(redactor.redact("k=abcd1234efgh5678"), "k=<secret>");
+}
+
+#[test]
+fn empty_secret_is_ignored_rather_than_redacting_everything() {
+    let redactor = Redactor::new().secret("");
+    assert_eq!(redactor.redact("plain text"), "plain text");
+}
+
+#[test]
+fn local_paths_become_placeholders() {
+    // OBSERVABILITY §6: no unrestricted local paths in logs or errors.
+    let home = Path::new(if cfg!(windows) {
+        r"C:\Users\ana"
+    } else {
+        "/home/ana"
+    });
+    let repo = home.join("work").join("shop");
+    let redactor = Redactor::new().path(&repo, "repo").path(home, "home");
+    let text = format!(
+        "cannot read {} or {}",
+        repo.join("src").join("a.rs").display(),
+        home.join(".cache").display()
+    );
+    let out = redactor.redact(&text);
+    assert!(!out.contains("ana"), "{out}");
+    assert!(out.contains("<repo>") && out.contains("<home>"), "{out}");
+}
+
+#[test]
+fn windows_paths_are_redacted_with_either_separator() {
+    let redactor = Redactor::new().path(Path::new(r"C:\Users\ana"), "home");
+    assert_eq!(
+        redactor.redact(r"C:\Users\ana\x and C:/Users/ana/y"),
+        r"<home>\x and <home>/y"
+    );
+}
+
+#[test]
+fn ordinary_text_is_left_alone() {
+    let text = "Review rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X found 2 findings in src/retry.ts:42.";
+    assert_eq!(Redactor::new().redact(text), text);
+}
+
+proptest! {
+    #[test]
+    fn canary_never_survives_anywhere_in_text(
+        which in 0..8usize,
+        before in "[ -~\n]{0,40}",
+        after in "[ -~\n]{0,40}",
+    ) {
+        let canary = canaries()[which].clone();
+        let text = format!("{before}{canary}{after}");
+        let out = Redactor::new().redact(&text);
+        prop_assert!(!out.contains(canary.as_str()), "{}", out);
+    }
+}
+
+#[test]
+fn canary_url_keeps_host_but_drops_credentials() {
+    let out = Redactor::new()
+        .redact("connect postgres://gitcko:CanaryPassw0rd@db.example.invalid:5432/app");
+    assert_eq!(
+        out,
+        "connect postgres://<secret>@db.example.invalid:5432/app"
+    );
+}
