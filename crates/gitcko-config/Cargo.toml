@@ -1,0 +1,24 @@
+[package]
+name = "gitcko-config"
+version = "0.0.0"
+description = "Load, merge and validate Gitcko's config: the cascading .gitcko/ folders, user file, env vars and run flags, with the source of every value"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+gitcko-redact = { path = "../gitcko-redact", version = "0.0.0" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+gitcko-test-support = { path = "../gitcko-test-support" }
+insta.workspace = true
+
+[lints]
+workspace = true

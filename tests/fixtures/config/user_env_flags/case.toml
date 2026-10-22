@@ -1,0 +1,11 @@
+# User settings: defaults < user file < env vars < run flags (CONFIGURATION §2).
+reviewed = "a.txt"
+user = """
+color = true
+api_url = "https://gitcko.example.test"
+[review]
+output = "text"
+context = 10
+"""
+env = { GITCKO_API_URL = "https://env.example.test", NO_COLOR = "1" }
+flags = { "review.output" = "json" }

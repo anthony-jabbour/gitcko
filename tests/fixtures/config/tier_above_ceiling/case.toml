@@ -1,0 +1,3 @@
+# Above a ceiling is an error, never a silent clamp (CONFIGURATION §2, §11).
+reviewed = "a.txt"
+expect_error = ".gitcko/config.toml:2: tier"

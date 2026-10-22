@@ -1,0 +1,2 @@
+reviewed = "a.txt"
+expect_error = ".gitcko/config.toml:4: rules.scope"

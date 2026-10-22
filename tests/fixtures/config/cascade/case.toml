@@ -1,0 +1,3 @@
+# CONFIGURATION §3: child scalar replaces, child array replaces, tables merge field by
+# field, rules and context files combine, instructions concatenate, closest wins.
+reviewed = "packages/api/src/handler.ts"
