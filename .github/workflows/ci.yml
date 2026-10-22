@@ -21,10 +21,34 @@ env:
   CARGO_TERM_COLOR: always
   NEXTEST_VERSION: 0.9.149
   DENY_VERSION: 0.20.2
+  INSTA_VERSION: 1.49.0
   GITLEAKS_VERSION: 8.30.1
   GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
 
 jobs:
+  # Which path-filtered checks (TESTING §4) this change needs. Jobs that depend on it
+  # are skipped, not failed, when their files didn't change.
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read # paths-filter lists a PR's files through the API
+    outputs:
+      schema: ${{ steps.filter.outputs.schema }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            schema:
+              - 'crates/gitcko-protocol/**'
+              - 'integrations/schemas/**'
+              - 'xtask/**'
+              - 'Cargo.lock'
+
   # fmt, clippy and tests on every OS we ship (rustup installs the toolchain
   # pinned in rust-toolchain.toml on first use).
   check:
@@ -51,6 +75,18 @@ jobs:
           path: target/nextest/ci/junit.xml
           if-no-files-found: ignore
 
+  # The committed JSON Schemas must match the gitcko-protocol types.
+  schema:
+    needs: changes
+    if: needs.changes.outputs.schema == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - run: cargo xtask schema-check
+
   # Repo policy: leak guard, licence headers, crate layers, dependency licences.
   policy:
     runs-on: ubuntu-latest
@@ -62,7 +98,7 @@ jobs:
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
         with:
-          tool: cargo-deny@${{ env.DENY_VERSION }}
+          tool: cargo-deny@${{ env.DENY_VERSION }},cargo-insta@${{ env.INSTA_VERSION }}
       - name: Install gitleaks (checksum-verified)
         run: |
           tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
@@ -85,6 +121,10 @@ jobs:
           else
             cargo xtask leak-guard --range "${HEAD}"
           fi
+      # The test job already fails on a changed snapshot on every OS; this also fails on
+      # a snapshot file no test uses any more.
+      - name: Snapshots (none pending or unreferenced)
+        run: cargo insta test --check --unreferenced=reject
       - name: Licence headers
         run: cargo xtask spdx
       - name: Crate layers

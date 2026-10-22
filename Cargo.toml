@@ -1,7 +1,8 @@
 [workspace]
 resolver = "3"
-# Crates are added when their phase starts (see CONTRIBUTING.md); `cargo xtask layers` checks how they depend on each other.
-members = ["xtask"]
+# Crates are added under crates/ when their phase starts (see CONTRIBUTING.md); `cargo xtask layers`
+# checks how they depend on each other. The glob means a new crate doesn't need an edit here.
+members = ["xtask", "crates/*"]
 
 [workspace.package]
 edition = "2024"
@@ -11,7 +12,18 @@ license = "AGPL-3.0-or-later"
 repository = "https://github.com/anthony-jabbour/gitcko"
 
 [workspace.dependencies]
+# Listed for all of Phase 1 at once so parallel crate PRs don't edit this file; an entry
+# only reaches Cargo.lock once a crate uses it.
+gitcko-protocol = { path = "crates/gitcko-protocol" }
+gix = { version = "0.89", default-features = false }
+insta = { version = "1.49", features = ["json"] }
+proptest = "1.12"
+schemars = "1.2"
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+thiserror = "2"
+toml = "1.1"
+uuid = { version = "1.28", features = ["v7"] }
 
 [workspace.lints.rust]
 # A crate that truly needs unsafe code goes through an RFC (CONTRIBUTING.md).

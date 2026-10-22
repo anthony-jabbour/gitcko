@@ -1,0 +1,83 @@
+{
+  "schema_version": "gitcko.review/1",
+  "review_id": "rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X",
+  "status": "complete",
+  "reason_codes": [],
+  "tier": "base",
+  "target": {
+    "base_sha": "9f2c1e0000000000000000000000000000000000",
+    "head_sha": "a71e5b0000000000000000000000000000000000",
+    "merge_base": "77d0aa0000000000000000000000000000000000",
+    "local_changes": false
+  },
+  "summary": "The retry path now preserves cancellation.",
+  "instructions": "focus on retry cancellation",
+  "score": 4,
+  "score_reasoning": "One P2 cleanup; complete coverage of changed paths.",
+  "score_details": {
+    "policy": "gitcko-score@1",
+    "source": "model",
+    "ceiling": 4,
+    "ceiling_rule": "C6",
+    "matched_rules": ["C6"],
+    "low_bound": 3,
+    "model_score": 4,
+    "adjustments": [],
+    "effective_counts": { "P0": 0, "P1": 0, "P2": 1 },
+    "coverage": 1.0
+  },
+  "score_availability_reason": null,
+  "risk_level": { "level": "medium", "source": "model", "reason": "Changes retry logic." },
+  "security_summary": null,
+  "cleared_risks": [{ "name": "Cancellation leak", "description": "All abort paths clear the timer." }],
+  "file_summaries": [{ "path": "src/retry.ts", "summary": "Adds timer cleanup on settle." }],
+  "findings": [
+    {
+      "id": "f_0123456789abcdef",
+      "path": "src/retry.ts",
+      "start_line": 42,
+      "end_line": 42,
+      "side": "new",
+      "severity": "P2",
+      "comment_type": "logic",
+      "security_issue": false,
+      "linked_rule": null,
+      "confidence": 0.91,
+      "calibration_status": "uncalibrated",
+      "title": "Timer is not cleared after the request settles",
+      "body": "The timer keeps the process alive after the request resolves.",
+      "evidence": [{ "kind": "source", "path": "src/retry.ts", "start_line": 31, "end_line": 35 }],
+      "verification": "not_run",
+      "verified_evidence": null,
+      "suggestion": "clearTimeout(timer)",
+      "hunk": {
+        "header": "@@ -39,6 +39,7 @@ async function retry() {",
+        "old_range": { "start": 39, "lines": 6 },
+        "new_range": { "start": 39, "lines": 7 },
+        "before": "return result",
+        "after": "clearTimeout(timer)"
+      },
+      "outside_diff": null,
+      "lifecycle": "new",
+      "fix_package": { "schema_version": "gitcko.fix/1" }
+    }
+  ],
+  "questions": [
+    {
+      "id": "q_0123456789abcdef",
+      "path": "src/routes.ts",
+      "start_line": 10,
+      "end_line": 12,
+      "side": "new",
+      "body": "Is /admin/export reachable without a session?",
+      "why": "If it is, the new handler skips the role check."
+    }
+  ],
+  "coverage": { "changed_files": 3, "investigated_files": 3, "held_back": [], "skipped_binary": [] },
+  "versions": { "engine": "0.1.0", "policy": "p1", "routing_policy": "gitcko-std@1", "index": "i1" },
+  "usage": { "model_calls": 14, "input_tokens": 182340, "output_tokens": 9120, "cost_usd": null },
+  "events": [
+    { "run_id": "rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X", "seq": 1, "at": "2026-10-17T18:02:00.000Z", "type": "lifecycle.changed", "from": "queued", "to": "indexing" },
+    { "run_id": "rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X", "seq": 7, "at": "2026-10-17T18:02:11.204Z", "type": "model_call.completed", "step": "review", "role": "review", "binding": "openrouter/example-model", "class": "smart", "duration_ms": 8120, "input_tokens": 41230, "output_tokens": 1820, "cost_usd": 0.061, "attempt": 1, "outcome": "ok", "fallback_from": null }
+  ]
+}

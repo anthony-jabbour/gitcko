@@ -1,0 +1,128 @@
+---
+source: crates/gitcko-protocol/tests/contract.rs
+expression: config
+---
+{
+  "schema_version": 1,
+  "strictness": 2,
+  "comment_types": [
+    "logic",
+    "syntax",
+    "style"
+  ],
+  "tier": "base",
+  "instructions": "This is a TypeScript monorepo.",
+  "fail_on": "P1",
+  "auto_review": [
+    "open"
+  ],
+  "review_drafts": false,
+  "skip_auto_review": false,
+  "labels": [
+    "review-me"
+  ],
+  "disabled_labels": [
+    "no-review"
+  ],
+  "include_authors": [],
+  "exclude_authors": [
+    "dependabot[bot]",
+    "renovate[bot]"
+  ],
+  "include_branches": [
+    "main"
+  ],
+  "exclude_branches": [
+    "release/*"
+  ],
+  "include_keywords": [],
+  "ignore_keywords": [
+    "WIP"
+  ],
+  "ignore": [
+    "vendor/",
+    "*.min.*"
+  ],
+  "check_run": true,
+  "summary_only": false,
+  "fix_links": true,
+  "hide_footer": false,
+  "update_description": false,
+  "auto_approve": {
+    "enabled": false,
+    "risk_ceiling": "low",
+    "filters": {
+      "exclude_paths": [
+        "src/auth/**"
+      ],
+      "include_paths": [],
+      "exclude_authors": [
+        "dependabot[bot]"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "id": "no-raw-sql",
+      "rule": "Use parameterized queries.",
+      "scope": [
+        "src/db/**"
+      ],
+      "severity": "P1",
+      "comment_type": null,
+      "enabled": true
+    },
+    {
+      "id": null,
+      "rule": "Prefer named exports.",
+      "scope": null,
+      "severity": "P2",
+      "comment_type": "style",
+      "enabled": null
+    }
+  ],
+  "disabled_rules": [
+    "no-console"
+  ],
+  "context": {
+    "files": [
+      {
+        "path": "prisma/schema.prisma",
+        "description": "Database schema",
+        "scope": [
+          "src/db/**"
+        ]
+      }
+    ],
+    "repos": [
+      "acme/shared-types"
+    ]
+  },
+  "summary": {
+    "overview": {
+      "included": true,
+      "collapsible": false,
+      "default_open": true
+    },
+    "files_table": {
+      "included": true,
+      "collapsible": true,
+      "default_open": false
+    },
+    "score": {
+      "included": true,
+      "collapsible": null,
+      "default_open": null
+    },
+    "diagram": {
+      "included": true,
+      "collapsible": null,
+      "default_open": null
+    },
+    "security": {
+      "included": true,
+      "collapsible": null,
+      "default_open": null
+    }
+  }
+}

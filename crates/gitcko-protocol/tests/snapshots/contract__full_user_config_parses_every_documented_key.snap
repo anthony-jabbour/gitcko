@@ -1,0 +1,24 @@
+---
+source: crates/gitcko-protocol/tests/contract.rs
+expression: config
+---
+{
+  "color": true,
+  "telemetry": false,
+  "api_url": "https://api.gitcko.dev",
+  "web_url": "https://app.gitcko.dev",
+  "review": {
+    "output": "auto",
+    "layout": "comments",
+    "context": 15,
+    "width": 100
+  },
+  "models": {
+    "bindings": {
+      "smart": {
+        "model": "example/model",
+        "provider": "openrouter"
+      }
+    }
+  }
+}

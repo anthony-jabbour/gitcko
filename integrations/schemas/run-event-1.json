@@ -1,0 +1,312 @@
+{
+  "$id": "https://gitcko.dev/schema/run-event-1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RunEvent",
+  "description": "One event in a run's stream. New event types can appear without a version bump, so\nreaders must accept a `type` they don't know.",
+  "type": "object",
+  "properties": {
+    "at": {
+      "description": "RFC 3339 timestamp in UTC.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "seq": {
+      "description": "Position in the run's stream, starting at 1.",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0
+    }
+  },
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/RunLifecycle"
+        },
+        "to": {
+          "$ref": "#/$defs/RunLifecycle"
+        },
+        "type": {
+          "type": "string",
+          "const": "lifecycle.changed"
+        }
+      },
+      "required": [
+        "type",
+        "from",
+        "to"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "step": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "step.started"
+        }
+      },
+      "required": [
+        "type",
+        "step"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "counts": {
+          "description": "Bounded counts such as files, symbols or hypotheses.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0
+          },
+          "default": {}
+        },
+        "duration_ms": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "step": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "step.completed"
+        }
+      },
+      "required": [
+        "type",
+        "step",
+        "outcome",
+        "duration_ms"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "attempt": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "binding": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "cost_usd": {
+          "description": "`null` when the provider doesn't report cost.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "fallback_from": {
+          "description": "The binding this call fell back from, if it was a fallback.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "input_tokens": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "output_tokens": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "role": {
+          "type": "string"
+        },
+        "step": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "const": "model_call.completed"
+        }
+      },
+      "required": [
+        "type",
+        "role",
+        "binding",
+        "class",
+        "duration_ms",
+        "input_tokens",
+        "output_tokens",
+        "attempt",
+        "outcome"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "binding": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/BreakerState"
+        },
+        "type": {
+          "type": "string",
+          "const": "breaker.changed"
+        }
+      },
+      "required": [
+        "type",
+        "binding",
+        "state"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cap": {
+          "type": "number",
+          "format": "double"
+        },
+        "limit": {
+          "$ref": "#/$defs/BudgetLimit"
+        },
+        "type": {
+          "type": "string",
+          "const": "budget.warning"
+        },
+        "used": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "type",
+        "limit",
+        "used",
+        "cap"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cap": {
+          "type": "number",
+          "format": "double"
+        },
+        "limit": {
+          "$ref": "#/$defs/BudgetLimit"
+        },
+        "type": {
+          "type": "string",
+          "const": "budget.exhausted"
+        },
+        "used": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "required": [
+        "type",
+        "limit",
+        "used",
+        "cap"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "outcome": {
+          "type": "string"
+        },
+        "stale_rejected": {
+          "description": "True when publishing was refused because a newer head exists.",
+          "type": "boolean"
+        },
+        "target": {
+          "$ref": "#/$defs/PublishTarget"
+        },
+        "type": {
+          "type": "string",
+          "const": "publish.completed"
+        }
+      },
+      "required": [
+        "type",
+        "target",
+        "outcome",
+        "stale_rejected"
+      ]
+    }
+  ],
+  "required": [
+    "run_id",
+    "seq",
+    "at"
+  ],
+  "$defs": {
+    "BreakerState": {
+      "type": "string",
+      "enum": [
+        "closed",
+        "open",
+        "half_open"
+      ]
+    },
+    "BudgetLimit": {
+      "type": "string",
+      "enum": [
+        "tokens",
+        "cost",
+        "wall_clock"
+      ]
+    },
+    "PublishTarget": {
+      "type": "string",
+      "enum": [
+        "summary",
+        "inline",
+        "check"
+      ]
+    },
+    "RunLifecycle": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "indexing",
+        "reviewing_files",
+        "generating_summary",
+        "completed",
+        "failed",
+        "canceled",
+        "superseded",
+        "skipped"
+      ]
+    }
+  }
+}

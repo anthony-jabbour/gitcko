@@ -1,0 +1,22 @@
+[package]
+name = "gitcko-protocol"
+version = "0.0.0"
+description = "Serialized public types for Gitcko: the gitcko.review/1 result, run events and config files"
+edition.workspace = true
+rust-version.workspace = true
+# Apache-2.0, unlike the AGPL core, so tools can read Gitcko output without copyleft
+# (LICENSE_STRATEGY §2). It must never depend on an AGPL crate.
+license = "Apache-2.0"
+repository.workspace = true
+
+[dependencies]
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+toml.workspace = true
+
+[lints]
+workspace = true
