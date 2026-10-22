@@ -405,6 +405,7 @@ dependencies = [
  "gitcko-domain",
  "gitcko-test-support",
  "gix",
+ "libc",
  "thiserror",
 ]
 

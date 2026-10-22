@@ -7,11 +7,15 @@ set -euo pipefail
 
 git init -q -b main
 printf 'a\n' > file.txt
+printf 'one\ntwo\nthree\nfour\nfive\n' > old.txt
 printf '* filter=evil diff=evil\n' > .gitattributes
 git add -A
 git commit -q -m base
 printf 'b\n' > file.txt
-git add file.txt
+# An edited rename, so rename detection (similarity scoring) runs on this repo too.
+git mv old.txt new.txt
+printf 'one\ntwo\nTHREE\nfour\nfive\n' > new.txt
+git add -A
 git commit -q -m head
 
 evil="$(cd .. && pwd)/evil.sh"

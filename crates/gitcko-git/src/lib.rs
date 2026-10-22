@@ -139,11 +139,15 @@ impl Repo {
         let mut tree = self.tree(commit)?;
         let mut parts = path.as_str().split('/').peekable();
         while let Some(part) = parts.next() {
-            let entry = tree
-                .iter()
-                .filter_map(|e| e.ok())
-                .find(|e| e.filename() == part.as_bytes())
-                .map(|e| (e.mode(), e.oid().to_owned()));
+            // A tree entry that can't be decoded is corruption, not a missing file.
+            let mut entry = None;
+            for e in tree.iter() {
+                let e = e.map_err(|err| object_error(tree.id, err))?;
+                if e.filename() == part.as_bytes() {
+                    entry = Some((e.mode(), e.oid().to_owned()));
+                    break;
+                }
+            }
             let Some((mode, id)) = entry else {
                 return Ok(None);
             };
@@ -234,9 +238,65 @@ impl Repo {
         if in_git_dir || RepoPath::parse(&relative.join("/")).is_err() {
             return Err(GitError::GitMetadata { path: path.clone() });
         }
-        if !std::fs::metadata(&real).map_err(read_error)?.is_file() {
+        let checked = std::fs::metadata(&real).map_err(read_error)?;
+        if !checked.is_file() {
             return Err(GitError::NotRegularFile { path: path.clone() });
         }
-        std::fs::read(&real).map_err(read_error)
+        read_checked_file(&real, &checked, path, root)
+    }
+}
+
+/// Reads the file that was just checked, refusing it if it changed in between: another
+/// process could swap it, or a folder above it, for a symlink or a FIFO after the checks.
+///
+/// On Unix the file is opened without following a final symlink and without blocking
+/// (a FIFO), and must be the same file (device and inode) that was checked. Windows has
+/// no portable way to get a handle's identity in std, so there the path is resolved
+/// again after reading and must still be the checked one; a swap and swap-back inside
+/// that window isn't caught.
+fn read_checked_file(
+    real: &Path,
+    checked: &std::fs::Metadata,
+    path: &RepoPath,
+    root: &Path,
+) -> Result<Vec<u8>> {
+    use std::io::Read;
+    let read_error = |e: std::io::Error| GitError::Read {
+        path: path.clone(),
+        reason: e.kind().to_string(),
+    };
+    let changed = || GitError::Read {
+        path: path.clone(),
+        reason: "changed while being read".into(),
+    };
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+        let _ = root; // only the Windows path needs it
+        let mut file = std::fs::OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open(real)
+            .map_err(|_| changed())?;
+        let opened = file.metadata().map_err(read_error)?;
+        if !opened.is_file() || (opened.dev(), opened.ino()) != (checked.dev(), checked.ino()) {
+            return Err(changed());
+        }
+        let mut bytes = Vec::new();
+        file.read_to_end(&mut bytes).map_err(read_error)?;
+        Ok(bytes)
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = checked;
+        let mut bytes = Vec::new();
+        std::fs::File::open(real)
+            .and_then(|mut f| f.read_to_end(&mut bytes))
+            .map_err(read_error)?;
+        let again = real.canonicalize().map_err(read_error)?;
+        if again != real || !again.starts_with(root) {
+            return Err(changed());
+        }
+        Ok(bytes)
     }
 }

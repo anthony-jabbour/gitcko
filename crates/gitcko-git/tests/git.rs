@@ -152,7 +152,14 @@ fn never_runs_hooks_filters_or_diff_drivers() {
         repo.resolve("HEAD").unwrap(),
     );
     let changes = repo.diff(base, head).unwrap();
-    assert_eq!(changes.files.len(), 1);
+    assert_eq!(changes.files.len(), 2);
+    assert!(
+        changes
+            .files
+            .iter()
+            .any(|f| matches!(f.change, Change::Renamed { .. })),
+        "the edited rename must be detected"
+    );
     repo.merge_base(base, head).unwrap();
     repo.read_blob(head, &path("file.txt")).unwrap().unwrap();
     repo.case_collisions(head).unwrap();
@@ -279,4 +286,33 @@ fn canary_object_errors_hold_no_local_paths() {
     let shown = format!("{err} {err:?}");
     let local = fixture.path().parent().unwrap().to_string_lossy();
     assert!(!shown.contains(local.as_ref()), "{shown}");
+}
+
+#[test]
+fn a_corrupt_tree_is_an_error_not_a_missing_file() {
+    let fixture = fixture_repo("single_commit");
+    // A tree whose first entry is fine and whose second is garbage.
+    let blob = git_out(fixture.path(), &["rev-parse", "HEAD:README.md"]);
+    let mut tree = b"100644 a\0".to_vec();
+    tree.extend((0..20).map(|i| u8::from_str_radix(&blob.trim()[i * 2..i * 2 + 2], 16).unwrap()));
+    tree.extend(b"zz not an entry");
+    let mut hash = git(fixture.path())
+        .args(["hash-object", "-t", "tree", "--literally", "-w", "--stdin"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    use std::io::Write;
+    hash.stdin.take().unwrap().write_all(&tree).unwrap();
+    let tree_id = String::from_utf8(hash.wait_with_output().unwrap().stdout).unwrap();
+    let commit = git_out(
+        fixture.path(),
+        &["commit-tree", tree_id.trim(), "-m", "corrupt"],
+    );
+    let repo = Repo::open(fixture.path()).unwrap();
+    let id = repo.resolve(commit.trim()).unwrap();
+    assert!(
+        repo.read_blob(id, &path("b")).is_err(),
+        "a corrupt tree must not read as a missing file"
+    );
 }

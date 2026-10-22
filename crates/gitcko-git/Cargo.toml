@@ -14,6 +14,10 @@ gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
 gix = { workspace = true, features = ["revision", "blob-diff", "sha1"] }
 thiserror.workspace = true
 
+[target.'cfg(unix)'.dependencies]
+# O_NOFOLLOW and O_NONBLOCK for race-free worktree reads; std has no names for them.
+libc.workspace = true
+
 [dev-dependencies]
 gitcko-test-support = { path = "../gitcko-test-support" }
 
