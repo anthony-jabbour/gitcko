@@ -9,6 +9,7 @@
 
 use gitcko_domain::RepoPath;
 
+use crate::render::quote;
 use crate::{Change, ChangeSet, FileDiff, Hunk, Line, LineKind, Mode, Side};
 
 /// Why diff text couldn't be parsed, and the 1-based line where it went wrong.
@@ -100,12 +101,24 @@ fn parse_file(lines: &[&str], start: usize) -> Result<(FileDiff, usize)> {
             h.copied.1 = Some(plain_path(rest, n)?);
         } else if let Some(rest) = line.strip_prefix("Binary files ") {
             h.binary = true;
-            // Only which side is /dev/null matters; the paths come from elsewhere.
-            if rest.starts_with("/dev/null and ") {
-                h.minus = Some(None);
-            }
-            if rest.ends_with(" and /dev/null differ") {
-                h.plus = Some(None);
+            // Only which side is /dev/null matters. Compare with the exact text git
+            // would print for the header's paths, so a name that itself contains
+            // " and /dev/null" can't be mistaken for a missing side.
+            match &h.git_paths {
+                Some((old, new)) => {
+                    if rest == format!("/dev/null and {} differ", quote("b/", new)) {
+                        h.minus = Some(None);
+                    } else if rest == format!("{} and /dev/null differ", quote("a/", old)) {
+                        h.plus = Some(None);
+                    }
+                }
+                None => {
+                    if rest.starts_with("/dev/null and ") {
+                        h.minus = Some(None);
+                    } else if rest.ends_with(" and /dev/null differ") {
+                        h.plus = Some(None);
+                    }
+                }
             }
             at += 1;
             break;
@@ -135,6 +148,13 @@ fn parse_file(lines: &[&str], start: usize) -> Result<(FileDiff, usize)> {
         }
         at += 1;
     }
+    if lines.get(at) == Some(&"-- ") {
+        // The `git format-patch` signature (`-- ` and the git version) ends this patch;
+        // skip to the next one in a mailbox, or the end.
+        while at < lines.len() && !lines[at].starts_with("diff --git ") {
+            at += 1;
+        }
+    }
     if at < lines.len() && !lines[at].starts_with("diff --git ") {
         return error(at + 1, "line is outside every hunk's line counts");
     }
@@ -143,6 +163,22 @@ fn parse_file(lines: &[&str], start: usize) -> Result<(FileDiff, usize)> {
 
 /// Decides the paths and the kind of change from the header, checking every path.
 fn build(h: Header, hunks: Vec<Hunk>, line: usize) -> Result<FileDiff> {
+    // Every path the header names is checked, including ones another line overrides:
+    // a patch that names `../../x` anywhere is rejected.
+    let (git_old, git_new) = h.git_paths.as_ref().map(|(o, n)| (o, n)).unzip();
+    let supplied = [
+        git_old,
+        git_new,
+        h.renamed.0.as_ref(),
+        h.renamed.1.as_ref(),
+        h.copied.0.as_ref(),
+        h.copied.1.as_ref(),
+        h.minus.as_ref().and_then(Option::as_ref),
+        h.plus.as_ref().and_then(Option::as_ref),
+    ];
+    for path in supplied.into_iter().flatten() {
+        RepoPath::parse(path).or_else(|e| error(line, e.to_string()))?;
+    }
     let renamed_or_copied = h.renamed_or_copied();
     let added = h.new_file.is_some() || h.minus == Some(None);
     let deleted = h.deleted_file.is_some() || h.plus == Some(None);
@@ -210,20 +246,30 @@ fn parse_hunks(lines: &[&str], mut at: usize, hunks: &mut Vec<Hunk>) -> Result<u
     while at < lines.len() && lines[at].starts_with("@@ ") {
         let header_line = at + 1;
         let mut hunk = hunk_header(lines[at], header_line)?;
-        if let Some(prev) = hunks.last() {
-            let after = |h: &Hunk, side| {
-                h.first(side)
-                    + if side == Side::Old {
-                        h.old_lines
-                    } else {
-                        h.new_lines
-                    }
-            };
-            if hunk.first(Side::Old) < after(prev, Side::Old)
-                || hunk.first(Side::New) < after(prev, Side::New)
-            {
-                return error(header_line, "hunks overlap or are out of order");
-            }
+        let end = |h: &Hunk, side| {
+            h.first(side)
+                + if side == Side::Old {
+                    h.old_lines
+                } else {
+                    h.new_lines
+                }
+        };
+        // Where the unchanged lines before this hunk start on each side: line 1, or
+        // right after the previous hunk.
+        let (from_old, from_new) = hunks
+            .last()
+            .map_or((1, 1), |prev| (end(prev, Side::Old), end(prev, Side::New)));
+        let (first_old, first_new) = (hunk.first(Side::Old), hunk.first(Side::New));
+        if first_old < from_old || first_new < from_new {
+            return error(header_line, "hunks overlap or are out of order");
+        }
+        // Unchanged lines are the same lines on both sides, so there must be as many
+        // before this hunk on each side, or line mapping would contradict itself.
+        if first_old - from_old != first_new - from_new {
+            return error(
+                header_line,
+                "hunk disagrees on how many unchanged lines come before it",
+            );
         }
         let (mut old_left, mut new_left) = (hunk.old_lines, hunk.new_lines);
         at += 1;

@@ -24,6 +24,10 @@ fn fixtures() -> Vec<(String, String)> {
     found
 }
 
+fn fixture(name: &str) -> String {
+    fixtures().into_iter().find(|(n, _)| n == name).unwrap().1
+}
+
 #[test]
 fn fixtures_parse_to_their_golden_structure() {
     for (name, text) in fixtures() {
@@ -81,7 +85,7 @@ fn empty_diff_is_an_empty_change_set() {
 
 #[test]
 fn quoted_and_spaced_paths_are_decoded() {
-    let changes = parse(&fixtures()[0].1).unwrap();
+    let changes = parse(&fixture("git_many_cases")).unwrap();
     let paths: Vec<_> = changes
         .files
         .iter()
@@ -185,8 +189,7 @@ fn paths_escaping_the_repository_are_rejected() {
 
 #[test]
 fn no_newline_marker_applies_to_the_line_before_it() {
-    let text = &fixtures()[0].1;
-    let changes = parse(text).unwrap();
+    let changes = parse(&fixture("git_many_cases")).unwrap();
     let file = changes
         .files
         .iter()
@@ -221,4 +224,43 @@ fn hunk_ranges_past_the_largest_line_number_are_rejected() {
         let err = parse(&text).unwrap_err();
         assert!(err.to_string().contains("too large"), "{header}: {err}");
     }
+}
+
+#[test]
+fn format_patch_mail_and_signature_are_skipped() {
+    // Default `git format-patch` output: mail headers and a diffstat before, and a
+    // `-- ` signature with the git version after.
+    let changes = parse(&fixture("git_format_patch")).unwrap();
+    assert_eq!(changes.files.len(), 2);
+    assert_eq!(changes.files[1].change, Change::Added);
+}
+
+#[test]
+fn binary_file_whose_name_contains_and_dev_null_stays_modified() {
+    let name = "bar and /dev/null";
+    let text = format!(
+        "diff --git a/{name} b/{name}\nindex 1..2 100644\nBinary files a/{name} and b/{name} differ\n"
+    );
+    let changes = parse(&text).unwrap();
+    assert_eq!(changes.files[0].change, Change::Modified);
+    assert_eq!(changes.files[0].new_path.as_ref().unwrap().as_str(), name);
+    assert_eq!(parse(&changes.to_string()).unwrap(), changes);
+}
+
+#[test]
+fn hunks_must_agree_on_unchanged_lines_between_them() {
+    // Two unchanged lines between the hunks on the old side but one on the new side
+    // would give conflicting line mappings.
+    let text = "diff --git a/f b/f\n--- a/f\n+++ b/f\n@@ -1 +1 @@\n a\n@@ -4 +3 @@\n d\n";
+    let err = parse(text).unwrap_err();
+    assert_eq!(err.line, 6, "{err}");
+    assert!(err.to_string().contains("unchanged"), "{err}");
+}
+
+#[test]
+fn every_path_in_a_header_is_checked_even_unused_ones() {
+    let text =
+        "diff --git a/../../etc/passwd b/../../etc/passwd\n--- a/f\n+++ b/f\n@@ -1 +1 @@\n-a\n+b\n";
+    let err = parse(text).unwrap_err();
+    assert!(err.to_string().contains("invalid repository path"), "{err}");
 }

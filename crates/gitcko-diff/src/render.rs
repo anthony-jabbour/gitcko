@@ -104,7 +104,12 @@ fn range(start: u32, lines: u32) -> String {
 /// `prefix` + path, C-quoted the way git does (`core.quotePath`) when the path holds a
 /// quote, a backslash or a non-ASCII byte. `RepoPath` already rules out control bytes.
 fn quoted(prefix: &str, path: &RepoPath) -> String {
-    let path = path.as_str();
+    quote(prefix, path.as_str())
+}
+
+/// [`quoted`] for a path that hasn't been checked yet (the parser comparing header
+/// text).
+pub(crate) fn quote(prefix: &str, path: &str) -> String {
     if !path.bytes().any(|b| b == b'"' || b == b'\\' || b >= 0x80) {
         return format!("{prefix}{path}");
     }
