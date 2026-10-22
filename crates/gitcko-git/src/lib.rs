@@ -26,12 +26,14 @@ pub enum GitError {
     Open,
     #[error("can't resolve {rev:?} to a commit")]
     Resolve { rev: String },
-    #[error("can't read git object {id}: {reason}")]
-    Object { id: String, reason: String },
+    #[error("can't read git object {id}: missing or corrupt")]
+    Object { id: String },
     #[error("the repository has no working tree")]
     NoWorktree,
     #[error("{path}: resolves outside the repository")]
     Escape { path: RepoPath },
+    #[error("{path}: resolves into git metadata")]
+    GitMetadata { path: RepoPath },
     #[error("{path}: not a regular file")]
     NotRegularFile { path: RepoPath },
     #[error("{path}: unsafe to open on Windows ({problem})")]
@@ -68,13 +70,14 @@ pub struct Repo {
     repo: gix::Repository,
     /// The working tree, canonical, when there is one.
     workdir: Option<PathBuf>,
+    /// The git dir, canonical: never readable through the working tree.
+    git_dir: Option<PathBuf>,
 }
 
-fn object_error(id: impl std::fmt::Display, err: impl std::fmt::Display) -> GitError {
-    GitError::Object {
-        id: id.to_string(),
-        reason: err.to_string(),
-    }
+/// gix's error text can include local paths (a loose object's file, for one), so only
+/// the object id goes into ours; the gix error itself is dropped.
+fn object_error(id: impl std::fmt::Display, _err: impl std::fmt::Display) -> GitError {
+    GitError::Object { id: id.to_string() }
 }
 
 impl Repo {
@@ -82,7 +85,12 @@ impl Repo {
         let repo =
             gix::open_opts(path, gix::open::Options::isolated()).map_err(|_| GitError::Open)?;
         let workdir = repo.workdir().and_then(|dir| dir.canonicalize().ok());
-        Ok(Repo { repo, workdir })
+        let git_dir = repo.git_dir().canonicalize().ok();
+        Ok(Repo {
+            repo,
+            workdir,
+            git_dir,
+        })
     }
 
     /// Resolves a branch, tag, `HEAD`, `HEAD~1` or hash to the commit it names, so a
@@ -208,6 +216,23 @@ impl Repo {
         let real = joined.canonicalize().map_err(read_error)?;
         if !real.starts_with(root) {
             return Err(GitError::Escape { path: path.clone() });
+        }
+        // A link that stays inside the working tree can still land in `.git` (its
+        // config, hooks, objects). Refuse the git dir and any `.git`-named part.
+        let in_git_dir = self
+            .git_dir
+            .as_ref()
+            .is_some_and(|git| real.starts_with(git));
+        let relative: Vec<String> = real
+            .strip_prefix(root)
+            .map(|rest| {
+                rest.components()
+                    .map(|c| c.as_os_str().to_string_lossy().into_owned())
+                    .collect()
+            })
+            .unwrap_or_default();
+        if in_git_dir || RepoPath::parse(&relative.join("/")).is_err() {
+            return Err(GitError::GitMetadata { path: path.clone() });
         }
         if !std::fs::metadata(&real).map_err(read_error)?.is_file() {
             return Err(GitError::NotRegularFile { path: path.clone() });

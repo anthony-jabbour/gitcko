@@ -246,3 +246,37 @@ fn canary_errors_hold_no_local_paths() {
     let local = dir.path().to_string_lossy();
     assert!(!shown.contains(local.as_ref()), "{shown}");
 }
+
+#[test]
+fn worktree_reads_refuse_links_into_git_metadata() {
+    // A link inside the working tree can still point at `.git/config` or a hook.
+    let fixture = fixture_repo("single_commit");
+    let repo = Repo::open(fixture.path()).unwrap();
+    link_dir(&fixture.path().join(".git"), &fixture.path().join("meta"));
+    let err = repo.read_worktree_file(&path("meta/config")).unwrap_err();
+    assert!(err.to_string().contains("git metadata"), "{err}");
+}
+
+#[test]
+fn canary_object_errors_hold_no_local_paths() {
+    let fixture = fixture_repo("single_commit");
+    let repo = Repo::open(fixture.path()).unwrap();
+    let head = repo.resolve("HEAD").unwrap();
+    // Corrupt every loose object so reading the tree fails inside gix.
+    let objects = fixture.path().join(".git/objects");
+    for dir in std::fs::read_dir(&objects).unwrap().flatten() {
+        if dir.file_name().len() == 2 {
+            for file in std::fs::read_dir(dir.path()).unwrap().flatten() {
+                let mut perms = std::fs::metadata(file.path()).unwrap().permissions();
+                #[allow(clippy::permissions_set_readonly_false)]
+                perms.set_readonly(false);
+                std::fs::set_permissions(file.path(), perms).unwrap();
+                std::fs::write(file.path(), b"not a zlib stream").unwrap();
+            }
+        }
+    }
+    let err = repo.read_blob(head, &path("README.md")).unwrap_err();
+    let shown = format!("{err} {err:?}");
+    let local = fixture.path().parent().unwrap().to_string_lossy();
+    assert!(!shown.contains(local.as_ref()), "{shown}");
+}
