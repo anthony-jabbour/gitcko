@@ -18,9 +18,9 @@ gitcko-protocol = { path = "crates/gitcko-protocol" }
 gix = { version = "0.89", default-features = false }
 gix-validate = "0.13"
 insta = { version = "1.49", features = ["json"] }
-libc = "0.2"
 proptest = "1.12"
 regex = "1.13"
+rustix = "1.1"
 schemars = "1.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

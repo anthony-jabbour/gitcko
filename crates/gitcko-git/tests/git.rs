@@ -185,19 +185,24 @@ fn worktree_reads_stay_inside_the_repository() {
     let err = repo
         .read_worktree_file(&path("escape/secret.txt"))
         .unwrap_err();
-    assert!(err.to_string().contains("outside the repository"), "{err}");
+    assert!(err.to_string().contains("link"), "{err}");
 
-    // A link that stays inside the repository is fine.
+    // Links aren't followed at all, even one that stays inside the repository: a
+    // followed link is what a racing process could swap.
     std::fs::create_dir(fixture.path().join("docs")).unwrap();
     std::fs::write(fixture.path().join("docs/a.txt"), "inside").unwrap();
+    assert_eq!(
+        repo.read_worktree_file(&path("docs/a.txt")).unwrap(),
+        b"inside"
+    );
     link_dir(
         &fixture.path().join("docs"),
         &fixture.path().join("docs-link"),
     );
-    assert_eq!(
-        repo.read_worktree_file(&path("docs-link/a.txt")).unwrap(),
-        b"inside"
-    );
+    let err = repo
+        .read_worktree_file(&path("docs-link/a.txt"))
+        .unwrap_err();
+    assert!(err.to_string().contains("link"), "{err}");
 }
 
 /// A directory link: a symlink on Unix, a junction on Windows (no admin rights needed,
@@ -261,7 +266,7 @@ fn worktree_reads_refuse_links_into_git_metadata() {
     let repo = Repo::open(fixture.path()).unwrap();
     link_dir(&fixture.path().join(".git"), &fixture.path().join("meta"));
     let err = repo.read_worktree_file(&path("meta/config")).unwrap_err();
-    assert!(err.to_string().contains("git metadata"), "{err}");
+    assert!(err.to_string().contains("link"), "{err}");
 }
 
 #[test]
@@ -305,9 +310,19 @@ fn a_corrupt_tree_is_an_error_not_a_missing_file() {
     use std::io::Write;
     hash.stdin.take().unwrap().write_all(&tree).unwrap();
     let tree_id = String::from_utf8(hash.wait_with_output().unwrap().stdout).unwrap();
+    // The helper strips all user config, so give commit-tree an identity explicitly.
     let commit = git_out(
         fixture.path(),
-        &["commit-tree", tree_id.trim(), "-m", "corrupt"],
+        &[
+            "-c",
+            "user.name=F",
+            "-c",
+            "user.email=f@fixture.invalid",
+            "commit-tree",
+            tree_id.trim(),
+            "-m",
+            "corrupt",
+        ],
     );
     let repo = Repo::open(fixture.path()).unwrap();
     let id = repo.resolve(commit.trim()).unwrap();

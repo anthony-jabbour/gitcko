@@ -30,10 +30,8 @@ pub enum GitError {
     Object { id: String },
     #[error("the repository has no working tree")]
     NoWorktree,
-    #[error("{path}: resolves outside the repository")]
-    Escape { path: RepoPath },
-    #[error("{path}: resolves into git metadata")]
-    GitMetadata { path: RepoPath },
+    #[error("{path}: goes through a symbolic link or junction, which isn't followed")]
+    Link { path: RepoPath },
     #[error("{path}: not a regular file")]
     NotRegularFile { path: RepoPath },
     #[error("{path}: unsafe to open on Windows ({problem})")]
@@ -70,8 +68,6 @@ pub struct Repo {
     repo: gix::Repository,
     /// The working tree, canonical, when there is one.
     workdir: Option<PathBuf>,
-    /// The git dir, canonical: never readable through the working tree.
-    git_dir: Option<PathBuf>,
 }
 
 /// gix's error text can include local paths (a loose object's file, for one), so only
@@ -85,12 +81,7 @@ impl Repo {
         let repo =
             gix::open_opts(path, gix::open::Options::isolated()).map_err(|_| GitError::Open)?;
         let workdir = repo.workdir().and_then(|dir| dir.canonicalize().ok());
-        let git_dir = repo.git_dir().canonicalize().ok();
-        Ok(Repo {
-            repo,
-            workdir,
-            git_dir,
-        })
+        Ok(Repo { repo, workdir })
     }
 
     /// Resolves a branch, tag, `HEAD`, `HEAD~1` or hash to the commit it names, so a
@@ -194,10 +185,10 @@ impl Repo {
         Ok(pairs)
     }
 
-    /// A file from the working tree, for reviewing uncommitted changes. Refused when the
-    /// path, after following links (symlinks, and junctions on Windows), ends up outside
-    /// the repository, when it isn't a regular file (a FIFO would block forever), and on
-    /// Windows when the name is a device or otherwise unsafe there (SECURITY §14.7).
+    /// A file from the working tree, for reviewing uncommitted changes. Symbolic links
+    /// and Windows junctions are never followed, anywhere in the path, so a read can't
+    /// leave the repository or reach `.git`. Special files are refused (a FIFO would
+    /// block), and on Windows so are names unsafe there, like `CON` (SECURITY §14.7).
     pub fn read_worktree_file(&self, path: &RepoPath) -> Result<Vec<u8>> {
         let root = self.workdir.as_ref().ok_or(GitError::NoWorktree)?;
         if cfg!(windows)
@@ -208,95 +199,84 @@ impl Repo {
                 problem,
             });
         }
-
-        let read_error = |e: std::io::Error| GitError::Read {
-            path: path.clone(),
-            reason: e.kind().to_string(),
-        };
-        let joined = path
-            .as_str()
-            .split('/')
-            .fold(root.clone(), |dir, part| dir.join(part));
-        let real = joined.canonicalize().map_err(read_error)?;
-        if !real.starts_with(root) {
-            return Err(GitError::Escape { path: path.clone() });
-        }
-        // A link that stays inside the working tree can still land in `.git` (its
-        // config, hooks, objects). Refuse the git dir and any `.git`-named part.
-        let in_git_dir = self
-            .git_dir
-            .as_ref()
-            .is_some_and(|git| real.starts_with(git));
-        let relative: Vec<String> = real
-            .strip_prefix(root)
-            .map(|rest| {
-                rest.components()
-                    .map(|c| c.as_os_str().to_string_lossy().into_owned())
-                    .collect()
-            })
-            .unwrap_or_default();
-        if in_git_dir || RepoPath::parse(&relative.join("/")).is_err() {
-            return Err(GitError::GitMetadata { path: path.clone() });
-        }
-        let checked = std::fs::metadata(&real).map_err(read_error)?;
-        if !checked.is_file() {
-            return Err(GitError::NotRegularFile { path: path.clone() });
-        }
-        read_checked_file(&real, &checked, path, root)
+        read_without_links(root, path)
     }
 }
 
-/// Reads the file that was just checked, refusing it if it changed in between: another
-/// process could swap it, or a folder above it, for a symlink or a FIFO after the checks.
-///
-/// On Unix the file is opened without following a final symlink and without blocking
-/// (a FIFO), and must be the same file (device and inode) that was checked. Windows has
-/// no portable way to get a handle's identity in std, so there the path is resolved
-/// again after reading and must still be the checked one; a swap and swap-back inside
-/// that window isn't caught.
-fn read_checked_file(
-    real: &Path,
-    checked: &std::fs::Metadata,
-    path: &RepoPath,
-    root: &Path,
-) -> Result<Vec<u8>> {
+/// Opens each folder from the repository root with `O_NOFOLLOW`, then the file the same
+/// way, and checks the opened handle. Nothing is looked up twice, so another process
+/// swapping a part of the path for a link can't redirect the read (no check-then-use
+/// gap).
+#[cfg(unix)]
+fn read_without_links(root: &Path, path: &RepoPath) -> Result<Vec<u8>> {
+    use rustix::fs::{FileType, Mode, OFlags, fstat, open, openat};
     use std::io::Read;
+
+    let error = |e: rustix::io::Errno| match e {
+        // A link where a folder or the file was expected.
+        rustix::io::Errno::LOOP | rustix::io::Errno::NOTDIR => {
+            GitError::Link { path: path.clone() }
+        }
+        e => GitError::Read {
+            path: path.clone(),
+            reason: std::io::Error::from(e).kind().to_string(),
+        },
+    };
+    let dir_flags = OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC;
+    let parts: Vec<&str> = path.as_str().split('/').collect();
+    let (file_name, folders) = parts
+        .split_last()
+        .expect("a RepoPath has at least one part");
+    let mut dir = open(root, dir_flags, Mode::empty()).map_err(error)?;
+    for folder in folders {
+        dir = openat(&dir, *folder, dir_flags | OFlags::NOFOLLOW, Mode::empty()).map_err(error)?;
+    }
+    let file_flags = OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::CLOEXEC;
+    let fd = openat(&dir, *file_name, file_flags, Mode::empty()).map_err(error)?;
+    if FileType::from_raw_mode(fstat(&fd).map_err(error)?.st_mode) != FileType::RegularFile {
+        return Err(GitError::NotRegularFile { path: path.clone() });
+    }
+    let mut bytes = Vec::new();
+    std::fs::File::from(fd)
+        .read_to_end(&mut bytes)
+        .map_err(|e| GitError::Read {
+            path: path.clone(),
+            reason: e.kind().to_string(),
+        })?;
+    Ok(bytes)
+}
+
+/// std has no `openat` on Windows, so each part is checked for a link or junction, the
+/// file is read, and the parts are checked again. A swap and swap-back between those
+/// checks isn't caught; Unix has no such window.
+#[cfg(not(unix))]
+fn read_without_links(root: &Path, path: &RepoPath) -> Result<Vec<u8>> {
     let read_error = |e: std::io::Error| GitError::Read {
         path: path.clone(),
         reason: e.kind().to_string(),
     };
-    let changed = || GitError::Read {
-        path: path.clone(),
-        reason: "changed while being read".into(),
+    let check = || -> Result<PathBuf> {
+        let mut at = root.to_path_buf();
+        for part in path.as_str().split('/') {
+            at.push(part);
+            if std::fs::symlink_metadata(&at)
+                .map_err(read_error)?
+                .file_type()
+                .is_symlink()
+            {
+                return Err(GitError::Link { path: path.clone() });
+            }
+        }
+        Ok(at)
     };
-    #[cfg(unix)]
+    let full = check()?;
+    if !std::fs::symlink_metadata(&full)
+        .map_err(read_error)?
+        .is_file()
     {
-        use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
-        let _ = root; // only the Windows path needs it
-        let mut file = std::fs::OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
-            .open(real)
-            .map_err(|_| changed())?;
-        let opened = file.metadata().map_err(read_error)?;
-        if !opened.is_file() || (opened.dev(), opened.ino()) != (checked.dev(), checked.ino()) {
-            return Err(changed());
-        }
-        let mut bytes = Vec::new();
-        file.read_to_end(&mut bytes).map_err(read_error)?;
-        Ok(bytes)
+        return Err(GitError::NotRegularFile { path: path.clone() });
     }
-    #[cfg(not(unix))]
-    {
-        let _ = checked;
-        let mut bytes = Vec::new();
-        std::fs::File::open(real)
-            .and_then(|mut f| f.read_to_end(&mut bytes))
-            .map_err(read_error)?;
-        let again = real.canonicalize().map_err(read_error)?;
-        if again != real || !again.starts_with(root) {
-            return Err(changed());
-        }
-        Ok(bytes)
-    }
+    let bytes = std::fs::read(&full).map_err(read_error)?;
+    check()?;
+    Ok(bytes)
 }

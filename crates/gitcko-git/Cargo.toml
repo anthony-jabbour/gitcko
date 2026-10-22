@@ -15,8 +15,8 @@ gix = { workspace = true, features = ["revision", "blob-diff", "sha1"] }
 thiserror.workspace = true
 
 [target.'cfg(unix)'.dependencies]
-# O_NOFOLLOW and O_NONBLOCK for race-free worktree reads; std has no names for them.
-libc.workspace = true
+# Safe openat/O_NOFOLLOW for link-free worktree reads; std has no openat.
+rustix = { workspace = true, features = ["fs"] }
 
 [dev-dependencies]
 gitcko-test-support = { path = "../gitcko-test-support" }
