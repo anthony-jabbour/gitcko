@@ -321,6 +321,12 @@ fn hunk_header(line: &str, n: usize) -> Result<Hunk> {
     else {
         return bad();
     };
+    // Every line number later code computes stays at or below start + lines (start + 1
+    // for an empty side), so checking that once here rules out overflow everywhere.
+    let fits = |start: u32, lines: u32| start.checked_add(lines.max(1)).is_some();
+    if !fits(old_start, old_lines) || !fits(new_start, new_lines) {
+        return error(n, format!("hunk range too large in {line:?}"));
+    }
     Ok(Hunk {
         old_start,
         old_lines,

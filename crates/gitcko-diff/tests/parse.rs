@@ -208,3 +208,17 @@ fn non_ascii_header_split_does_not_panic() {
     let result = parse("diff --git a/cop9y_src.txt bɜopy_fy, sin differ\n");
     assert!(result.is_err(), "{result:?}");
 }
+
+#[test]
+fn hunk_ranges_past_the_largest_line_number_are_rejected() {
+    // Untrusted input: `start + lines` must fit, or later arithmetic would overflow.
+    for header in [
+        "@@ -4294967295,1 +1 @@",
+        "@@ -1 +4294967295,2 @@",
+        "@@ -4294967295,0 +1 @@",
+    ] {
+        let text = format!("diff --git a/f b/f\n--- a/f\n+++ b/f\n{header}\n-a\n+b\n");
+        let err = parse(&text).unwrap_err();
+        assert!(err.to_string().contains("too large"), "{header}: {err}");
+    }
+}
