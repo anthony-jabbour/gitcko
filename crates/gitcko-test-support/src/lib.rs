@@ -111,8 +111,13 @@ pub fn fixture_repo_with_inherited_env(name: &str, inherited: &[(&str, &str)]) -
 /// environment the fixture scripts get.
 pub fn git(dir: &Path) -> Command {
     let mut command = Command::new("git");
-    command.current_dir(dir).env("GIT_CONFIG_NOSYSTEM", "1");
+    // Strip inherited settings first, so they can't cancel the ones set below.
     without_inherited_git_env(&mut command, std::iter::empty());
+    let no_file = if cfg!(windows) { "NUL" } else { "/dev/null" };
+    command
+        .current_dir(dir)
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .env("GIT_CONFIG_GLOBAL", no_file);
     command
 }
 

@@ -71,3 +71,17 @@ fn temp_dirs_are_removed_on_drop() {
 fn missing_fixture_script_fails_loudly() {
     fixture_repo("no_such_fixture");
 }
+
+#[test]
+fn git_helper_reads_no_user_or_system_config() {
+    // Only the repository's own config may apply, or output (e.g. path quoting) would
+    // differ between developers' machines.
+    let repo = fixture_repo("single_commit");
+    let out = git(repo.path())
+        .args(["config", "--list", "--show-scope"])
+        .output()
+        .unwrap();
+    let listed = String::from_utf8_lossy(&out.stdout);
+    let foreign: Vec<_> = listed.lines().filter(|l| !l.starts_with("local")).collect();
+    assert!(foreign.is_empty(), "{foreign:?}");
+}
