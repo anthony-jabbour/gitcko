@@ -1,0 +1,21 @@
+[package]
+name = "gitcko-git"
+version = "0.0.0"
+description = "Read-only, command-free access to the repository under review: commits, merge bases, diffs, files"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-diff = { path = "../gitcko-diff", version = "0.0.0" }
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+# No network transports and no worktree checkout: reading objects only (ADR-9).
+gix = { workspace = true, features = ["revision", "blob-diff", "sha1"] }
+thiserror.workspace = true
+
+[dev-dependencies]
+gitcko-test-support = { path = "../gitcko-test-support" }
+
+[lints]
+workspace = true
