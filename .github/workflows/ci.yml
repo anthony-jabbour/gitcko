@@ -22,6 +22,7 @@ env:
   NEXTEST_VERSION: 0.9.149
   DENY_VERSION: 0.20.2
   INSTA_VERSION: 1.49.0
+  FUZZ_VERSION: 0.13.2
   GITLEAKS_VERSION: 8.30.1
   GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
 
@@ -35,6 +36,7 @@ jobs:
       pull-requests: read # paths-filter lists a PR's files through the API
     outputs:
       schema: ${{ steps.filter.outputs.schema }}
+      fuzz: ${{ steps.filter.outputs.fuzz }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -48,6 +50,12 @@ jobs:
               - 'integrations/schemas/**'
               - 'xtask/**'
               - 'Cargo.lock'
+            fuzz:
+              - 'crates/gitcko-diff/**'
+              - 'crates/gitcko-config/**'
+              - 'crates/gitcko-domain/**'
+              - 'fuzz/**'
+              - 'xtask/src/fuzz.rs'
 
   # fmt, clippy and tests on every OS we ship (rustup installs the toolchain
   # pinned in rust-toolchain.toml on first use).
@@ -86,6 +94,28 @@ jobs:
           persist-credentials: false
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - run: cargo xtask schema-check
+
+  # Fuzz targets still build when a parser they cover changes (TESTING §4). Linux only:
+  # libFuzzer on Windows is unreliable, and runs happen in fuzz-nightly.yml.
+  fuzz-build:
+    needs: changes
+    if: needs.changes.outputs.fuzz == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the nightly pinned in fuzz/rust-toolchain.toml
+        run: rustup toolchain install "$(sed -n 's/^channel = "\(.*\)"/\1/p' fuzz/rust-toolchain.toml)" --profile minimal
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: |
+            . -> target
+            fuzz -> target
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: cargo-fuzz@${{ env.FUZZ_VERSION }}
+      - run: cargo xtask fuzz --build
 
   # Repo policy: leak guard, licence headers, crate layers, dependency licences.
   policy:

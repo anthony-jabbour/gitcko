@@ -3,6 +3,7 @@
 //! `cargo xtask`: Gitcko's dev tasks, as plain Rust instead of shell scripts
 //! (the pattern from https://github.com/matklad/cargo-xtask).
 
+mod fuzz;
 mod layers;
 mod leak_guard;
 mod schema;
@@ -14,6 +15,7 @@ use std::process::{Command, ExitCode};
 const NEXTEST_VERSION: &str = "0.9.149";
 const DENY_VERSION: &str = "0.20.2";
 const INSTA_VERSION: &str = "1.49.0";
+const FUZZ_VERSION: &str = "0.13.2";
 
 const USAGE: &str = "\
 usage: cargo xtask <task>
@@ -23,6 +25,8 @@ usage: cargo xtask <task>
   leak-guard [--range A..B]    scan commits for secrets and private content
   leak-guard --self-test       prove the leak guard blocks what it should
   spdx                         check every .rs file's licence header
+  fuzz --build                 build the fuzz targets (nightly from fuzz/rust-toolchain.toml)
+  fuzz --run <secs>            run each fuzz target for <secs> seconds
   schema-gen                   write integrations/schemas/ from gitcko-protocol
   schema-check                 fail if integrations/schemas/ differs from the types
   layers                       check crates only depend on their own or lower layers";
@@ -47,6 +51,8 @@ fn main() -> ExitCode {
         // git also passes the remote name ($1); only the URL matters.
         ["leak-guard", "--pre-push", _remote, url] => leak_guard::pre_push(url),
         ["spdx"] => spdx::check(),
+        ["fuzz", "--build"] => fuzz::build(),
+        ["fuzz", "--run", seconds] => fuzz::run_for(seconds),
         ["schema-gen"] => schema::generate(),
         ["schema-check"] => schema::check(),
         ["layers"] => layers::check(),
@@ -66,6 +72,7 @@ fn setup() -> Result {
         ("cargo-nextest", NEXTEST_VERSION),
         ("cargo-deny", DENY_VERSION),
         ("cargo-insta", INSTA_VERSION),
+        ("cargo-fuzz", FUZZ_VERSION),
     ] {
         let subcommand = tool.trim_start_matches("cargo-");
         let installed = output("cargo", &[subcommand, "--version"]).unwrap_or_default();
@@ -78,6 +85,18 @@ fn setup() -> Result {
             )?;
         }
     }
+    // The nightly only fuzz/ uses (cargo-fuzz needs sanitizers).
+    let nightly = fuzz::toolchain()?;
+    run(
+        "rustup",
+        &[
+            "toolchain",
+            "install",
+            &nightly[1..],
+            "--profile",
+            "minimal",
+        ],
+    )?;
     if output("gitleaks", &["version"]).is_err() {
         // gitleaks is a Go binary, so cargo can't install it.
         println!(

@@ -1,0 +1,114 @@
+---
+source: crates/gitcko-diff/tests/parse.rs
+expression: table
+---
+all.diff
+  new   1 -> old   +  hunk
+  new   2 -> old   +  hunk
+  new   3 -> old   +  hunk
+  new   4 -> old   +  hunk
+  new   5 -> old   +  hunk
+  new   6 -> old   +  hunk
+  new   7 -> old   +  hunk
+  new   8 -> old   +  hunk
+  new   9 -> old   +  hunk
+  new  10 -> old   +  hunk
+  new  11 -> old   +  hunk
+  new  12 -> old   +  hunk
+  new  13 -> old   +  hunk
+  new  14 -> old   +  hunk
+  new  15 -> old   +  hunk
+  new  16 -> old   +  hunk
+  new  17 -> old   +  hunk
+  new  18 -> old   +  hunk
+  new  19 -> old   +  hunk
+  new  20 -> old   +  hunk
+  new  21 -> old   +  hunk
+  new  22 -> old   +  hunk
+  new  23 -> old   +  hunk
+  new  24 -> old   +  hunk
+  new  25 -> old   +  hunk
+  new  26 -> old   +  hunk
+  new  27 -> old   +  hunk
+  new  28 -> old   +  hunk
+  new  29 -> old   +  hunk
+  new  30 -> old   +  hunk
+  new  31 -> old   +  hunk
+  new  32 -> old   +  hunk
+  new  33 -> old   +  hunk
+  new  34 -> old   +  hunk
+  new  35 -> old   +  hunk
+  new  36 -> old   +  hunk
+  new  37 -> old   +  hunk
+  new  38 -> old   +  hunk
+  new  39 -> old   +  hunk
+  new  40 -> old   +  hunk
+  new  41 -> old   +  hunk
+  new  42 -> old   +  hunk
+  new  43 -> old   +  hunk
+  new  44 -> old   +  hunk
+  new  45 -> old   +  hunk
+  new  46 -> old   +  hunk
+  new  47 -> old   +  hunk
+  new  48 -> old   +  hunk
+  new  49 -> old   +  hunk
+  new  50 -> old   +  hunk
+  new  51 -> old   +  hunk
+  new  52 -> old   +  hunk
+  new  53 -> old   +  hunk
+  new  54 -> old   +  hunk
+  new  55 -> old   +  hunk
+  new  56 -> old   +  hunk
+  new  57 -> old   +  hunk
+  new  58 -> old   +  hunk
+  new  59 -> old   +  hunk
+  new  60 -> old   +  hunk
+  new  61 -> old   +  hunk
+  new  62 -> old   +  hunk
+  new  63 -> old   +  hunk
+  new  64 -> old   +  hunk
+  new  65 -> old   +  hunk
+  new  66 -> old   +  hunk
+  new  67 -> old   +  hunk
+  new  68 -> old   +  hunk
+  new  69 -> old   +  hunk
+  new  70 -> old   +  hunk
+  new  71 -> old   +  hunk
+  new  72 -> old   +  hunk
+  new  73 -> old   +  hunk
+  new  74 -> old   +  hunk
+  new  75 -> old   +  hunk
+  new  76 -> old   +  hunk
+  new  77 -> old   +  hunk
+  new  78 -> old   +  hunk
+  new  79 -> old   +  hunk
+  new  80 -> old   +  hunk
+  new  81 -> old   +  hunk
+  new  82 -> old   +  hunk
+  new  83 -> old   +  hunk
+  new  84 -> old   +  hunk
+  new  85 -> old   +  hunk
+  new  86 -> old   +  hunk
+  new  87 -> old   +  hunk
+  new  88 -> old   +  hunk
+  new  89 -> old   +  hunk
+  new  90 -> old   +  hunk
+  new  91 -> old   +  hunk
+  new  92 -> old   +  hunk
+  new  93 -> old   +  hunk
+  new  94 -> old   +  hunk
+  new  95 -> old   +  hunk
+  new  96 -> old   +  hunk
+  new  97 -> old   +  
+  new  98 -> old   +  
+copy_dst.txt
+  new   1 -> old   1  hunk
+  new   2 -> old   2  hunk
+  new   3 -> old   3  hunk
+  new   4 -> old   +  hunk
+  new   5 -> old   4  
+  new   6 -> old   5  
+link.txt
+  new   1 -> old   +  hunk
+  new   2 -> old   +  
+  new   3 -> old   +

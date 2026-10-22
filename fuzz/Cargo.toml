@@ -1,0 +1,25 @@
+# cargo-fuzz targets (TESTING §10). Outside the main workspace on purpose: it builds on
+# its own pinned nightly (rust-toolchain.toml here) and never ships.
+[package]
+name = "gitcko-fuzz"
+version = "0.0.0"
+edition = "2024"
+license = "AGPL-3.0-or-later"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4.13"
+gitcko-diff = { path = "../crates/gitcko-diff" }
+
+# Its own workspace, so the main one doesn't try to build it on stable.
+[workspace]
+
+[[bin]]
+name = "diff_parse"
+path = "fuzz_targets/diff_parse.rs"
+test = false
+doc = false
+bench = false

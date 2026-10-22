@@ -205,6 +205,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-diff"
+version = "0.0.0"
+dependencies = [
+ "gitcko-domain",
+ "insta",
+ "proptest",
+ "thiserror",
+]
+
+[[package]]
 name = "gitcko-domain"
 version = "0.0.0"
 dependencies = [

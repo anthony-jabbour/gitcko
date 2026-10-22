@@ -1,0 +1,67 @@
+---
+source: crates/gitcko-diff/tests/parse.rs
+expression: table
+---
+added.txt
+  new   1 -> old   +  hunk
+  new   2 -> old   +  
+  new   3 -> old   +  
+copy_dst.txt
+  new   1 -> old   1  hunk
+  new   2 -> old   2  hunk
+  new   3 -> old   +  hunk
+  new   4 -> old   3  
+  new   5 -> old   4  
+deleted.txt
+  new   1 -> old   +  
+nonl.txt
+  new   1 -> old   1  hunk
+  new   2 -> old   +  hunk
+  new   3 -> old   3  
+  new   4 -> old   4  
+numbers.txt
+  new   1 -> old   1  
+  new   2 -> old   2  hunk
+  new   3 -> old   3  hunk
+  new   4 -> old   4  hunk
+  new   5 -> old   +  hunk
+  new   6 -> old   6  hunk
+  new   7 -> old   7  hunk
+  new   8 -> old   8  hunk
+  new   9 -> old   9  
+  new  10 -> old  10  hunk
+  new  11 -> old  11  hunk
+  new  12 -> old  12  hunk
+  new  13 -> old   +  hunk
+  new  14 -> old  13  hunk
+  new  15 -> old  14  hunk
+  new  16 -> old  15  hunk
+  new  17 -> old  16  
+  new  18 -> old  17  
+  new  19 -> old  18  
+  new  20 -> old  19  
+  new  21 -> old  20  
+  new  22 -> old  21  
+  new  23 -> old  22  hunk
+  new  24 -> old  23  hunk
+  new  25 -> old  24  hunk
+  new  26 -> old   +  hunk
+  new  27 -> old  26  hunk
+  new  28 -> old  27  hunk
+  new  29 -> old  28  hunk
+  new  30 -> old  29  
+  new  31 -> old  30  
+renamed.txt
+  new   1 -> old   1  hunk
+  new   2 -> old   +  hunk
+  new   3 -> old   3  hunk
+  new   4 -> old   4  
+  new   5 -> old   5  
+with space.txt
+  new   1 -> old   +  hunk
+  new   2 -> old   2  
+  new   3 -> old   3  
+ünïcode.txt
+  new   1 -> old   +  hunk
+  new   2 -> old   2  
+  new   3 -> old   3
