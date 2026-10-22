@@ -231,6 +231,7 @@ name = "gitcko-test-support"
 version = "0.0.0"
 dependencies = [
  "serde",
+ "tempfile",
  "toml",
 ]
 

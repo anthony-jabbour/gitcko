@@ -7,18 +7,19 @@
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::sync::atomic::{AtomicU64, Ordering};
 
 /// The workspace root, so tests in any crate find `tests/fixtures/`.
 pub fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
-/// A directory under the system temp folder that is deleted when dropped.
-/// ponytail: std only; reach for the `tempfile` crate if tests need more than this.
+/// A private directory under the system temp folder, deleted when dropped.
+///
+/// Created exclusively, with a random name and owner-only permissions (via `tempfile`),
+/// so another user on a shared machine can't plant files or symlinks in it first.
 pub struct TempDir {
-    /// Deleted on drop.
-    root: PathBuf,
+    /// Never read: owning it is what deletes the folder on drop.
+    _root: tempfile::TempDir,
     /// What `path()` returns: the root, or a folder inside it.
     path: PathBuf,
 }
@@ -26,25 +27,23 @@ pub struct TempDir {
 impl TempDir {
     /// `label` makes leftovers easy to trace if a test process is killed.
     pub fn new(label: &str) -> TempDir {
-        static COUNTER: AtomicU64 = AtomicU64::new(0);
-        let n = COUNTER.fetch_add(1, Ordering::Relaxed);
-        let dir = std::env::temp_dir().join(format!("gitcko-{label}-{}-{n}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&dir);
-        std::fs::create_dir_all(&dir).unwrap_or_else(|e| panic!("{}: {e}", dir.display()));
-        TempDir {
-            root: dir.clone(),
-            path: dir,
+        let prefix = format!("gitcko-{label}-");
+        let mut builder = tempfile::Builder::new();
+        builder.prefix(&prefix);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            builder.permissions(std::fs::Permissions::from_mode(0o700));
         }
+        let root = builder
+            .tempdir()
+            .unwrap_or_else(|e| panic!("cannot create a temp dir: {e}"));
+        let path = root.path().to_path_buf();
+        TempDir { _root: root, path }
     }
 
     pub fn path(&self) -> &Path {
         &self.path
-    }
-}
-
-impl Drop for TempDir {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.root);
     }
 }
 
@@ -55,6 +54,13 @@ impl Drop for TempDir {
 /// script gives the same commit ids on every machine and OS. Building per test instead
 /// of unpacking cached archives (the gitoxide pattern) is fine while repos are tiny.
 pub fn fixture_repo(name: &str) -> TempDir {
+    fixture_repo_with_inherited_env(name, &[])
+}
+
+/// [`fixture_repo`] as if the test process had also inherited `inherited` from its
+/// environment. Only for proving that inherited git settings can't leak in.
+#[doc(hidden)]
+pub fn fixture_repo_with_inherited_env(name: &str, inherited: &[(&str, &str)]) -> TempDir {
     let script = workspace_root().join(format!("tests/fixtures/repos/make_{name}.sh"));
     assert!(
         script.is_file(),
@@ -68,8 +74,16 @@ pub fn fixture_repo(name: &str) -> TempDir {
     std::fs::write(&empty_config, "").unwrap();
 
     let date = "2026-01-01T00:00:00Z";
-    let out = Command::new(bash())
+    let templates = dir.path().join("templates");
+    std::fs::create_dir(&templates).unwrap();
+
+    let mut command = Command::new(bash());
+    command.envs(inherited.iter().copied());
+    without_inherited_git_env(&mut command, inherited.iter().map(|(k, _)| (*k).into()));
+    let out = command
         .arg(&script)
+        // No hooks or other files copied in by `git init` from a template folder.
+        .env("GIT_TEMPLATE_DIR", &templates)
         .current_dir(&repo)
         .env("HOME", dir.path())
         .env("GIT_CONFIG_NOSYSTEM", "1")
@@ -91,6 +105,31 @@ pub fn fixture_repo(name: &str) -> TempDir {
     // Hand back the repo folder; dropping it still removes the throwaway config beside it.
     dir.path = repo;
     dir
+}
+
+/// `git` run in `dir`, for tests that inspect a fixture repo, with the same clean
+/// environment the fixture scripts get.
+pub fn git(dir: &Path) -> Command {
+    let mut command = Command::new("git");
+    command.current_dir(dir).env("GIT_CONFIG_NOSYSTEM", "1");
+    without_inherited_git_env(&mut command, std::iter::empty());
+    command
+}
+
+/// Removes every `GIT_*` variable the process inherited (config injection such as
+/// `GIT_CONFIG_COUNT`/`GIT_CONFIG_PARAMETERS`, repository and object-format overrides,
+/// identities), plus `extra` names, so only what a helper sets explicitly applies.
+/// Callers set their own `GIT_*` values after this.
+fn without_inherited_git_env(
+    command: &mut Command,
+    extra: impl Iterator<Item = std::ffi::OsString>,
+) {
+    let inherited = std::env::vars_os().map(|(key, _)| key);
+    for key in inherited.chain(extra) {
+        if key.to_string_lossy().starts_with("GIT_") {
+            command.env_remove(key);
+        }
+    }
 }
 
 /// Git for Windows' bash. On Windows `bash` on the PATH can be WSL's, which can't run
