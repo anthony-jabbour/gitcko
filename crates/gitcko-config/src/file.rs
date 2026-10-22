@@ -396,10 +396,7 @@ fn valid_origin(url: &str) -> bool {
     // `[v6]:port` or `host:port`, the port optional.
     let (host, port) = match authority.strip_prefix('[') {
         Some(v6) => match v6.split_once(']') {
-            Some((inner, tail))
-                if !inner.is_empty()
-                    && inner.chars().all(|c| c.is_ascii_hexdigit() || c == ':') =>
-            {
+            Some((inner, tail)) if inner.parse::<std::net::Ipv6Addr>().is_ok() => {
                 match tail.strip_prefix(':') {
                     Some(port) => (format!("[{inner}]"), Some(port)),
                     None if tail.is_empty() => (format!("[{inner}]"), None),
@@ -413,11 +410,13 @@ fn valid_origin(url: &str) -> bool {
             None => (authority.to_string(), None),
         },
     };
+    // A fully qualified name may end in the root's dot (`example.test.`).
+    let name = host.strip_suffix('.').unwrap_or(&host);
     let host_ok = host.starts_with('[')
-        || (!host.is_empty()
-            && !host.starts_with(['.', '-'])
-            && !host.ends_with(['.', '-'])
-            && host
+        || (!name.is_empty()
+            && !name.starts_with(['.', '-'])
+            && !name.ends_with(['.', '-'])
+            && name
                 .chars()
                 .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-'));
     let port_ok = port.is_none_or(|p| {

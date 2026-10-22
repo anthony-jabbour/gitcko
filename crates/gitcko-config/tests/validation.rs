@@ -119,6 +119,9 @@ fn urls_must_be_real_origins() {
         "http://example.test",
         "https://example.test/v1",
         "ftp://example.test",
+        "https://example.test..",
+        "https://[::g]",
+        "https://[1:2]",
     ] {
         assert!(check(bad).is_err(), "{bad} should be refused");
     }
@@ -128,6 +131,10 @@ fn urls_must_be_real_origins() {
         "http://localhost:3000",
         "http://127.0.0.1",
         "http://[::1]:8080",
+        // A fully qualified name ends in the root's dot; mapped IPv4 has dots in v6.
+        "https://api.example.test.",
+        "https://[::ffff:192.0.2.1]",
+        "https://[2001:db8::1]:8443",
     ] {
         assert!(
             check(good).is_ok(),
