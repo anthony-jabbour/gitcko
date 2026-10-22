@@ -35,11 +35,9 @@ pub fn parse(text: &str) -> Result<ChangeSet> {
     let lines: Vec<&str> = text.split_terminator('\n').collect();
     let mut at = 0;
     while at < lines.len() && !lines[at].starts_with("diff --git ") {
-        if lines[at].starts_with("@@ ") {
-            return error(at + 1, "hunk before any file header");
-        }
         at += 1;
     }
+    reject_hidden_patches(&lines[..at], 0)?;
     let mut files = Vec::new();
     while at < lines.len() {
         let (file, next) = parse_file(&lines, at)?;
@@ -47,6 +45,33 @@ pub fn parse(text: &str) -> Result<ChangeSet> {
         at = next;
     }
     Ok(ChangeSet { files })
+}
+
+/// Fails if text the parser skips (a commit message, mail headers, a signature)
+/// contains patch-shaped lines. `git apply` accepts patches without a `diff --git` line,
+/// so such text could change files without ever being parsed and reviewed. `first` is
+/// the index of `skipped[0]` in the whole text, for the line number.
+fn reject_hidden_patches(skipped: &[&str], first: usize) -> Result<()> {
+    const PATCH_LIKE: [&str; 8] = [
+        "--- ",
+        "+++ ",
+        "@@ ",
+        "diff ",
+        "Index: ",
+        "*** ",
+        "GIT binary patch",
+        "Binary files ",
+    ];
+    match skipped
+        .iter()
+        .position(|l| PATCH_LIKE.iter().any(|p| l.starts_with(p)))
+    {
+        Some(i) => error(
+            first + i + 1,
+            "patch-like line outside a `diff --git` section",
+        ),
+        None => Ok(()),
+    }
 }
 
 /// What a file's header lines say, before deciding paths and change kind.
@@ -151,9 +176,11 @@ fn parse_file(lines: &[&str], start: usize) -> Result<(FileDiff, usize)> {
     if lines.get(at) == Some(&"-- ") {
         // The `git format-patch` signature (`-- ` and the git version) ends this patch;
         // skip to the next one in a mailbox, or the end.
+        let signature = at;
         while at < lines.len() && !lines[at].starts_with("diff --git ") {
             at += 1;
         }
+        reject_hidden_patches(&lines[signature + 1..at], signature + 1)?;
     }
     if at < lines.len() && !lines[at].starts_with("diff --git ") {
         return error(at + 1, "line is outside every hunk's line counts");

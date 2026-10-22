@@ -31,8 +31,21 @@ fn channel(toml: &str) -> Option<&str> {
         .filter(|value| !value.is_empty())
 }
 
+/// The machine's own target triple, from the pinned nightly's `rustc -vV`. cargo-fuzz
+/// otherwise defaults to the triple *it* was compiled for, and a prebuilt cargo-fuzz
+/// (as CI installs) is a musl build, where sanitizers don't work.
+fn host(toolchain: &str) -> Result<String> {
+    let info = output("rustc", &[toolchain, "-vV"])?;
+    info.lines()
+        .find_map(|line| line.strip_prefix("host: "))
+        .map(str::to_string)
+        .ok_or_else(|| "`rustc -vV` printed no host triple".into())
+}
+
 pub fn build() -> Result {
-    run("cargo", &[&toolchain()?, "fuzz", "build"])
+    let toolchain = toolchain()?;
+    let host = host(&toolchain)?;
+    run("cargo", &[&toolchain, "fuzz", "build", "--target", &host])
 }
 
 /// Runs every target for `seconds` each, starting from its seeds; a crash fails the task
@@ -42,12 +55,21 @@ pub fn run_for(seconds: &str) -> Result {
         .parse()
         .map_err(|_| format!("not a number of seconds: {seconds}"))?;
     let toolchain = toolchain()?;
+    let host = host(&toolchain)?;
     let targets = output("cargo", &[&toolchain, "fuzz", "list"])?;
     for target in targets.lines().map(str::trim).filter(|t| !t.is_empty()) {
         let corpus = format!("fuzz/corpus/{target}");
         std::fs::create_dir_all(&corpus).map_err(|e| format!("{corpus}: {e}"))?;
         let time = format!("-max_total_time={seconds}");
-        let mut args = vec![toolchain.as_str(), "fuzz", "run", target, corpus.as_str()];
+        let mut args = vec![
+            toolchain.as_str(),
+            "fuzz",
+            "run",
+            "--target",
+            host.as_str(),
+            target,
+            corpus.as_str(),
+        ];
         args.extend(seeds(target));
         args.extend(["--", time.as_str()]);
         println!("fuzz: {target} for {seconds}s");

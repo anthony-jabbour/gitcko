@@ -140,7 +140,7 @@ fn malformed_diffs_are_rejected_with_the_line_number() {
             6,
             "order",
         ),
-        ("@@ -1 +1 @@\n a\n".to_string(), 1, "before any file"),
+        ("@@ -1 +1 @@\n a\n".to_string(), 1, "outside a `diff --git`"),
         (
             "diff --git a/f b/f\n--- a/f\n@@ -1 +1 @@\n a\n".to_string(),
             3,
@@ -263,4 +263,24 @@ fn every_path_in_a_header_is_checked_even_unused_ones() {
         "diff --git a/../../etc/passwd b/../../etc/passwd\n--- a/f\n+++ b/f\n@@ -1 +1 @@\n-a\n+b\n";
     let err = parse(text).unwrap_err();
     assert!(err.to_string().contains("invalid repository path"), "{err}");
+}
+
+#[test]
+fn patch_text_hidden_in_skipped_parts_is_rejected() {
+    // `git apply` also takes a plain `---`/`+++`/`@@` patch without a `diff --git`
+    // line, so patch-shaped text in the parts the parser skips (before the first file,
+    // after a format-patch signature) could be applied without being reviewed.
+    let hidden = "--- a/evil\n+++ b/evil\n@@ -1 +1 @@\n-a\n+b\n";
+    let real = "diff --git a/f b/f\n--- a/f\n+++ b/f\n@@ -1 +1 @@\n-a\n+b\n";
+    for text in [
+        format!("Subject: x\n\n{hidden}{real}"),
+        format!("{real}-- \n2.55.0\n\n{hidden}"),
+        format!("{real}-- \n2.55.0\nIndex: evil\n"),
+    ] {
+        let err = parse(&text).unwrap_err();
+        assert!(
+            err.to_string().contains("outside a `diff --git`"),
+            "{err}\n{text}"
+        );
+    }
 }
