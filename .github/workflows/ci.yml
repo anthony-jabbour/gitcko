@@ -36,6 +36,7 @@ jobs:
       pull-requests: read # paths-filter lists a PR's files through the API
     outputs:
       schema: ${{ steps.filter.outputs.schema }}
+      canaries: ${{ steps.filter.outputs.canaries }}
       fuzz: ${{ steps.filter.outputs.fuzz }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -50,6 +51,9 @@ jobs:
               - 'integrations/schemas/**'
               - 'xtask/**'
               - 'Cargo.lock'
+            canaries:
+              - 'crates/**'
+              - 'xtask/**'
             fuzz:
               - 'crates/gitcko-diff/**'
               - 'crates/gitcko-config/**'
@@ -61,6 +65,7 @@ jobs:
   # pinned in rust-toolchain.toml on first use).
   check:
     name: check (${{ matrix.os }})
+    needs: changes
     strategy:
       fail-fast: false
       matrix:
@@ -75,6 +80,11 @@ jobs:
         with:
           tool: cargo-nextest@${{ env.NEXTEST_VERSION }}
       - run: cargo xtask check
+      # Redaction canaries (TESTING §4) on every OS whenever crate code changes; they
+      # also run inside `check`, but this fails loudly if none are found.
+      - name: Redaction canaries
+        if: needs.changes.outputs.canaries == 'true'
+        run: cargo xtask canaries
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -155,6 +165,23 @@ jobs:
       # a snapshot file no test uses any more.
       - name: Snapshots (none pending or unreferenced)
         run: cargo insta test --check --unreferenced=reject
+      # A squash merge lands the whole PR as one new commit, which the step above never
+      # saw: patterns spanning several commits only appear together there (it let a
+      # false positive reach main in #11). Scan the PR squashed onto its base too.
+      - name: Leak guard (the PR squashed, as it will land)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        # Put back the commit actions/checkout chose (the PR merged into its base), so
+        # the policy steps after this one check the tree that will land.
+        run: |
+          checked_out=$(git rev-parse HEAD)
+          git checkout -q --detach "${BASE}"
+          git merge --squash -q "${HEAD}"
+          git -c user.name=ci -c user.email=ci@ci.invalid commit -q --allow-empty -m squashed
+          cargo xtask leak-guard --range "${BASE}..HEAD"
+          git checkout -q --detach "${checked_out}"
       - name: Licence headers
         run: cargo xtask spdx
       - name: Crate layers
