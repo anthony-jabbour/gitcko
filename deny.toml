@@ -25,8 +25,16 @@ allow = [
 confidence-threshold = 0.8
 # The allow-list is policy, so licences no dependency uses yet are expected.
 unused-allowed-license = "allow"
-# Our own published AGPL crates get an exception each as they are created.
-exceptions = []
+# Our own published crates are AGPL-3.0-or-later on purpose (LICENSE_STRATEGY §2); the
+# copyleft ban above is for third-party dependencies. gitcko-protocol is Apache-2.0 and
+# needs no entry. Added for all of Phase 1 at once so parallel crate PRs don't edit this file.
+exceptions = [
+    { crate = "gitcko-config", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-diff", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-domain", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-git", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-redact", allow = ["AGPL-3.0-or-later"] },
+]
 
 [licenses.private]
 # Unpublished workspace crates (xtask) are ours, not dependencies.

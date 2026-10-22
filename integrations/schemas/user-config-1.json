@@ -1,0 +1,116 @@
+{
+  "$id": "https://gitcko.dev/schema/user-config-1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UserConfig",
+  "description": "`~/.config/gitcko/config.toml` (CONFIGURATION §6). Local runs only.",
+  "type": "object",
+  "properties": {
+    "api_url": {
+      "description": "HTTPS origin with no path; plain HTTP only for loopback.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "color": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "models": {
+      "description": "Model bindings, roles and fallbacks (MODEL_ROUTING). An open table until the\nmodel layer types it in Phase 3. Keys never live here; they come from the\nkeychain or environment.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "review": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/UserReview"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "telemetry": {
+      "description": "Off unless set to `true` (stricter than Greptile, which defaults on).",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "web_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "Layout": {
+      "type": "string",
+      "enum": [
+        "comments",
+        "diff"
+      ]
+    },
+    "OutputFormat": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "text",
+        "json"
+      ]
+    },
+    "UserReview": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "description": "Lines of context around each finding.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "maximum": 60,
+          "minimum": 0
+        },
+        "layout": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Layout"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "output": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OutputFormat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "width": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint16",
+          "maximum": 240,
+          "minimum": 40
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

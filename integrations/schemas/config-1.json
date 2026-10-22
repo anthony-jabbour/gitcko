@@ -1,0 +1,555 @@
+{
+  "$id": "https://gitcko.dev/schema/config-1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RepoConfig",
+  "description": "`.gitcko/config.toml` at the repo root or in any subfolder (CONFIGURATION §5).",
+  "type": "object",
+  "properties": {
+    "auto_approve": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AutoApprove"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "auto_review": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/$defs/AutoReviewTrigger"
+      }
+    },
+    "check_run": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "comment_types": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/$defs/CommentType"
+      }
+    },
+    "context": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Context"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "disabled_labels": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "disabled_rules": {
+      "description": "Ids of inherited rules to drop in this folder and below.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "exclude_authors": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "exclude_branches": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "fail_on": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Severity"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "fix_links": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "hide_footer": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "ignore": {
+      "description": "gitignore-syntax patterns for files the review skips.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "ignore_keywords": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "include_authors": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "include_branches": {
+      "description": "Globs over the PR's target branch.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "include_keywords": {
+      "description": "Matched against the PR title and body.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "instructions": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 4000
+    },
+    "labels": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "review_drafts": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "rules": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/$defs/Rule"
+      }
+    },
+    "schema_version": {
+      "description": "Required in the root config only; must be `1`.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "uint32",
+      "minimum": 0
+    },
+    "skip_auto_review": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "strictness": {
+      "description": "1 = most verbose, 3 = critical only (same direction as Greptile).",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "uint8",
+      "maximum": 3,
+      "minimum": 1
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Summary"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "summary_only": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "tier": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Tier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "update_description": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "AutoApprove": {
+      "description": "Always read from the base branch and merged strictest-wins (CONFIGURATION §5.4).",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "filters": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AutoApproveFilters"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "risk_ceiling": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RiskLevel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "AutoApproveFilters": {
+      "type": "object",
+      "properties": {
+        "exclude_authors": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "exclude_paths": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "include_paths": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AutoReviewTrigger": {
+      "description": "Each trigger implies the earlier ones: `push` also reviews on open.",
+      "type": "string",
+      "enum": [
+        "open",
+        "push",
+        "rebase"
+      ]
+    },
+    "CommentType": {
+      "type": "string",
+      "enum": [
+        "logic",
+        "syntax",
+        "style"
+      ]
+    },
+    "Context": {
+      "type": "object",
+      "properties": {
+        "files": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/ContextFile"
+          }
+        },
+        "repos": {
+          "description": "Read-only cross-repo context on the same host and installation (Later).",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ContextFile": {
+      "description": "A repository file the reviewer reads for background, like a schema or API spec.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "path": {
+          "description": "Relative to the folder that holds this `.gitcko/`; `../` is rejected.",
+          "type": "string"
+        },
+        "scope": {
+          "description": "Include only when reviewing files that match.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ]
+    },
+    "RiskLevel": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "Rule": {
+      "description": "A structured review rule. Rules can raise attention and severity floors but never\nwaive evidence or security gates.",
+      "type": "object",
+      "properties": {
+        "comment_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CommentType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Needed to disable the rule further down the tree.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rule": {
+          "type": "string"
+        },
+        "scope": {
+          "description": "Globs relative to the folder that holds this `.gitcko/`.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "severity": {
+          "description": "Minimum severity when violated.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Severity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "rule"
+      ]
+    },
+    "Severity": {
+      "description": "Impact times realistic reachability, never confidence. There is no P3 (ADR-13).",
+      "type": "string",
+      "enum": [
+        "P0",
+        "P1",
+        "P2"
+      ]
+    },
+    "Summary": {
+      "description": "Which sections the PR summary shows. Each table merges field by field.",
+      "type": "object",
+      "properties": {
+        "diagram": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SummarySection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "files_table": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SummarySection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overview": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SummarySection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "score": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SummarySection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "security": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SummarySection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "SummarySection": {
+      "type": "object",
+      "properties": {
+        "collapsible": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "default_open": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "included": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Tier": {
+      "description": "Review depth. Local and Self-Host run `base` only (ADR-79).",
+      "type": "string",
+      "enum": [
+        "base",
+        "plus",
+        "max",
+        "auto"
+      ]
+    }
+  }
+}

@@ -1,0 +1,1154 @@
+{
+  "$id": "https://gitcko.dev/schema/review-1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Review",
+  "description": "One review run and everything it found.",
+  "type": "object",
+  "properties": {
+    "cleared_risks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ClearedRisk"
+      }
+    },
+    "coverage": {
+      "$ref": "#/$defs/Coverage"
+    },
+    "events": {
+      "description": "The run's events, included only when asked for (`review show --events`).",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/$defs/RunEvent"
+      }
+    },
+    "file_summaries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FileSummary"
+      }
+    },
+    "findings": {
+      "description": "Empty for a clean review, never `null`.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Finding"
+      }
+    },
+    "instructions": {
+      "description": "The run's free-form instructions, echoed so a result explains itself.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "questions": {
+      "description": "Questions are not findings: they carry no severity and never count toward the\nscore, `fail_on` or precision (REVIEW_RULES §8). At most two per review.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Question"
+      }
+    },
+    "reason_codes": {
+      "description": "Machine-readable reasons for a non-complete status, e.g. `config_invalid`.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "review_id": {
+      "description": "`rv_` followed by a 26-character ULID-format id.",
+      "type": "string"
+    },
+    "risk_level": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RiskAssessment"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "schema_version": {
+      "$ref": "#/$defs/ReviewSchemaVersion"
+    },
+    "score": {
+      "description": "Readiness score 0–5 (SCORING). `null` until the scoring gate passes, and always\n`null` when `status` isn't `complete`.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "uint8",
+      "maximum": 5,
+      "minimum": 0
+    },
+    "score_availability_reason": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ScoreAvailabilityReason"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "score_details": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ScoreDetails"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "score_reasoning": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "security_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "$ref": "#/$defs/ReviewStatus"
+    },
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target": {
+      "$ref": "#/$defs/Target"
+    },
+    "tier": {
+      "$ref": "#/$defs/Tier"
+    },
+    "usage": {
+      "$ref": "#/$defs/Usage"
+    },
+    "versions": {
+      "$ref": "#/$defs/Versions"
+    }
+  },
+  "required": [
+    "schema_version",
+    "review_id",
+    "status",
+    "reason_codes",
+    "tier",
+    "target",
+    "cleared_risks",
+    "file_summaries",
+    "findings",
+    "questions",
+    "coverage",
+    "versions",
+    "usage"
+  ],
+  "$defs": {
+    "BreakerState": {
+      "type": "string",
+      "enum": [
+        "closed",
+        "open",
+        "half_open"
+      ]
+    },
+    "BudgetLimit": {
+      "type": "string",
+      "enum": [
+        "tokens",
+        "cost",
+        "wall_clock"
+      ]
+    },
+    "CalibrationStatus": {
+      "type": "string",
+      "enum": [
+        "calibrated",
+        "uncalibrated"
+      ]
+    },
+    "ClearedRisk": {
+      "description": "A risk the reviewer checked and found handled.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "description"
+      ]
+    },
+    "CommentType": {
+      "type": "string",
+      "enum": [
+        "logic",
+        "syntax",
+        "style"
+      ]
+    },
+    "Coverage": {
+      "type": "object",
+      "properties": {
+        "changed_files": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "held_back": {
+          "description": "Changed files the review didn't investigate, so a reader never mistakes\npartial coverage for a clean result.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "investigated_files": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "skipped_binary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "changed_files",
+        "investigated_files",
+        "held_back",
+        "skipped_binary"
+      ]
+    },
+    "Evidence": {
+      "description": "A source location that supports a finding. Model prose alone is never evidence.",
+      "type": "object",
+      "properties": {
+        "end_line": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 1
+        },
+        "kind": {
+          "$ref": "#/$defs/EvidenceKind"
+        },
+        "path": {
+          "type": "string"
+        },
+        "start_line": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "kind",
+        "path",
+        "start_line",
+        "end_line"
+      ]
+    },
+    "EvidenceKind": {
+      "type": "string",
+      "enum": [
+        "source",
+        "rule",
+        "graph",
+        "test"
+      ]
+    },
+    "FileSummary": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "summary"
+      ]
+    },
+    "Finding": {
+      "description": "A concrete defect the change introduces or worsens (REVIEW_RULES §1).",
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "calibration_status": {
+          "description": "`uncalibrated` means `confidence` is the model's assessment, not a measured\nprobability.",
+          "$ref": "#/$defs/CalibrationStatus"
+        },
+        "comment_type": {
+          "$ref": "#/$defs/CommentType"
+        },
+        "confidence": {
+          "description": "Final confidence 0–1. Bands (High ≥ 0.85, Medium ≥ 0.70) are derived from it,\nnever stored (REVIEW_ENGINE §15).",
+          "type": "number",
+          "format": "double",
+          "maximum": 1.0,
+          "minimum": 0.0
+        },
+        "end_line": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          }
+        },
+        "fix_package": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FixPackage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hunk": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hunk"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "description": "`f_` followed by 16 hex characters: a stable fingerprint of the issue, not of\nits line numbers (REVIEW_ENGINE §16).",
+          "type": "string"
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/Lifecycle"
+        },
+        "linked_rule": {
+          "description": "The repository rule that triggered this finding, if any.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "outside_diff": {
+          "description": "Set when the finding sits outside the changed lines: the changed line it traces\nback to (REVIEW_RULES §9).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OutsideDiff"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path": {
+          "description": "Repository-relative, `/`-separated.",
+          "type": "string"
+        },
+        "security_issue": {
+          "type": "boolean"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "side": {
+          "$ref": "#/$defs/Side"
+        },
+        "start_line": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 1
+        },
+        "suggestion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "verification": {
+          "$ref": "#/$defs/Verification"
+        },
+        "verified_evidence": {
+          "description": "Typed when Verify lands; `null` until then."
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "start_line",
+        "end_line",
+        "side",
+        "severity",
+        "comment_type",
+        "security_issue",
+        "confidence",
+        "calibration_status",
+        "title",
+        "body",
+        "evidence",
+        "verification",
+        "lifecycle"
+      ]
+    },
+    "FixPackage": {
+      "description": "The hand-off a coding agent uses to fix the finding. Phase 4 adds its fields; adding\nthem is not a breaking change.",
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/FixSchemaVersion"
+        }
+      },
+      "required": [
+        "schema_version"
+      ]
+    },
+    "FixSchemaVersion": {
+      "type": "string",
+      "enum": [
+        "gitcko.fix/1"
+      ]
+    },
+    "Hunk": {
+      "description": "The diff hunk a finding points into, with the lines before and after the fix.",
+      "type": "object",
+      "properties": {
+        "after": {
+          "type": "string"
+        },
+        "before": {
+          "type": "string"
+        },
+        "header": {
+          "type": "string"
+        },
+        "new_range": {
+          "$ref": "#/$defs/LineRange"
+        },
+        "old_range": {
+          "$ref": "#/$defs/LineRange"
+        }
+      },
+      "required": [
+        "header",
+        "old_range",
+        "new_range",
+        "before",
+        "after"
+      ]
+    },
+    "Lifecycle": {
+      "description": "Where the issue stands across reviews of the same PR (REVIEW_ENGINE §16).",
+      "type": "string",
+      "enum": [
+        "new",
+        "still_present",
+        "possibly_fixed",
+        "resolved"
+      ]
+    },
+    "LineRange": {
+      "description": "A hunk range as in `@@ -start,lines +start,lines @@`. `start` is 0 for an empty side.",
+      "type": "object",
+      "properties": {
+        "lines": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "start": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "start",
+        "lines"
+      ]
+    },
+    "OutsideDiff": {
+      "type": "object",
+      "properties": {
+        "linked_line": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 1
+        },
+        "linked_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "linked_path",
+        "linked_line"
+      ]
+    },
+    "PublishTarget": {
+      "type": "string",
+      "enum": [
+        "summary",
+        "inline",
+        "check"
+      ]
+    },
+    "Question": {
+      "description": "A possible P0/P1 that needs one fact the repository can't answer (REVIEW_RULES §8).",
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "end_line": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 1
+        },
+        "id": {
+          "description": "`q_` followed by 16 hex characters.",
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "side": {
+          "$ref": "#/$defs/Side"
+        },
+        "start_line": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 1
+        },
+        "why": {
+          "description": "What answer would make it a bug, and why that matters.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "start_line",
+        "end_line",
+        "side",
+        "body",
+        "why"
+      ]
+    },
+    "ReviewSchemaVersion": {
+      "description": "The only version this crate reads or writes. Any other value fails to parse with a\nmessage naming the supported one.",
+      "type": "string",
+      "enum": [
+        "gitcko.review/1"
+      ]
+    },
+    "ReviewStatus": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "partial",
+        "failed",
+        "canceled",
+        "superseded"
+      ]
+    },
+    "RiskAssessment": {
+      "description": "What the change does, separate from the score; only auto-approve uses it (ADR-43).",
+      "type": "object",
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/RiskLevel"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/RiskSource"
+        }
+      },
+      "required": [
+        "level",
+        "source",
+        "reason"
+      ]
+    },
+    "RiskLevel": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "RiskSource": {
+      "description": "`rules` when the risk-classifier failed and deterministic rules decided (SCORING §7).",
+      "type": "string",
+      "enum": [
+        "model",
+        "rules"
+      ]
+    },
+    "RunEvent": {
+      "description": "One event in a run's stream. New event types can appear without a version bump, so\nreaders must accept a `type` they don't know.",
+      "type": "object",
+      "properties": {
+        "at": {
+          "description": "RFC 3339 timestamp in UTC.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "seq": {
+          "description": "Position in the run's stream, starting at 1.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        }
+      },
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "from": {
+              "$ref": "#/$defs/RunLifecycle"
+            },
+            "to": {
+              "$ref": "#/$defs/RunLifecycle"
+            },
+            "type": {
+              "type": "string",
+              "const": "lifecycle.changed"
+            }
+          },
+          "required": [
+            "type",
+            "from",
+            "to"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "step": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "const": "step.started"
+            }
+          },
+          "required": [
+            "type",
+            "step"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "counts": {
+              "description": "Bounded counts such as files, symbols or hypotheses.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0
+              },
+              "default": {}
+            },
+            "duration_ms": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0
+            },
+            "outcome": {
+              "type": "string"
+            },
+            "step": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string",
+              "const": "step.completed"
+            }
+          },
+          "required": [
+            "type",
+            "step",
+            "outcome",
+            "duration_ms"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "attempt": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0
+            },
+            "binding": {
+              "type": "string"
+            },
+            "class": {
+              "type": "string"
+            },
+            "cost_usd": {
+              "description": "`null` when the provider doesn't report cost.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "duration_ms": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0
+            },
+            "fallback_from": {
+              "description": "The binding this call fell back from, if it was a fallback.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "input_tokens": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0
+            },
+            "outcome": {
+              "type": "string"
+            },
+            "output_tokens": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0
+            },
+            "role": {
+              "type": "string"
+            },
+            "step": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "const": "model_call.completed"
+            }
+          },
+          "required": [
+            "type",
+            "role",
+            "binding",
+            "class",
+            "duration_ms",
+            "input_tokens",
+            "output_tokens",
+            "attempt",
+            "outcome"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "binding": {
+              "type": "string"
+            },
+            "state": {
+              "$ref": "#/$defs/BreakerState"
+            },
+            "type": {
+              "type": "string",
+              "const": "breaker.changed"
+            }
+          },
+          "required": [
+            "type",
+            "binding",
+            "state"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cap": {
+              "type": "number",
+              "format": "double"
+            },
+            "limit": {
+              "$ref": "#/$defs/BudgetLimit"
+            },
+            "type": {
+              "type": "string",
+              "const": "budget.warning"
+            },
+            "used": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "required": [
+            "type",
+            "limit",
+            "used",
+            "cap"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cap": {
+              "type": "number",
+              "format": "double"
+            },
+            "limit": {
+              "$ref": "#/$defs/BudgetLimit"
+            },
+            "type": {
+              "type": "string",
+              "const": "budget.exhausted"
+            },
+            "used": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "required": [
+            "type",
+            "limit",
+            "used",
+            "cap"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string"
+            },
+            "stale_rejected": {
+              "description": "True when publishing was refused because a newer head exists.",
+              "type": "boolean"
+            },
+            "target": {
+              "$ref": "#/$defs/PublishTarget"
+            },
+            "type": {
+              "type": "string",
+              "const": "publish.completed"
+            }
+          },
+          "required": [
+            "type",
+            "target",
+            "outcome",
+            "stale_rejected"
+          ]
+        }
+      ],
+      "required": [
+        "run_id",
+        "seq",
+        "at"
+      ]
+    },
+    "RunLifecycle": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "indexing",
+        "reviewing_files",
+        "generating_summary",
+        "completed",
+        "failed",
+        "canceled",
+        "superseded",
+        "skipped"
+      ]
+    },
+    "ScoreAdjustment": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "evidence": {
+          "description": "`path:line`, a rule id or a summary reference.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "evidence"
+      ]
+    },
+    "ScoreAvailabilityReason": {
+      "type": "string",
+      "enum": [
+        "gate_closed",
+        "incomplete",
+        "failed",
+        "canceled",
+        "superseded",
+        "inputs_missing"
+      ]
+    },
+    "ScoreDetails": {
+      "type": "object",
+      "properties": {
+        "adjustments": {
+          "description": "Each point the scorer took off below the ceiling, with its evidence.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ScoreAdjustment"
+          }
+        },
+        "ceiling": {
+          "type": "integer",
+          "format": "uint8",
+          "maximum": 5,
+          "minimum": 0
+        },
+        "ceiling_rule": {
+          "description": "The ceiling rule that decided `ceiling`.",
+          "type": "string"
+        },
+        "coverage": {
+          "description": "Share of changed files actually investigated, 0–1.",
+          "type": "number",
+          "format": "double",
+          "maximum": 1.0,
+          "minimum": 0.0
+        },
+        "effective_counts": {
+          "description": "Findings counted for scoring after the medium-confidence drop (SCORING §3.1).",
+          "$ref": "#/$defs/SeverityCounts"
+        },
+        "low_bound": {
+          "type": "integer",
+          "format": "uint8",
+          "maximum": 5,
+          "minimum": 0
+        },
+        "matched_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model_score": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "maximum": 5,
+          "minimum": 0
+        },
+        "policy": {
+          "description": "Versioned scoring policy, e.g. `gitcko-score@1`.",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/ScoreSource"
+        }
+      },
+      "required": [
+        "policy",
+        "source",
+        "ceiling",
+        "ceiling_rule",
+        "matched_rules",
+        "low_bound",
+        "adjustments",
+        "effective_counts",
+        "coverage"
+      ]
+    },
+    "ScoreSource": {
+      "description": "Who picked the score: the scorer model, or the deterministic ceiling when the\nmodel call failed (SCORING §6).",
+      "type": "string",
+      "enum": [
+        "model",
+        "ceiling"
+      ]
+    },
+    "Severity": {
+      "description": "Impact times realistic reachability, never confidence. There is no P3 (ADR-13).",
+      "type": "string",
+      "enum": [
+        "P0",
+        "P1",
+        "P2"
+      ]
+    },
+    "SeverityCounts": {
+      "type": "object",
+      "properties": {
+        "P0": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "P1": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "P2": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "P0",
+        "P1",
+        "P2"
+      ]
+    },
+    "Side": {
+      "description": "Which side of the diff a line number refers to.",
+      "type": "string",
+      "enum": [
+        "old",
+        "new"
+      ]
+    },
+    "Target": {
+      "description": "The immutable commits the review is bound to.",
+      "type": "object",
+      "properties": {
+        "base_sha": {
+          "type": "string"
+        },
+        "head_sha": {
+          "type": "string"
+        },
+        "local_changes": {
+          "description": "True when staged or unstaged changes were reviewed on top of `head_sha`.",
+          "type": "boolean"
+        },
+        "merge_base": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "base_sha",
+        "head_sha",
+        "local_changes"
+      ]
+    },
+    "Tier": {
+      "description": "Review depth. Local and Self-Host run `base` only (ADR-79).",
+      "type": "string",
+      "enum": [
+        "base",
+        "plus",
+        "max",
+        "auto"
+      ]
+    },
+    "Usage": {
+      "type": "object",
+      "properties": {
+        "cost_usd": {
+          "description": "`null` when the provider doesn't report cost; never estimated as 0.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "input_tokens": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "model_calls": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "model_calls",
+        "input_tokens",
+        "output_tokens"
+      ]
+    },
+    "Verification": {
+      "description": "Runtime verification outcome (ARCHITECTURE §7). Base reviews are always `not_run`.",
+      "type": "string",
+      "enum": [
+        "not_run",
+        "verified",
+        "not_reproduced",
+        "inconclusive",
+        "error"
+      ]
+    },
+    "Versions": {
+      "type": "object",
+      "properties": {
+        "engine": {
+          "type": "string"
+        },
+        "index": {
+          "type": "string"
+        },
+        "policy": {
+          "type": "string"
+        },
+        "routing_policy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "engine",
+        "policy",
+        "routing_policy",
+        "index"
+      ]
+    }
+  }
+}

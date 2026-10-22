@@ -1,0 +1,16 @@
+# Every user key from CONFIGURATION §6.
+color = true
+telemetry = false
+api_url = "https://api.gitcko.dev"
+web_url = "https://app.gitcko.dev"
+
+[review]
+output = "auto"
+layout = "comments"
+context = 15
+width = 100
+
+# Typed in Phase 3 with MODEL_ROUTING; an open table until then.
+[models.bindings.smart]
+provider = "openrouter"
+model = "example/model"

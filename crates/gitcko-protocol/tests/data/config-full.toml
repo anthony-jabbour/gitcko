@@ -1,0 +1,75 @@
+# Every repo key from CONFIGURATION §5, so the type and the schema are checked against the spec.
+schema_version = 1
+strictness = 2
+comment_types = ["logic", "syntax", "style"]
+tier = "base"
+instructions = "This is a TypeScript monorepo."
+fail_on = "P1"
+
+auto_review = ["open"]
+review_drafts = false
+skip_auto_review = false
+labels = ["review-me"]
+disabled_labels = ["no-review"]
+include_authors = []
+exclude_authors = ["dependabot[bot]", "renovate[bot]"]
+include_branches = ["main"]
+exclude_branches = ["release/*"]
+include_keywords = []
+ignore_keywords = ["WIP"]
+ignore = ["vendor/", "*.min.*"]
+
+check_run = true
+summary_only = false
+fix_links = true
+hide_footer = false
+update_description = false
+
+disabled_rules = ["no-console"]
+
+[auto_approve]
+enabled = false
+risk_ceiling = "low"
+[auto_approve.filters]
+exclude_paths = ["src/auth/**"]
+include_paths = []
+exclude_authors = ["dependabot[bot]"]
+
+[[rules]]
+id = "no-raw-sql"
+rule = "Use parameterized queries."
+scope = ["src/db/**"]
+severity = "P1"
+enabled = true
+
+[[rules]]
+rule = "Prefer named exports."
+severity = "P2"
+comment_type = "style"
+
+[context]
+repos = ["acme/shared-types"]
+
+[[context.files]]
+path = "prisma/schema.prisma"
+description = "Database schema"
+scope = ["src/db/**"]
+
+[summary.overview]
+included = true
+collapsible = false
+default_open = true
+
+[summary.files_table]
+included = true
+collapsible = true
+default_open = false
+
+[summary.score]
+included = true
+
+[summary.diagram]
+included = true
+
+[summary.security]
+included = true

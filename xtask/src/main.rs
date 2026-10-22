@@ -5,6 +5,7 @@
 
 mod layers;
 mod leak_guard;
+mod schema;
 mod spdx;
 
 use std::process::{Command, ExitCode};
@@ -12,6 +13,7 @@ use std::process::{Command, ExitCode};
 /// Tool versions `setup` installs, so every machine and CI run the same ones.
 const NEXTEST_VERSION: &str = "0.9.149";
 const DENY_VERSION: &str = "0.20.2";
+const INSTA_VERSION: &str = "1.49.0";
 
 const USAGE: &str = "\
 usage: cargo xtask <task>
@@ -21,6 +23,8 @@ usage: cargo xtask <task>
   leak-guard [--range A..B]    scan commits for secrets and private content
   leak-guard --self-test       prove the leak guard blocks what it should
   spdx                         check every .rs file's licence header
+  schema-gen                   write integrations/schemas/ from gitcko-protocol
+  schema-check                 fail if integrations/schemas/ differs from the types
   layers                       check crates only depend on their own or lower layers";
 
 type Result<T = ()> = std::result::Result<T, String>;
@@ -43,6 +47,8 @@ fn main() -> ExitCode {
         // git also passes the remote name ($1); only the URL matters.
         ["leak-guard", "--pre-push", _remote, url] => leak_guard::pre_push(url),
         ["spdx"] => spdx::check(),
+        ["schema-gen"] => schema::generate(),
+        ["schema-check"] => schema::check(),
         ["layers"] => layers::check(),
         _ => Err(USAGE.to_string()),
     };
@@ -59,6 +65,7 @@ fn setup() -> Result {
     for (tool, version) in [
         ("cargo-nextest", NEXTEST_VERSION),
         ("cargo-deny", DENY_VERSION),
+        ("cargo-insta", INSTA_VERSION),
     ] {
         let subcommand = tool.trim_start_matches("cargo-");
         let installed = output("cargo", &[subcommand, "--version"]).unwrap_or_default();
