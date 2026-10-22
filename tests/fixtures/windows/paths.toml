@@ -1,0 +1,202 @@
+# Paths that behave differently on Windows, as data. Many of them can't be committed
+# as real files: a `CON` file breaks a Windows checkout, case-only collisions can't
+# both exist on a case-insensitive disk, and `.gitattributes` turns CRLF into LF.
+#
+# `valid`: `RepoPath::parse` accepts it on every OS. It mirrors git's own tree checks
+# (core.protectNTFS and core.protectHFS are on by default on all platforms since git
+# 2.24): no escape from the repo and no `.git`, under any alias.
+# `windows_safe`: also safe to open on Windows (`RepoPath::windows_problem` is None).
+# A valid but Windows-unsafe path is a real file in a Linux repo; on Windows, Gitcko
+# refuses to touch it on disk instead of opening the wrong thing.
+
+[[case]]
+path = "src/main.rs"
+valid = true
+windows_safe = true
+why = "ordinary path"
+
+[[case]]
+path = "a/b/c/d/e/f.txt"
+valid = true
+windows_safe = true
+why = "deep path"
+
+[[case]]
+path = "docs/über notes (v2).md"
+valid = true
+windows_safe = true
+why = "spaces, parentheses and non-ASCII are fine everywhere"
+
+[[case]]
+path = ""
+valid = false
+windows_safe = false
+why = "empty"
+
+[[case]]
+path = "/etc/passwd"
+valid = false
+windows_safe = false
+why = "absolute"
+
+[[case]]
+path = "../outside"
+valid = false
+windows_safe = false
+why = "parent escape"
+
+[[case]]
+path = "a/../../outside"
+valid = false
+windows_safe = false
+why = "parent escape in the middle"
+
+[[case]]
+path = "a/./b"
+valid = false
+windows_safe = false
+why = "dot component: not a canonical tree path"
+
+[[case]]
+path = "a//b"
+valid = false
+windows_safe = false
+why = "empty component"
+
+[[case]]
+path = "a/"
+valid = false
+windows_safe = false
+why = "trailing slash"
+
+[[case]]
+path = "//server/share/file"
+valid = false
+windows_safe = false
+why = "UNC with forward slashes starts with an empty component"
+
+[[case]]
+path = "a\u0000b"
+valid = false
+windows_safe = false
+why = "NUL byte"
+
+[[case]]
+path = "a\nb"
+valid = false
+windows_safe = false
+why = "control character: breaks line-based output and terminals"
+
+[[case]]
+path = ".git/config"
+valid = false
+windows_safe = false
+why = "the repository's own metadata"
+
+[[case]]
+path = "sub/.GIT/hooks/pre-commit"
+valid = false
+windows_safe = false
+why = ".git in any case"
+
+[[case]]
+path = "GIT~1/config"
+valid = false
+windows_safe = false
+why = "NTFS 8.3 short name for .git"
+
+[[case]]
+path = ".git::$INDEX_ALLOCATION/config"
+valid = false
+windows_safe = false
+why = "NTFS alternate data stream naming .git"
+
+[[case]]
+path = ".git./config"
+valid = false
+windows_safe = false
+why = "NTFS drops a trailing dot, so this is .git"
+
+[[case]]
+path = "a\\b.txt"
+valid = true
+windows_safe = false
+why = "backslash is a file name character on Linux and a separator on Windows"
+
+[[case]]
+path = "..\\..\\outside"
+valid = true
+windows_safe = false
+why = "one odd name on Linux; a parent escape if Windows read it"
+
+[[case]]
+path = "C:/Windows/win.ini"
+valid = true
+windows_safe = false
+why = "drive letter: `C:` is a legal folder name on Linux"
+
+[[case]]
+path = "c:relative.txt"
+valid = true
+windows_safe = false
+why = "drive-relative path on Windows"
+
+[[case]]
+path = "\\\\server\\share\\file"
+valid = true
+windows_safe = false
+why = "UNC with backslashes"
+
+[[case]]
+path = "CON"
+valid = true
+windows_safe = false
+why = "console device: opening it on Windows blocks on input"
+
+[[case]]
+path = "logs/nul.txt"
+valid = true
+windows_safe = false
+why = "device names are reserved even with an extension"
+
+[[case]]
+path = "com1"
+valid = true
+windows_safe = false
+why = "reserved in any case"
+
+[[case]]
+path = "notes."
+valid = true
+windows_safe = false
+why = "Windows drops a trailing dot, so this would open `notes`"
+
+[[case]]
+path = "notes "
+valid = true
+windows_safe = false
+why = "Windows drops a trailing space"
+
+[[case]]
+path = "what?.txt"
+valid = true
+windows_safe = false
+why = "character Windows forbids in names"
+
+[[case]]
+path = "file:stream"
+valid = true
+windows_safe = false
+why = "colon names an alternate data stream on NTFS"
+
+[[case]]
+path = "console.log"
+valid = true
+windows_safe = true
+why = "starts like CON but isn't a device name"
+
+[[case]]
+path = "long/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.txt"
+valid = true
+windows_safe = true
+why = "over 260 characters: valid, and readable on Windows with long-path support"
