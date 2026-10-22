@@ -90,7 +90,7 @@ fn ordinary_text_is_left_alone() {
 proptest! {
     #[test]
     fn canary_never_survives_anywhere_in_text(
-        which in 0..8usize,
+        which in 0..canaries().len(),
         before in "[ -~\n]{0,40}",
         after in "[ -~\n]{0,40}",
     ) {
@@ -109,4 +109,35 @@ fn canary_url_keeps_host_but_drops_credentials() {
         out,
         "connect postgres://<secret>@db.example.invalid:5432/app"
     );
+}
+
+#[test]
+fn canary_overlapping_secrets_leave_no_piece_behind() {
+    // Replacing one secret at a time would cut the second one in half and leak its tail.
+    let redactor = Redactor::new().secret("abcd1234XYZ").secret("XYZ5678efgh");
+    assert_eq!(redactor.redact("k=abcd1234XYZ5678efgh!"), "k=<secret>!");
+}
+
+#[test]
+fn canary_truncated_private_key_is_still_redacted() {
+    // An error message or a cut-off log line can hold a key with no END line.
+    let out = Redactor::new()
+        .redact("bad key: -----BEGIN PRIVATE KEY-----\nMIICanaryCanaryCanaryQQQQ\nMIIC");
+    assert_eq!(out, "bad key: <secret>");
+}
+
+#[test]
+fn canary_url_userinfo_of_any_shape_is_dropped() {
+    for (text, want) in [
+        (
+            "https://CanaryTok3nOnly1234@git.example.invalid/r.git",
+            "https://<secret>@git.example.invalid/r.git",
+        ),
+        (
+            "mysql://app:Can@ry/Pass@db.example.invalid/app",
+            "mysql://<secret>@db.example.invalid/app",
+        ),
+    ] {
+        assert_eq!(Redactor::new().redact(text), want);
+    }
 }

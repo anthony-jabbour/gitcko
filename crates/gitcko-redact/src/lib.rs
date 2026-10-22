@@ -49,6 +49,47 @@ impl Redactor {
             .with(shown, placeholder)
     }
 
+    /// Every occurrence of every registered value is found in the original text first
+    /// and overlapping matches are merged, then all are replaced in one pass. Replacing
+    /// one value at a time would cut an overlapping second secret in half and leak its
+    /// tail.
+    fn redact_known<'a>(&self, text: &'a str) -> Cow<'a, str> {
+        let mut matches: Vec<(usize, usize, &str)> = Vec::new();
+        for (value, replacement) in &self.values {
+            let mut from = 0;
+            while let Some(offset) = text[from..].find(value.as_str()) {
+                let start = from + offset;
+                matches.push((start, start + value.len(), replacement));
+                // Step one character, not one match, so overlapping repeats are found.
+                from = start + value.chars().next().map_or(1, char::len_utf8);
+            }
+        }
+        if matches.is_empty() {
+            return Cow::Borrowed(text);
+        }
+        matches.sort_by_key(|&(start, _, _)| start);
+        let mut out = String::with_capacity(text.len());
+        let mut copied = 0;
+        let mut i = 0;
+        while i < matches.len() {
+            let (start, mut end, mut replacement) = matches[i];
+            i += 1;
+            while i < matches.len() && matches[i].0 < end {
+                end = end.max(matches[i].1);
+                // A span that includes any secret is shown as a secret.
+                if matches[i].2 == SECRET {
+                    replacement = SECRET;
+                }
+                i += 1;
+            }
+            out.push_str(&text[copied..start]);
+            out.push_str(replacement);
+            copied = end;
+        }
+        out.push_str(&text[copied..]);
+        Cow::Owned(out)
+    }
+
     fn with(mut self, value: String, replacement: String) -> Redactor {
         if !value.is_empty() && !self.values.iter().any(|(v, _)| *v == value) {
             self.values.push((value, replacement));
@@ -58,12 +99,7 @@ impl Redactor {
     }
 
     pub fn redact<'a>(&self, text: &'a str) -> Cow<'a, str> {
-        let mut out = Cow::Borrowed(text);
-        for (value, replacement) in &self.values {
-            if out.contains(value.as_str()) {
-                out = Cow::Owned(out.replace(value.as_str(), replacement));
-            }
-        }
+        let mut out = self.redact_known(text);
         for (shape, replacement) in SHAPES.iter() {
             if shape.is_match(&out) {
                 out = Cow::Owned(shape.replace_all(&out, *replacement).into_owned());
@@ -77,9 +113,10 @@ impl Redactor {
 /// and specific: a pattern that also matches ordinary text would hide real output.
 static SHAPES: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
     [
-        // PEM private keys, whole block.
+        // PEM private keys: the whole block, or everything base64 after BEGIN when the
+        // END line is missing (a cut-off log line or error message).
         (
-            r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----",
+            r"-----BEGIN [A-Z ]*PRIVATE KEY-----(?:[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----|[A-Za-z0-9+/=\s]*)",
             SECRET,
         ),
         // GitHub tokens: classic (ghp_, gho_, ghu_, ghs_, ghr_) and fine-grained.
@@ -93,10 +130,12 @@ static SHAPES: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
         (r"xox[abposr]-[A-Za-z0-9-]{10,}", SECRET),
         // `Authorization: Bearer …` and similar.
         (r"(?i)(bearer\s+)[A-Za-z0-9._~+/=-]{16,}", "${1}<secret>"),
-        // Credentials inside a URL: keep scheme and host, drop `user:password@`. No word
-        // boundaries anywhere: glued to other text, a secret must still go.
+        // Credentials inside a URL: keep the scheme and host, drop everything up to the
+        // last `@`, so a token without a password, or a password holding `/` or `@`,
+        // goes too. This may also hide an `@` later in the path; hiding too much is the
+        // safe side. No word boundaries: glued to other text, a secret must still go.
         (
-            r"(?i)([a-z][a-z0-9+.-]*://)[^/\s:@]+:[^/\s@]+@",
+            r"(?i)([a-z][a-z0-9+.-]*://)\S*@",
             "${1}<secret>@",
         ),
     ]
