@@ -3,6 +3,7 @@
 //! `cargo xtask`: Gitcko's dev tasks, as plain Rust instead of shell scripts
 //! (the pattern from https://github.com/matklad/cargo-xtask).
 
+mod canaries;
 mod layers;
 mod leak_guard;
 mod schema;
@@ -23,6 +24,7 @@ usage: cargo xtask <task>
   leak-guard [--range A..B]    scan commits for secrets and private content
   leak-guard --self-test       prove the leak guard blocks what it should
   spdx                         check every .rs file's licence header
+  canaries                     run the redaction canary tests in every crate
   schema-gen                   write integrations/schemas/ from gitcko-protocol
   schema-check                 fail if integrations/schemas/ differs from the types
   layers                       check crates only depend on their own or lower layers";
@@ -47,6 +49,7 @@ fn main() -> ExitCode {
         // git also passes the remote name ($1); only the URL matters.
         ["leak-guard", "--pre-push", _remote, url] => leak_guard::pre_push(url),
         ["spdx"] => spdx::check(),
+        ["canaries"] => canaries::check(),
         ["schema-gen"] => schema::generate(),
         ["schema-check"] => schema::check(),
         ["layers"] => layers::check(),
