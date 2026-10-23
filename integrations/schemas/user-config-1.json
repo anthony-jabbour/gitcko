@@ -53,6 +53,7 @@
   "additionalProperties": false,
   "$defs": {
     "Layout": {
+      "description": "`comments` lists findings like review comments; `diff` shows them inline in the\ndiff.",
       "type": "string",
       "enum": [
         "comments",
@@ -60,6 +61,7 @@
       ]
     },
     "OutputFormat": {
+      "description": "`auto` shows the interactive view on a terminal and plain text when piped\n(CLI_SPEC); `json` is always asked for explicitly, so its shape is a promise.",
       "type": "string",
       "enum": [
         "auto",
@@ -68,6 +70,7 @@
       ]
     },
     "UserReview": {
+      "description": "How `gitcko review` prints results on this machine. User settings only change\noutput, never what the review finds.",
       "type": "object",
       "properties": {
         "context": {

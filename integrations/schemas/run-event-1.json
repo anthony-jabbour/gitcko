@@ -271,6 +271,7 @@
   ],
   "$defs": {
     "BreakerState": {
+      "description": "A circuit breaker for one model binding: `open` stops calls to a failing provider\nso a run fails fast or falls back instead of waiting on timeouts; `half_open` lets\none trial call through to see whether it has recovered.",
       "type": "string",
       "enum": [
         "closed",
@@ -279,6 +280,7 @@
       ]
     },
     "BudgetLimit": {
+      "description": "Which of the run's budgets (MODEL_ROUTING §6) a warning or stop is about.",
       "type": "string",
       "enum": [
         "tokens",
@@ -287,6 +289,7 @@
       ]
     },
     "PublishTarget": {
+      "description": "Where a result was posted on the code host: the summary, inline comments or the\ncheck run.",
       "type": "string",
       "enum": [
         "summary",
@@ -295,6 +298,7 @@
       ]
     },
     "RunLifecycle": {
+      "description": "The stage a run is in, as shown to the user while it works. The last five are\nterminal: a run ends in exactly one of them.",
       "type": "string",
       "enum": [
         "queued",

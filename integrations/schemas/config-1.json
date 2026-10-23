@@ -281,6 +281,7 @@
       "additionalProperties": false
     },
     "AutoApproveFilters": {
+      "description": "Paths and authors that auto-approve never applies to, however clean the review\n(CONFIGURATION §5.4). Merged strictest-wins across configs, so a PR touching an\nexcluded path is never auto-approved.",
       "type": "object",
       "properties": {
         "exclude_authors": {
@@ -323,6 +324,7 @@
       ]
     },
     "CommentType": {
+      "description": "What kind of problem a finding is (REVIEW_RULES §3). Repos choose which kinds they\nwant with `comment_types`, so this is a filter, not a severity.",
       "type": "string",
       "enum": [
         "logic",
@@ -331,6 +333,7 @@
       ]
     },
     "Context": {
+      "description": "Background the reviewer reads besides the diff (CONFIGURATION §5.6). Context files\nfrom every folder level are combined, not replaced.",
       "type": "object",
       "properties": {
         "files": {
@@ -386,6 +389,7 @@
       ]
     },
     "RiskLevel": {
+      "description": "What the change could break, judged from what the code does, not its path. Kept\napart from the score because auto-approve needs both a 5 and a low enough risk\n(SCORING §7). Ordered, so `risk <= ceiling` is a plain comparison.",
       "type": "string",
       "enum": [
         "low",
@@ -518,6 +522,7 @@
       "additionalProperties": false
     },
     "SummarySection": {
+      "description": "Display settings for one section of the PR summary. Every field is optional, so a\nnested config can change one setting and keep the rest (merged field by field).",
       "type": "object",
       "properties": {
         "collapsible": {

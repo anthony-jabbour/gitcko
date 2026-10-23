@@ -20,6 +20,8 @@ pub enum Band {
 const HIGH: f64 = 0.85;
 const MEDIUM: f64 = 0.70;
 
+/// A confidence outside 0..=1 or not finite. Refused at the boundary so a bad model
+/// value can't sort or band findings wrongly later.
 #[derive(Debug, Clone, Copy, PartialEq, thiserror::Error)]
 #[error("confidence must be a finite number from 0 to 1, got {0}")]
 pub struct ConfidenceError(pub f64);
@@ -37,10 +39,13 @@ impl TryFrom<f64> for Confidence {
 }
 
 impl Confidence {
+    /// The exact number, unrounded: bands and thresholds compare against this.
     pub fn value(self) -> f64 {
         self.0
     }
 
+    /// High from 0.85, Medium from 0.70, else Low (REVIEW_ENGINE §15). Derived on demand,
+    /// never stored, so the number and its band can't disagree.
     pub fn band(self) -> Band {
         if self.0 >= HIGH {
             Band::High

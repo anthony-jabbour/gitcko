@@ -209,6 +209,8 @@ pub struct Resolved {
 }
 
 impl Resolved {
+    /// One value and its sources, by dotted key. This is what `gitcko config` prints,
+    /// so a user can see why a setting has the value it has.
     pub fn get(&self, key: &str) -> Option<&Entry> {
         self.entries.get(key)
     }

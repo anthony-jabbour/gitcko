@@ -39,6 +39,8 @@ pub struct FileDiff {
     pub hunks: Vec<Hunk>,
 }
 
+/// What happened to a file. Renames and copies keep both paths, so findings on
+/// either side can be mapped to the right file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Change {
     Added,
@@ -77,6 +79,7 @@ pub struct Hunk {
     pub lines: Vec<Line>,
 }
 
+/// One line of a hunk, kept byte-exact so rendering it back gives the same diff.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Line {
     pub kind: LineKind,
@@ -86,6 +89,7 @@ pub struct Line {
     pub missing_newline: bool,
 }
 
+/// Context lines exist on both sides, so they anchor old-to-new line mapping.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LineKind {
     Context,

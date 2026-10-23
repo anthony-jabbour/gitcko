@@ -157,6 +157,7 @@
   ],
   "$defs": {
     "BreakerState": {
+      "description": "A circuit breaker for one model binding: `open` stops calls to a failing provider\nso a run fails fast or falls back instead of waiting on timeouts; `half_open` lets\none trial call through to see whether it has recovered.",
       "type": "string",
       "enum": [
         "closed",
@@ -165,6 +166,7 @@
       ]
     },
     "BudgetLimit": {
+      "description": "Which of the run's budgets (MODEL_ROUTING §6) a warning or stop is about.",
       "type": "string",
       "enum": [
         "tokens",
@@ -173,6 +175,7 @@
       ]
     },
     "CalibrationStatus": {
+      "description": "Whether `confidence` comes from a measured calibration for this model route and\nprompt. `uncalibrated` means it is the model's own assessment, not a measured\nprobability, and must not be read as one (REVIEW_ENGINE §15).",
       "type": "string",
       "enum": [
         "calibrated",
@@ -196,6 +199,7 @@
       ]
     },
     "CommentType": {
+      "description": "What kind of problem a finding is (REVIEW_RULES §3). Repos choose which kinds they\nwant with `comment_types`, so this is a filter, not a severity.",
       "type": "string",
       "enum": [
         "logic",
@@ -204,6 +208,7 @@
       ]
     },
     "Coverage": {
+      "description": "How much of the change the review actually looked at, so \"no findings\" is never\nmistaken for \"everything was checked\".",
       "type": "object",
       "properties": {
         "changed_files": {
@@ -266,6 +271,7 @@
       ]
     },
     "EvidenceKind": {
+      "description": "Where a piece of evidence comes from: the code itself, a configured rule, the code\ngraph, or a test.",
       "type": "string",
       "enum": [
         "source",
@@ -275,6 +281,7 @@
       ]
     },
     "FileSummary": {
+      "description": "One line per changed file for the summary's file table.",
       "type": "object",
       "properties": {
         "path": {
@@ -431,6 +438,7 @@
       ]
     },
     "FixSchemaVersion": {
+      "description": "Version tag of the fix package format, so readers can reject one they don't know.",
       "type": "string",
       "enum": [
         "gitcko.fix/1"
@@ -495,6 +503,7 @@
       ]
     },
     "OutsideDiff": {
+      "description": "For a finding on a line the PR didn't change: the changed line it traces back to.\nA finding must always be anchored to the change (REVIEW_RULES §9).",
       "type": "object",
       "properties": {
         "linked_line": {
@@ -512,6 +521,7 @@
       ]
     },
     "PublishTarget": {
+      "description": "Where a result was posted on the code host: the summary, inline comments or the\ncheck run.",
       "type": "string",
       "enum": [
         "summary",
@@ -569,6 +579,7 @@
       ]
     },
     "ReviewStatus": {
+      "description": "How the run ended. Anything but `complete` means the result is not a full review,\nso `score` is null and the reason is in `score_availability_reason` (SCORING §8).\n`superseded`: a newer head of the same PR replaced this run.",
       "type": "string",
       "enum": [
         "complete",
@@ -599,6 +610,7 @@
       ]
     },
     "RiskLevel": {
+      "description": "What the change could break, judged from what the code does, not its path. Kept\napart from the score because auto-approve needs both a 5 and a low enough risk\n(SCORING §7). Ordered, so `risk <= ceiling` is a plain comparison.",
       "type": "string",
       "enum": [
         "low",
@@ -885,6 +897,7 @@
       ]
     },
     "RunLifecycle": {
+      "description": "The stage a run is in, as shown to the user while it works. The last five are\nterminal: a run ends in exactly one of them.",
       "type": "string",
       "enum": [
         "queued",
@@ -899,6 +912,7 @@
       ]
     },
     "ScoreAdjustment": {
+      "description": "One reason the scorer moved within the ceiling and low bound, tied to evidence so\nthe move can be audited (SCORING §5).",
       "type": "object",
       "properties": {
         "code": {
@@ -915,6 +929,7 @@
       ]
     },
     "ScoreAvailabilityReason": {
+      "description": "Why `score` is null. An incomplete review never gets a number, so it can never\nlook like a 5 (SCORING §4, §8). `gate_closed`: scoring is off until evals pass.",
       "type": "string",
       "enum": [
         "gate_closed",
@@ -926,6 +941,7 @@
       ]
     },
     "ScoreDetails": {
+      "description": "How the score was reached, so a reader can check it instead of trusting a bare\nnumber: the deterministic ceiling and low bound, and what the scorer did inside them\n(SCORING §8).",
       "type": "object",
       "properties": {
         "adjustments": {
@@ -1015,6 +1031,7 @@
       ]
     },
     "SeverityCounts": {
+      "description": "Findings per severity that counted toward the score. Serialized as `P0`/`P1`/`P2`\nto match how severities are written everywhere else.",
       "type": "object",
       "properties": {
         "P0": {
@@ -1085,6 +1102,7 @@
       ]
     },
     "Usage": {
+      "description": "What the run cost in model calls and tokens, for budgets and the user's own\naccounting.",
       "type": "object",
       "properties": {
         "cost_usd": {
@@ -1129,6 +1147,7 @@
       ]
     },
     "Versions": {
+      "description": "Versions of everything that shaped the result, so two reviews can be compared and\na change in output traced to a change in engine, policy, routing or index.",
       "type": "object",
       "properties": {
         "engine": {
