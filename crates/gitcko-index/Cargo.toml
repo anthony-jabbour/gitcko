@@ -1,0 +1,23 @@
+[package]
+name = "gitcko-index"
+version = "0.0.0"
+description = "Gitcko's repository index: safe discovery, symbols, graph, chunks and lexical search for one commit, built without running repository code"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
+gitcko-syntax = { path = "../gitcko-syntax", version = "0.0.0" }
+thiserror.workspace = true
+
+[dev-dependencies]
+gitcko-redact = { path = "../gitcko-redact" }
+gitcko-test-support = { path = "../gitcko-test-support" }
+insta.workspace = true
+
+[lints]
+workspace = true

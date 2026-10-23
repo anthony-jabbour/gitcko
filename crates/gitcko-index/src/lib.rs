@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+//! Gitcko's repository index (INDEXING): everything a review needs to know about the code
+//! beyond the diff, built from one immutable commit.
+//!
+//! It never executes anything from the repository (IX-031, ADR-9): files are read as git
+//! objects through `gitcko-git`, never from a checkout, and parsed by Tree-sitter.
+//! Every result says how complete it is ([`gitcko_domain::Coverage`]), so a gap in the
+//! index can't be mistaken for an absence in the code.
+
+mod discover;
+mod limits;
+
+pub use discover::{Disposition, IndexError, Manifest, ManifestEntry, discover};
+pub use limits::IndexLimits;

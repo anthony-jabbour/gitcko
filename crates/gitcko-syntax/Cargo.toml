@@ -1,0 +1,15 @@
+[package]
+name = "gitcko-syntax"
+version = "0.0.0"
+description = "What each file is (language, role, binary, generated, vendored) and, for supported languages, its syntax: Tree-sitter parsing that never runs repository code"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+serde.workspace = true
+
+[lints]
+workspace = true
