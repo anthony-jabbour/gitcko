@@ -76,6 +76,9 @@ pub struct AutoApprove {
     pub filters: Option<AutoApproveFilters>,
 }
 
+/// Paths and authors that auto-approve never applies to, however clean the review
+/// (CONFIGURATION §5.4). Merged strictest-wins across configs, so a PR touching an
+/// excluded path is never auto-approved.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct AutoApproveFilters {
@@ -100,6 +103,8 @@ pub struct Rule {
     pub enabled: Option<bool>,
 }
 
+/// Background the reviewer reads besides the diff (CONFIGURATION §5.6). Context files
+/// from every folder level are combined, not replaced.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Context {
@@ -130,6 +135,8 @@ pub struct Summary {
     pub security: Option<SummarySection>,
 }
 
+/// Display settings for one section of the PR summary. Every field is optional, so a
+/// nested config can change one setting and keep the rest (merged field by field).
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SummarySection {
@@ -155,6 +162,8 @@ pub struct UserConfig {
     pub models: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
+/// How `gitcko review` prints results on this machine. User settings only change
+/// output, never what the review finds.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct UserReview {
@@ -167,6 +176,8 @@ pub struct UserReview {
     pub width: Option<u16>,
 }
 
+/// `auto` shows the interactive view on a terminal and plain text when piped
+/// (CLI_SPEC); `json` is always asked for explicitly, so its shape is a promise.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum OutputFormat {
@@ -175,6 +186,8 @@ pub enum OutputFormat {
     Json,
 }
 
+/// `comments` lists findings like review comments; `diff` shows them inline in the
+/// diff.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Layout {

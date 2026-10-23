@@ -29,6 +29,8 @@ pub struct PathError {
     pub problem: PathProblem,
 }
 
+/// Which rule a path broke, so callers can show the problem without echoing an
+/// untrusted path.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
 pub enum PathProblem {
     #[error("it is empty")]
@@ -53,6 +55,8 @@ const EVERY_OS: Options = Options {
 };
 
 impl RepoPath {
+    /// The only way to make a `RepoPath`: every path from a tree, diff, config or model
+    /// passes these checks once, on the way in.
     pub fn parse(path: &str) -> Result<RepoPath, PathError> {
         let fail = |problem| {
             Err(PathError {
@@ -84,6 +88,7 @@ impl RepoPath {
         Ok(RepoPath(path.to_string()))
     }
 
+    /// The path as git writes it: `/`-separated, relative to the repository root.
     pub fn as_str(&self) -> &str {
         &self.0
     }

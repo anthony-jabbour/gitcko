@@ -5,6 +5,8 @@
 use std::fmt;
 use std::str::FromStr;
 
+/// An id that doesn't match its documented format, e.g. a review id typed wrong on
+/// the command line.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 #[error("invalid {kind} id {value:?}: expected {expected}")]
 pub struct IdError {
@@ -25,6 +27,8 @@ pub struct ReviewId(u128);
 const CROCKFORD: &[u8; 32] = b"0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
 impl ReviewId {
+    /// A fresh id. UUIDv7 puts the time first, so ids sort by creation time, like a
+    /// ULID.
     #[allow(clippy::new_without_default)] // a default would hide that each call is new
     pub fn new() -> ReviewId {
         ReviewId(uuid::Uuid::now_v7().as_u128())
@@ -76,12 +80,15 @@ pub struct FindingId(u64);
 pub struct QuestionId(u64);
 
 impl FindingId {
+    /// The same issue always gets the same fingerprint (REVIEW_ENGINE §16), so its id
+    /// stays stable across reviews of the same PR and lifecycle can be tracked.
     pub fn from_fingerprint(fingerprint: u64) -> FindingId {
         FindingId(fingerprint)
     }
 }
 
 impl QuestionId {
+    /// Stable across reviews for the same reason as [`FindingId::from_fingerprint`].
     pub fn from_fingerprint(fingerprint: u64) -> QuestionId {
         QuestionId(fingerprint)
     }

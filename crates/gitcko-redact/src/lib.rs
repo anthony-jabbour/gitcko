@@ -36,6 +36,8 @@ impl std::fmt::Debug for Redactor {
 }
 
 impl Redactor {
+    /// A redactor that removes credential-shaped text only. Register known secrets and
+    /// local paths with [`Redactor::secret`] and [`Redactor::path`].
     pub fn new() -> Redactor {
         Redactor::default()
     }

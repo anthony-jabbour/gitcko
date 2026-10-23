@@ -46,6 +46,7 @@ pub enum GitError {
     NonUtf8Path,
 }
 
+/// Every gitcko-git call returns [`GitError`], so callers handle one error type.
 pub type Result<T, E = GitError> = std::result::Result<T, E>;
 
 /// A commit id (the full hex hash).
@@ -66,6 +67,8 @@ pub struct Blob {
     pub symlink: bool,
 }
 
+/// A repository opened for reading. Nothing here writes to it, so a review can run in
+/// the same checkout the user is working in.
 pub struct Repo {
     repo: gix::Repository,
     /// The working tree, canonical, when there is one.
@@ -83,6 +86,9 @@ fn object_error(id: impl std::fmt::Display, _err: impl std::fmt::Display) -> Git
 }
 
 impl Repo {
+    /// Opens the repository at `path` with gix's isolated options: only the
+    /// repository's own `.git/config` is read, never the user's or the system's, so
+    /// another machine's git settings can't change what a review sees.
     pub fn open(path: &Path) -> Result<Repo> {
         let repo =
             gix::open_opts(path, gix::open::Options::isolated()).map_err(|_| GitError::Open)?;

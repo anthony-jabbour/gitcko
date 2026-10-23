@@ -59,6 +59,9 @@ pub struct Review {
     pub events: Option<Vec<RunEvent>>,
 }
 
+/// How the run ended. Anything but `complete` means the result is not a full review,
+/// so `score` is null and the reason is in `score_availability_reason` (SCORING §8).
+/// `superseded`: a newer head of the same PR replaced this run.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ReviewStatus {
@@ -89,6 +92,9 @@ pub struct Target {
     pub local_changes: bool,
 }
 
+/// How the score was reached, so a reader can check it instead of trusting a bare
+/// number: the deterministic ceiling and low bound, and what the scorer did inside them
+/// (SCORING §8).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ScoreDetails {
     /// Versioned scoring policy, e.g. `gitcko-score@1`.
@@ -121,6 +127,8 @@ pub enum ScoreSource {
     Ceiling,
 }
 
+/// One reason the scorer moved within the ceiling and low bound, tied to evidence so
+/// the move can be audited (SCORING §5).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ScoreAdjustment {
     pub code: String,
@@ -128,6 +136,8 @@ pub struct ScoreAdjustment {
     pub evidence: String,
 }
 
+/// Findings per severity that counted toward the score. Serialized as `P0`/`P1`/`P2`
+/// to match how severities are written everywhere else.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct SeverityCounts {
     #[serde(rename = "P0")]
@@ -138,6 +148,8 @@ pub struct SeverityCounts {
     pub p2: u32,
 }
 
+/// Why `score` is null. An incomplete review never gets a number, so it can never
+/// look like a 5 (SCORING §4, §8). `gate_closed`: scoring is off until evals pass.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ScoreAvailabilityReason {
@@ -157,6 +169,9 @@ pub struct RiskAssessment {
     pub reason: String,
 }
 
+/// What the change could break, judged from what the code does, not its path. Kept
+/// apart from the score because auto-approve needs both a 5 and a low enough risk
+/// (SCORING §7). Ordered, so `risk <= ceiling` is a plain comparison.
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
@@ -183,6 +198,7 @@ pub struct ClearedRisk {
     pub description: String,
 }
 
+/// One line per changed file for the summary's file table.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct FileSummary {
     pub path: String,
@@ -247,6 +263,8 @@ pub enum Severity {
     P2,
 }
 
+/// What kind of problem a finding is (REVIEW_RULES §3). Repos choose which kinds they
+/// want with `comment_types`, so this is a filter, not a severity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CommentType {
@@ -255,6 +273,9 @@ pub enum CommentType {
     Style,
 }
 
+/// Whether `confidence` comes from a measured calibration for this model route and
+/// prompt. `uncalibrated` means it is the model's own assessment, not a measured
+/// probability, and must not be read as one (REVIEW_ENGINE §15).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum CalibrationStatus {
@@ -273,6 +294,8 @@ pub struct Evidence {
     pub end_line: u32,
 }
 
+/// Where a piece of evidence comes from: the code itself, a configured rule, the code
+/// graph, or a test.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum EvidenceKind {
@@ -310,6 +333,8 @@ pub struct LineRange {
     pub lines: u32,
 }
 
+/// For a finding on a line the PR didn't change: the changed line it traces back to.
+/// A finding must always be anchored to the change (REVIEW_RULES §9).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct OutsideDiff {
     pub linked_path: String,
@@ -334,6 +359,7 @@ pub struct FixPackage {
     pub schema_version: FixSchemaVersion,
 }
 
+/// Version tag of the fix package format, so readers can reject one they don't know.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub enum FixSchemaVersion {
     #[serde(rename = "gitcko.fix/1")]
@@ -356,6 +382,8 @@ pub struct Question {
     pub why: String,
 }
 
+/// How much of the change the review actually looked at, so "no findings" is never
+/// mistaken for "everything was checked".
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct Coverage {
     pub changed_files: u32,
@@ -366,6 +394,8 @@ pub struct Coverage {
     pub skipped_binary: Vec<String>,
 }
 
+/// Versions of everything that shaped the result, so two reviews can be compared and
+/// a change in output traced to a change in engine, policy, routing or index.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct Versions {
     pub engine: String,
@@ -374,6 +404,8 @@ pub struct Versions {
     pub index: String,
 }
 
+/// What the run cost in model calls and tokens, for budgets and the user's own
+/// accounting.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct Usage {
     pub model_calls: u32,

@@ -26,6 +26,8 @@ pub struct RunEvent {
     pub kind: RunEventKind,
 }
 
+/// What happened, tagged by `type` on the wire (OBSERVABILITY §4). Readers keep types
+/// they don't know as `Unknown`, so adding an event type later breaks no one.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type")]
 pub enum RunEventKind {
@@ -92,6 +94,8 @@ pub enum RunEventKind {
     Unknown,
 }
 
+/// The stage a run is in, as shown to the user while it works. The last five are
+/// terminal: a run ends in exactly one of them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RunLifecycle {
@@ -106,6 +110,9 @@ pub enum RunLifecycle {
     Skipped,
 }
 
+/// A circuit breaker for one model binding: `open` stops calls to a failing provider
+/// so a run fails fast or falls back instead of waiting on timeouts; `half_open` lets
+/// one trial call through to see whether it has recovered.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum BreakerState {
@@ -114,6 +121,7 @@ pub enum BreakerState {
     HalfOpen,
 }
 
+/// Which of the run's budgets (MODEL_ROUTING §6) a warning or stop is about.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum BudgetLimit {
@@ -122,6 +130,8 @@ pub enum BudgetLimit {
     WallClock,
 }
 
+/// Where a result was posted on the code host: the summary, inline comments or the
+/// check run.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum PublishTarget {

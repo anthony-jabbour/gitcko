@@ -42,6 +42,9 @@ impl TempDir {
         TempDir { _root: root, path }
     }
 
+    /// The directory as created, not canonicalized. On macOS it sits under `/var`, a
+    /// link to `/private/var`, so canonicalize it before comparing it with a path that
+    /// was.
     pub fn path(&self) -> &Path {
         &self.path
     }
