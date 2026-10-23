@@ -1,0 +1,21 @@
+[package]
+name = "gitcko-search"
+version = "0.0.0"
+description = "Gitcko's local lexical search: a Tantivy index over code, with code-aware tokens, and no database or daemon"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+regex.workspace = true
+tantivy.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+gitcko-redact = { path = "../gitcko-redact" }
+gitcko-test-support = { path = "../gitcko-test-support" }
+tantivy.workspace = true
+
+[lints]
+workspace = true
