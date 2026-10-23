@@ -15,6 +15,7 @@ libfuzzer-sys = "0.4.13"
 gitcko-config = { path = "../crates/gitcko-config" }
 gitcko-diff = { path = "../crates/gitcko-diff" }
 gitcko-domain = { path = "../crates/gitcko-domain" }
+gitcko-syntax = { path = "../crates/gitcko-syntax" }
 
 # Its own workspace, so the main one doesn't try to build it on stable.
 [workspace]
@@ -29,6 +30,13 @@ bench = false
 [[bin]]
 name = "config_load"
 path = "fuzz_targets/config_load.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "syntax_extract"
+path = "fuzz_targets/syntax_extract.rs"
 test = false
 doc = false
 bench = false

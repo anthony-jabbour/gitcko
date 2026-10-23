@@ -1,0 +1,20 @@
+---
+source: crates/gitcko-syntax/tests/rust.rs
+expression: "render(&extract(&fixture(\"tests.rs\"), &ParseLimits::default()))"
+---
+coverage: Complete
+reference_coverage: Partial { reason: Reason("macro_arguments"), omitted: None }
+sym#0 Function(function) add scope=[] Public L4-6 sig=`pub fn add(a: u32, b: u32) -> u32`
+sym#1 Test(function) top_level_test scope=[] Private test L9-11 sig=`fn top_level_test()`
+sym#2 Module(module) tests scope=[] Private test L14-30 sig=`mod tests`
+sym#3 Function(function) fixture scope=[tests] parent=#2 Private test L17-19 sig=`fn fixture() -> u32`
+sym#4 Test(function) adds scope=[tests] parent=#2 Private test L22-24 sig=`fn adds()`
+sym#5 Test(function) adds_async scope=[tests] parent=#2 Private test L27-29 sig=`async fn adds_async()`
+use super::* scope=[tests] L15
+ref MacroCall assert_eq in=#1 L10
+ref MacroArgCall add in=#1 L10
+ref MacroCall assert_eq in=#4 L23
+ref MacroArgCall add in=#4 L23
+ref MacroArgCall fixture in=#4 L23
+ref MacroCall assert in=#5 L28
+ref MacroArgCall add in=#5 L28

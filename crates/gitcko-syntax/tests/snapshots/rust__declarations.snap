@@ -1,0 +1,61 @@
+---
+source: crates/gitcko-syntax/tests/rust.rs
+expression: "render(&extract(&fixture(\"items.rs\"), &ParseLimits::default()))"
+---
+coverage: Complete
+reference_coverage: Complete
+sym#0 Function(function) public_fn scope=[] Public L4-6 sig=`pub fn public_fn(a: u32) -> u32`
+sym#1 Function(function) crate_fn scope=[] Crate L8 sig=`pub(crate) fn crate_fn()`
+sym#2 Function(function) private_fn scope=[] Private L10 sig=`fn private_fn()`
+sym#3 Struct(struct) Point scope=[] Public L12-15 sig=`pub struct Point`
+sym#4 Field(field) x scope=[Point] parent=#3 Public L13 sig=`pub x: i64`
+sym#5 Field(field) y scope=[Point] parent=#3 Private L14 sig=`y: i64`
+sym#6 Enum(enum) Shape scope=[] Public L17-20 sig=`pub enum Shape`
+sym#7 Constant(enum_variant) Circle scope=[Shape] parent=#6 Private L18 sig=`Circle`
+sym#8 Constant(enum_variant) Square scope=[Shape] parent=#6 Private L19 sig=`Square`
+sym#9 Field(field) side scope=[Shape::Square] parent=#8 Private L19 sig=`side: f64`
+sym#10 Struct(union) Bits scope=[] Private L22-25 sig=`union Bits`
+sym#11 Field(field) int scope=[Bits] parent=#10 Private L23 sig=`int: u32`
+sym#12 Field(field) float scope=[Bits] parent=#10 Private L24 sig=`float: f32`
+sym#13 Trait(trait) Area scope=[] Public L27-33 sig=`pub trait Area: Clone + std::fmt::Debug`
+sym#14 Method(function_signature) area scope=[Area] parent=#13 Private L28 sig=`fn area(&self) -> f64`
+sym#15 Method(function) describe scope=[Area] parent=#13 Private L30-32 sig=`fn describe(&self) -> String`
+sym#16 Method(function) area scope=[Point] disc=Area Private L36-38 sig=`fn area(&self) -> f64`
+sym#17 Method(function) fmt scope=[Point] disc=std::fmt::Display Private L42-44 sig=`fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result`
+sym#18 Method(function) fmt scope=[Point] disc=std::fmt::Debug Private L48-50 sig=`fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result`
+sym#19 Method(function) new scope=[Wrapper] Public L54-56 sig=`pub fn new(value: T) -> Self`
+sym#20 Constant(const) LIMIT scope=[] Public L59 sig=`pub const LIMIT: usize = 10`
+sym#21 Variable(static) COUNTER scope=[] Private L60 sig=`static mut COUNTER: u32 = 0`
+sym#22 TypeAlias(type_alias) Id scope=[] Public L61 sig=`pub type Id = u64`
+sym#23 Macro(macro_rules) square scope=[] Private L63-67 sig=`macro_rules! square`
+sym#24 Module(module) inner scope=[] Private L69-73 sig=`mod inner`
+sym#25 Function(function) nested scope=[inner] parent=#24 Public L70-72 sig=`pub fn nested()`
+sym#26 Function(function) helper scope=[inner::nested] parent=#25 Private L71 sig=`fn helper()`
+sym#27 Module(module) external scope=[] Private L75 sig=`mod external`
+sym#28 Module(module) moved scope=[] Public L78 sig=`pub mod moved`
+ref Type Clone in=#13 L27
+ref Type std::fmt::Debug in=#13 L27
+ref Type String in=#15 L30
+ref Call String::new in=#15 L31
+ref Type Area L35
+ref Type Point L35
+ref Type std::fmt::Display L41
+ref Type Point L41
+ref Type std::fmt::Formatter in=#17 L42
+ref Type std::fmt::Result in=#17 L42
+ref Call Ok in=#17 L43
+ref Type std::fmt::Debug L47
+ref Type Point L47
+ref Type std::fmt::Formatter in=#18 L48
+ref Type std::fmt::Result in=#18 L48
+ref Call Ok in=#18 L49
+ref Type Wrapper L53
+ref Call Wrapper in=#19 L55
+mod external path=None scope=[] sym=#27
+mod moved path=Some("elsewhere.rs") scope=[] sym=#28
+impl Area for Point L35-39
+impl std::fmt::Display for Point L41-45
+impl std::fmt::Debug for Point L47-51
+impl - for Wrapper L53-57
+extends #13 Clone L27
+extends #13 std::fmt::Debug L27

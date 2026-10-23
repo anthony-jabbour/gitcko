@@ -1,0 +1,16 @@
+---
+source: crates/gitcko-syntax/tests/rust.rs
+expression: "render(&extract(&fixture(\"uses.rs\"), &ParseLimits::default()))"
+---
+coverage: Complete
+reference_coverage: Complete
+use std::collections::HashMap scope=[] L4
+use crate::model::Point scope=[] L5
+use crate::model::shapes::Circle scope=[] L5
+use crate::model::shapes::Square as Sq scope=[] L5
+use super::util::* scope=[] L6
+use self::local::thing scope=[] L7
+use crate::api::Client pub scope=[] L8
+use crate::api pub scope=[] L9
+use crate::api::Server pub scope=[] L9
+use alloc as heap scope=[] L10
