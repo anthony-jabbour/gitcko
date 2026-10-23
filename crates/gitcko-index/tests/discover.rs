@@ -399,3 +399,52 @@ fn display_paths_never_collide() {
         m.entries.iter().map(|e| e.path.as_str()).collect();
     assert_eq!(paths.len(), 2, "{paths:?}");
 }
+
+#[test]
+fn only_a_broken_root_config_discards_the_repository_config() {
+    let root = b"schema_version = 1\nignore = [\"*.gen.rs\"]\n";
+    // A rules file that isn't UTF-8 has nothing to do with `ignore`.
+    let m = manifest(
+        &[
+            (b".gitcko/config.toml", "100644", root),
+            (b".gitcko/rules.md", "100644", b"\xff\xfe not text"),
+            (b"a.gen.rs", "100644", b"fn a() {}\n"),
+        ],
+        &IndexLimits::default(),
+    );
+    assert!(!m.config_invalid);
+    assert!(
+        m.entries
+            .iter()
+            .find(|e| e.path == "a.gen.rs")
+            .unwrap()
+            .ignored_by_config
+    );
+
+    // An unreadable child config leaves its folder with its parent's list.
+    let dir = empty_repo("discover-child-unreadable");
+    let commit = literal_commit(
+        dir.path(),
+        &[
+            (b".gitcko/config.toml", "100644", root),
+            (b"pkg/.gitcko/config.toml", "100644", b"ignore = []\n"),
+            (b"pkg/b.gen.rs", "100644", b"fn b() {}\n"),
+        ],
+    );
+    delete_object(dir.path(), &commit, "pkg/.gitcko/config.toml");
+    let repo = Repo::open(dir.path()).unwrap();
+    let m = discover(
+        &repo,
+        repo.resolve(&commit).unwrap(),
+        &IndexLimits::default(),
+    )
+    .unwrap();
+    assert!(!m.config_invalid);
+    assert!(
+        m.entries
+            .iter()
+            .find(|e| e.path == "pkg/b.gen.rs")
+            .unwrap()
+            .ignored_by_config
+    );
+}

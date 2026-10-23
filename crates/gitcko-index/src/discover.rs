@@ -102,7 +102,7 @@ pub fn discover(
     limits: &IndexLimits,
 ) -> Result<Manifest, IndexError> {
     let files = repo.files(commit)?;
-    let (ignore, config_invalid) = ignore_list(repo, &files, limits)?;
+    let (ignore, config_invalid) = ignore_list(repo, &files, limits);
     let mut entries = Vec::with_capacity(files.len());
     // Repository-wide limits cut a prefix of the sorted paths: once one is reached,
     // every later file is left out too, so the result doesn't depend on file order.
@@ -247,20 +247,17 @@ fn reason(code: &str) -> Reason {
     Reason::new(code).expect("reason codes in this file are valid")
 }
 
-/// The commit's `ignore` lists. A root config that can't be read (unreadable object, not
-/// UTF-8, invalid TOML) doesn't stop indexing: the default list applies, child configs
-/// are dropped with it, and the manifest says so. A child config that isn't UTF-8 is
+/// The commit's `ignore` lists, from each `.gitcko/config.toml` (`rules.md` doesn't
+/// affect them, so it isn't read). A root config that can't be used (unreadable, not
+/// UTF-8, invalid TOML) doesn't stop indexing: the defaults apply, child configs are
+/// dropped with it, and the second value says so. A child config that can't be read is
 /// skipped, so its folder inherits its parent's list, as for any broken nested config
 /// (CONFIGURATION §11).
-fn ignore_list(
-    repo: &Repo,
-    files: &[TreeEntry],
-    limits: &IndexLimits,
-) -> Result<(IgnoreRules, bool), IndexError> {
-    let mut folders: HashMap<Option<RepoPath>, FolderConfig> = HashMap::new();
+fn ignore_list(repo: &Repo, files: &[TreeEntry], limits: &IndexLimits) -> (IgnoreRules, bool) {
+    let defaults = || ignore_rules(&RepoFiles::default()).expect("the built-in defaults are valid");
+    let mut folders = Vec::new();
     let mut legacy_root_file = false;
     let (mut config_files, mut config_bytes) = (0usize, 0u64);
-    let defaults = || ignore_rules(&RepoFiles::default()).expect("the built-in defaults are valid");
     for file in files {
         if !matches!(file.kind, EntryKind::File | EntryKind::Executable) {
             continue;
@@ -271,60 +268,48 @@ fn ignore_list(
         else {
             continue;
         };
-        let text = path.as_str();
-        legacy_root_file |= text == ".gitcko.toml";
-        let (folder, is_config) = if let Some(folder) = text.strip_suffix(".gitcko/config.toml") {
-            (folder, true)
-        } else if let Some(folder) = text.strip_suffix(".gitcko/rules.md") {
-            (folder, false)
-        } else {
-            continue;
-        };
+        legacy_root_file |= path.as_str() == ".gitcko.toml";
         // `x.gitcko/config.toml` isn't a `.gitcko/` folder.
-        if !(folder.is_empty() || folder.ends_with('/')) {
+        let Some(folder) = path
+            .as_str()
+            .strip_suffix(".gitcko/config.toml")
+            .filter(|f| f.is_empty() || f.ends_with('/'))
+        else {
             continue;
-        }
-        // Checked before reading, so a repository full of `.gitcko/` folders can't make
-        // discovery read more than the budget (TM-38).
-        config_files += 1;
-        let Ok(size) = repo.blob_size(file.id) else {
-            return Ok((defaults(), true));
         };
-        config_bytes += size;
-        if config_files > limits.max_config_files || config_bytes > limits.max_config_bytes {
-            return Ok((defaults(), true));
-        }
         let folder = folder
             .strip_suffix('/')
             .map(|f| RepoPath::parse(f).expect("a prefix of a valid path is valid"));
-        let Ok(bytes) = repo.read_blob_id(file.id) else {
-            return Ok((defaults(), true));
-        };
-        let Ok(content) = String::from_utf8(bytes) else {
-            if folder.is_none() {
-                return Ok((defaults(), true));
-            }
-            continue;
-        };
-        let entry = folders.entry(folder.clone()).or_insert(FolderConfig {
-            folder,
-            config_toml: None,
-            rules_md: None,
-        });
-        if is_config {
-            entry.config_toml = Some(content);
-        } else {
-            entry.rules_md = Some(content);
+        // Counted before reading, so a repository full of `.gitcko/` folders can't make
+        // discovery read more than the budget (TM-38). Over it, no config is used: half
+        // a cascade could be looser than the whole.
+        config_files += 1;
+        let size = repo.blob_size(file.id).ok();
+        config_bytes += size.unwrap_or(0);
+        if config_files > limits.max_config_files || config_bytes > limits.max_config_bytes {
+            return (defaults(), true);
+        }
+        let content = size
+            .and_then(|_| repo.read_blob_id(file.id).ok())
+            .and_then(|bytes| String::from_utf8(bytes).ok());
+        match (content, &folder) {
+            (Some(text), _) => folders.push(FolderConfig {
+                folder,
+                config_toml: Some(text),
+                rules_md: None,
+            }),
+            (None, None) => return (defaults(), true),
+            (None, Some(_)) => {}
         }
     }
     let repo_files = RepoFiles {
-        folders: folders.into_values().collect(),
+        folders,
         legacy_root_file,
     };
-    Ok(match ignore_rules(&repo_files) {
+    match ignore_rules(&repo_files) {
         Ok(rules) => (rules, false),
         Err(_) => (defaults(), true),
-    })
+    }
 }
 
 /// The display form of a tree path (see [`ManifestEntry::path`]).
