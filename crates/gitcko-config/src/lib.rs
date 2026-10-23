@@ -14,6 +14,7 @@
 
 mod defaults;
 mod file;
+mod ignore;
 mod pr;
 
 use std::collections::BTreeMap;
@@ -24,6 +25,7 @@ use gitcko_protocol::config::{RepoConfig, UserConfig};
 use gitcko_protocol::review::Tier;
 use serde_json::Value;
 
+pub use ignore::{IgnoreRules, ignore_rules};
 pub use pr::combine_for_pr;
 
 /// Which layer a value came from, lowest precedence first (CONFIGURATION §2).
