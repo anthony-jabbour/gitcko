@@ -485,6 +485,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-index"
+version = "0.0.0"
+dependencies = [
+ "gitcko-config",
+ "gitcko-domain",
+ "gitcko-git",
+ "gitcko-redact",
+ "gitcko-syntax",
+ "gitcko-test-support",
+ "insta",
+ "thiserror",
+]
+
+[[package]]
 name = "gitcko-protocol"
 version = "0.0.0"
 dependencies = [
@@ -501,6 +515,14 @@ version = "0.0.0"
 dependencies = [
  "proptest",
  "regex",
+]
+
+[[package]]
+name = "gitcko-syntax"
+version = "0.0.0"
+dependencies = [
+ "gitcko-domain",
+ "serde",
 ]
 
 [[package]]

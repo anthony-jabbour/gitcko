@@ -1,0 +1,27 @@
+---
+source: crates/gitcko-index/tests/discover.rs
+expression: render(&m)
+---
+coverage: Complete
+.git/config | File | size None | hash None | None | Unknown | [] | ExcludedPolicy unsafe_path
+.gitcko/config.toml | File | size Some(50) | hash Some("793886345644") | Some(Toml) | Configuration | [] | LexicalOnly -
+CON | File | size Some(1) | hash Some("2d711642b726") | None | Unknown | [] | LexicalOnly -
+Cargo.lock | File | size Some(7) | hash Some("718475cd179c") | None | DependencyLock | [ignored] | LexicalOnly -
+README.md | File | size Some(5) | hash Some("045d2d07c2db") | Some(Markdown) | Documentation | [case_collision] | LexicalOnly -
+a/../escape.rs | File | size None | hash None | None | Unknown | [] | ExcludedPolicy unsafe_path
+assets/model.bin | File | size Some(70) | hash Some("63b5fd38b862") | None | Unknown | [] | MetadataOnly lfs_pointer
+bad\xff.rs | File | size None | hash None | None | Unknown | [] | Unavailable non_utf8_path
+big.rs | File | size Some(300) | hash None | Some(Rust) | Source | [] | ExcludedResourceLimit file_too_large
+fake.rs | File | size Some(7) | hash Some("13df58ffc6b8") | Some(Rust) | Source | [binary] | MetadataOnly binary
+latin1.rs | File | size Some(10) | hash Some("fbd8bea48232") | Some(Rust) | Source | [] | MetadataOnly not_utf8
+link-root | Symlink | size None | hash None | None | Unknown | [] | MetadataOnly symlink
+link-up | Symlink | size None | hash None | None | Unknown | [] | MetadataOnly symlink
+mid.rs | File | size Some(100) | hash Some("53870cd1affe") | Some(Rust) | Source | [] | LexicalOnly file_too_large_to_parse
+readme.md | File | size Some(6) | hash Some("7e4fa2eb8c7a") | Some(Markdown) | Documentation | [case_collision] | LexicalOnly -
+run.sh | Executable | size Some(8) | hash Some("ab08508fdf5c") | Some(Shell) | Source | [] | LexicalOnly -
+src/crlf.rs | File | size Some(22) | hash Some("9d6c53635afd") | Some(Rust) | Source | [] | Parse -
+src/gen.rs | File | size Some(24) | hash Some("a5be49c02006") | Some(Rust) | Generated | [generated] | Parse -
+src/main.rs | File | size Some(13) | hash Some("536e506bb909") | Some(Rust) | Source | [] | Parse -
+src/my file ü.rs | File | size Some(10) | hash Some("509a0a5b5ce4") | Some(Rust) | Source | [] | Parse -
+third/sub | Submodule | size None | hash None | None | Unknown | [] | MetadataOnly submodule
+vendor/dep/lib.rs | File | size Some(14) | hash Some("574b21ac1812") | Some(Rust) | Vendor | [vendor,ignored] | Parse -
