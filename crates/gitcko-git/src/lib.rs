@@ -59,6 +59,47 @@ impl std::fmt::Display for CommitId {
     }
 }
 
+/// A git object id as stored in a tree entry: a blob's id, or for a submodule the id of
+/// a commit in another repository. Ids are content hashes, so naming one in an error
+/// reveals nothing about the file.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ObjectId(gix::ObjectId);
+
+impl std::fmt::Display for ObjectId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+/// What a tree entry is, from its mode, read the way git reads it (`canon_mode` in git):
+/// any regular-file mode is a file, executable when the owner exec bit is set, so the
+/// `100664` some old git versions wrote is a plain file. Folders aren't listed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum EntryKind {
+    /// A regular file: `100644`, or a legacy mode like `100664`.
+    File,
+    /// A regular file with the owner exec bit: `100755`, or a legacy mode like `100775`.
+    Executable,
+    /// Mode `120000`: the blob is the link's target, which is never followed.
+    Symlink,
+    /// Mode `160000`: a commit in another repository, which isn't here to read.
+    Submodule,
+    /// A mode that isn't a file, folder, link or gitlink at all. Git never writes one,
+    /// but a crafted tree can hold it.
+    Other,
+}
+
+/// One file-like entry of a commit's tree.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TreeEntry {
+    /// The full path as stored, `/`-separated. Raw bytes, not a [`RepoPath`]: a tree can
+    /// hold names that aren't valid UTF-8 or aren't safe paths, and discovery has to
+    /// record those too rather than stop at them.
+    pub path: Vec<u8>,
+    pub kind: EntryKind,
+    pub id: ObjectId,
+}
+
 /// A file's content at a commit.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Blob {
@@ -178,6 +219,64 @@ impl Repo {
             }
         }
         Ok(None)
+    }
+
+    /// Every entry of `commit`'s tree except folders, sorted by path bytes, so index
+    /// discovery sees the whole commit with no checkout and no disk reads. Submodules are
+    /// listed but never entered.
+    ///
+    /// ponytail: the whole listing is held in memory (about 100 bytes per entry); stream
+    /// it if repositories with millions of files ever need indexing.
+    pub fn files(&self, commit: CommitId) -> Result<Vec<TreeEntry>> {
+        let mut recorder = gix::traverse::tree::Recorder::default();
+        self.tree(commit)?
+            .traverse()
+            .breadthfirst(&mut recorder)
+            .map_err(|e| object_error(commit, e))?;
+        let mut files: Vec<TreeEntry> = recorder
+            .records
+            .into_iter()
+            .filter(|r| !r.mode.is_tree())
+            .map(|r| {
+                let kind = if r.mode.is_link() {
+                    EntryKind::Symlink
+                } else if r.mode.is_executable() {
+                    EntryKind::Executable
+                } else if r.mode.is_blob() {
+                    EntryKind::File
+                } else if r.mode.is_commit() {
+                    EntryKind::Submodule
+                } else {
+                    EntryKind::Other
+                };
+                TreeEntry {
+                    path: r.filepath.into(),
+                    kind,
+                    id: ObjectId(r.oid),
+                }
+            })
+            .collect();
+        files.sort_by(|a, b| a.path.cmp(&b.path));
+        Ok(files)
+    }
+
+    /// A blob's size from its object header, without inflating the blob, so a huge file
+    /// is refused before any of it is read (INDEXING §35.2).
+    pub fn blob_size(&self, id: ObjectId) -> Result<u64> {
+        let header = self
+            .repo
+            .find_header(id.0)
+            .map_err(|e| object_error(id, e))?;
+        if header.kind() != gix::object::Kind::Blob {
+            return Err(object_error(id, "not a blob"));
+        }
+        Ok(header.size())
+    }
+
+    /// A blob's bytes by id. Check [`Repo::blob_size`] first: this reads the whole blob.
+    pub fn read_blob_id(&self, id: ObjectId) -> Result<Vec<u8>> {
+        let blob = self.repo.find_blob(id.0).map_err(|e| object_error(id, e))?;
+        Ok(blob.data.clone())
     }
 
     /// Pairs of paths in `commit` that differ only in letter case. A case-insensitive
