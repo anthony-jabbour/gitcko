@@ -71,18 +71,21 @@ impl std::fmt::Display for ObjectId {
     }
 }
 
-/// What a tree entry is, from its mode. Folders aren't listed.
+/// What a tree entry is, from its mode, read the way git reads it (`canon_mode` in git):
+/// any regular-file mode is a file, executable when the owner exec bit is set, so the
+/// `100664` some old git versions wrote is a plain file. Folders aren't listed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum EntryKind {
-    /// Mode `100644`.
+    /// A regular file: `100644`, or a legacy mode like `100664`.
     File,
-    /// Mode `100755`.
+    /// A regular file with the owner exec bit: `100755`, or a legacy mode like `100775`.
     Executable,
     /// Mode `120000`: the blob is the link's target, which is never followed.
     Symlink,
     /// Mode `160000`: a commit in another repository, which isn't here to read.
     Submodule,
-    /// Any other mode. Git doesn't write these, but a crafted tree can hold one.
+    /// A mode that isn't a file, folder, link or gitlink at all. Git never writes one,
+    /// but a crafted tree can hold it.
     Other,
 }
 

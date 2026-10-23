@@ -103,3 +103,26 @@ fn a_submodule_pointing_at_a_commit_in_this_repo_is_still_not_a_blob() {
     assert_eq!(file.kind, EntryKind::Submodule);
     assert!(repo.blob_size(file.id).is_err());
 }
+
+#[test]
+fn legacy_file_modes_are_read_the_way_git_reads_them() {
+    // Old git wrote `100664`; git still reads any regular-file mode as a file, and as
+    // executable when the owner exec bit is set (`canon_mode` in git). Only modes that
+    // aren't a file, folder, link or gitlink at all are `Other`.
+    let dir = empty_repo("files-legacy-modes");
+    let commit = literal_commit(
+        dir.path(),
+        &[
+            (b"group-writable", "100664", b"a"),
+            (b"group-exec", "100775", b"b"),
+        ],
+    );
+    let repo = Repo::open(dir.path()).unwrap();
+    let kinds: Vec<EntryKind> = repo
+        .files(repo.resolve(&commit).unwrap())
+        .unwrap()
+        .iter()
+        .map(|f| f.kind)
+        .collect();
+    assert_eq!(kinds, [EntryKind::Executable, EntryKind::File]);
+}
