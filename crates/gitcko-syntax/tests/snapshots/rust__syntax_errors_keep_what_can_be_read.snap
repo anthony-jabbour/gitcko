@@ -1,0 +1,11 @@
+---
+source: crates/gitcko-syntax/tests/rust.rs
+expression: render(&x)
+---
+coverage: Partial { reason: Reason("syntax_errors"), omitted: None }
+reference_coverage: Partial { reason: Reason("syntax_errors"), omitted: None }
+sym#0 Function(function) fine scope=[] Public L4-6 sig=`pub fn fine() -> u32`
+sym#1 Struct(struct) AfterTheError scope=[] Public L12-14 sig=`pub struct AfterTheError`
+sym#2 Field(field) field scope=[AfterTheError] parent=#1 Private L13 sig=`field: u32`
+syntax_error L8
+syntax_error L9

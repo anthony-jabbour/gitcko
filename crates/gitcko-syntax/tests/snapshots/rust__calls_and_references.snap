@@ -1,0 +1,22 @@
+---
+source: crates/gitcko-syntax/tests/rust.rs
+expression: "render(&extract(&fixture(\"calls.rs\"), &ParseLimits::default()))"
+---
+coverage: Complete
+reference_coverage: Partial { reason: Reason("macro_arguments"), omitted: None }
+sym#0 Function(function) run scope=[] Private L4-14 sig=`fn run(input: Config) -> Result<Output, Error>`
+ref Type Config in=#0 L4
+ref Type Result in=#0 L4
+ref Type Output in=#0 L4
+ref Type Error in=#0 L4
+ref Call parse in=#0 L5
+ref Call crate::util::normalize in=#0 L6
+ref MethodCall sum in=#0 L7
+ref Call convert in=#0 L8
+ref Call Shape::Circle in=#0 L9
+ref Type Point in=#0 L10
+ref MacroCall log in=#0 L11
+ref MacroArgCall format_total in=#0 L11
+ref Call helper in=#0 L12
+ref Call Ok in=#0 L13
+ref Call Output::new in=#0 L13
