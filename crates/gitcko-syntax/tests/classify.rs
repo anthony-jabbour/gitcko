@@ -90,6 +90,8 @@ fn a_tests_folder_only_counts_as_a_whole_path_part() {
     // `contests/` and `tests.rs` aren't test folders.
     assert_eq!(class("src/contests/a.rs", b"").role, FileRole::Source);
     assert_eq!(class("src/tests.rs", b"").role, FileRole::Source);
+    // `src/test/` means those two whole folders, not `mysrc/test/`.
+    assert_eq!(class("mysrc/test/App.java", b"").role, FileRole::Source);
     // `go test` only picks up a lowercase `_test.go` suffix.
     assert_eq!(class("pkg/server_TEST.go", b"").role, FileRole::Source);
 }

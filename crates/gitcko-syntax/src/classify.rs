@@ -231,7 +231,7 @@ fn role(
         FileRole::BuildDefinition
     } else if in_folder(&["migrations"]) {
         FileRole::Migration
-    } else if is_test(path, folders, name) {
+    } else if is_test(folders, name) {
         FileRole::Test
     } else if in_folder(&["templates"]) {
         FileRole::Template
@@ -256,9 +256,9 @@ fn role(
 /// Test-file conventions of the common ecosystems: a `tests`/`__tests__` folder,
 /// Maven's `src/test/`, Go's `_test.go`, pytest's `test_*.py`/`*_test.py`, and the JS
 /// `.test.`/`.spec.` infix. Case-sensitive, as the tools that define them are.
-fn is_test(path: &str, folders: &[&str], name: &str) -> bool {
+fn is_test(folders: &[&str], name: &str) -> bool {
     folders.iter().any(|f| *f == "tests" || *f == "__tests__")
-        || path.contains("src/test/")
+        || folders.windows(2).any(|pair| pair == ["src", "test"])
         || name.ends_with("_test.go")
         || (name.ends_with(".py") && (name.starts_with("test_") || name.ends_with("_test.py")))
         || name.contains(".test.")

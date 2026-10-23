@@ -286,3 +286,116 @@ fn config_files_have_their_own_budget_and_overflowing_it_falls_back_to_defaults(
     };
     assert!(manifest(&files, &limits).config_invalid);
 }
+
+/// Deletes a blob's loose object, as disk corruption or a broken partial clone would.
+fn delete_object(repo: &std::path::Path, commit: &str, path: &str) {
+    let out = gitcko_test_support::git(repo)
+        .args(["rev-parse", &format!("{commit}:{path}")])
+        .output()
+        .unwrap();
+    let id = String::from_utf8(out.stdout).unwrap();
+    let id = id.trim();
+    std::fs::remove_file(repo.join(".git/objects").join(&id[..2]).join(&id[2..])).unwrap();
+}
+
+#[test]
+fn an_unreadable_file_is_unavailable_and_discovery_goes_on() {
+    let dir = empty_repo("discover-unreadable");
+    let commit = literal_commit(
+        dir.path(),
+        &[
+            (b"a.rs", "100644", b"fn a() {}\n"),
+            (b"gone.rs", "100644", b"fn gone() {}\n"),
+            (
+                b".gitcko/config.toml",
+                "100644",
+                b"schema_version = 1\nignore = [\"a.rs\"]\n",
+            ),
+        ],
+    );
+    delete_object(dir.path(), &commit, "gone.rs");
+    delete_object(dir.path(), &commit, ".gitcko/config.toml");
+    let repo = Repo::open(dir.path()).unwrap();
+    let m = discover(
+        &repo,
+        repo.resolve(&commit).unwrap(),
+        &IndexLimits::default(),
+    )
+    .unwrap();
+    let gone = m.entries.iter().find(|e| e.path == "gone.rs").unwrap();
+    assert_eq!(format!("{:?}", gone.disposition), "Unavailable");
+    assert_eq!(gone.reason.as_ref().unwrap().as_str(), "unreadable");
+    let a = m.entries.iter().find(|e| e.path == "a.rs").unwrap();
+    assert_eq!(format!("{:?}", a.disposition), "Parse");
+    // The unreadable config can't be applied, so the defaults are, and that's reported.
+    assert!(m.config_invalid);
+    assert!(!a.ignored_by_config);
+    let Coverage::Partial { reason, omitted } = &m.coverage else {
+        panic!("{:?}", m.coverage);
+    };
+    // gone.rs and the config file itself, which is a manifest entry too.
+    assert_eq!((reason.as_str(), *omitted), ("unreadable_files", Some(2)));
+}
+
+#[test]
+fn a_root_config_that_isnt_utf8_counts_as_invalid() {
+    let m = manifest(
+        &[
+            (
+                b".gitcko/config.toml",
+                "100644",
+                b"schema_version = 1\nignore = [\"\xff\"]\n",
+            ),
+            (
+                b"pkg/.gitcko/config.toml",
+                "100644",
+                b"ignore = [\"*.rs\"]\n",
+            ),
+            (b"pkg/a.rs", "100644", b"fn a() {}\n"),
+        ],
+        &IndexLimits::default(),
+    );
+    assert!(m.config_invalid);
+    let a = m.entries.iter().find(|e| e.path == "pkg/a.rs").unwrap();
+    assert!(
+        !a.ignored_by_config,
+        "a child config must not apply without its root"
+    );
+}
+
+#[test]
+fn an_executable_config_file_is_still_config() {
+    let m = manifest(
+        &[
+            (
+                b".gitcko/config.toml",
+                "100755",
+                b"schema_version = 1\nignore = [\"*.gen.rs\"]\n",
+            ),
+            (b"a.gen.rs", "100644", b"fn a() {}\n"),
+        ],
+        &IndexLimits::default(),
+    );
+    assert!(
+        m.entries
+            .iter()
+            .find(|e| e.path == "a.gen.rs")
+            .unwrap()
+            .ignored_by_config
+    );
+}
+
+#[test]
+fn display_paths_never_collide() {
+    // A name that isn't UTF-8 and a valid name spelling out the same escape.
+    let m = manifest(
+        &[
+            (b"bad\xff.rs", "100644", b"x"),
+            (b"bad\\xff.rs", "100644", b"x"),
+        ],
+        &IndexLimits::default(),
+    );
+    let paths: std::collections::HashSet<&str> =
+        m.entries.iter().map(|e| e.path.as_str()).collect();
+    assert_eq!(paths.len(), 2, "{paths:?}");
+}

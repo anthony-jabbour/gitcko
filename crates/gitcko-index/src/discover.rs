@@ -31,8 +31,9 @@ pub enum Disposition {
 /// One path of the commit and what the index will do with it (INDEXING §8).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ManifestEntry {
-    /// The path as stored in the tree; a name that isn't UTF-8 is shown with its bytes
-    /// escaped (`bad\xff.rs`) rather than replaced, so distinct names stay distinct.
+    /// The path as stored in the tree, for display. A name that isn't UTF-8 has its bytes
+    /// escaped (`bad\xff.rs`), and a backslash in any name is doubled, so two distinct
+    /// names never display the same.
     pub path: String,
     /// The validated path, when the name is a safe repository path.
     pub repo_path: Option<RepoPath>,
@@ -107,12 +108,10 @@ pub fn discover(
     // every later file is left out too, so the result doesn't depend on file order.
     let mut cut: Option<&'static str> = None;
     let (mut read_files, mut read_bytes, mut omitted) = (0usize, 0u64, 0u64);
+    let mut unreadable = 0u64;
     for file in files {
         let mut entry = ManifestEntry {
-            path: match std::str::from_utf8(&file.path) {
-                Ok(text) => text.to_string(),
-                Err(_) => file.path.escape_ascii().to_string(),
-            },
+            path: display_path(&file.path),
             repo_path: None,
             kind: file.kind,
             object: file.id,
@@ -162,7 +161,14 @@ pub fn discover(
             continue;
         }
 
-        let size = repo.blob_size(file.id)?;
+        // A missing or corrupt object costs that one file, not the whole manifest
+        // (INDEXING §36).
+        let Ok(size) = repo.blob_size(file.id) else {
+            unreadable += 1;
+            entry.reason = Some(reason("unreadable"));
+            entries.push(entry);
+            continue;
+        };
         entry.size = Some(size);
         if cut.is_none() && read_files >= limits.max_files {
             cut = Some("repo_file_limit");
@@ -188,7 +194,12 @@ pub fn discover(
         }
         read_files += 1;
         read_bytes += size;
-        let bytes = repo.read_blob_id(file.id)?;
+        let Ok(bytes) = repo.read_blob_id(file.id) else {
+            unreadable += 1;
+            entry.reason = Some(reason("unreadable"));
+            entries.push(entry);
+            continue;
+        };
         entry.content_hash = Some(ContentHash::of(&bytes));
         let class = classify(&path, &bytes);
         (entry.role, entry.generated) = (class.role, class.generated);
@@ -211,12 +222,18 @@ pub fn discover(
         entries.push(entry);
     }
     mark_case_collisions(&mut entries);
-    let coverage = match cut {
-        Some(why) => Coverage::Partial {
+    // `omitted` counts every file left out, whichever the reason; a limit is named first
+    // because it's the one the user can raise.
+    let coverage = match (cut, unreadable) {
+        (Some(why), _) => Coverage::Partial {
             reason: reason(why),
-            omitted: Some(omitted),
+            omitted: Some(omitted + unreadable),
         },
-        None => Coverage::Complete {},
+        (None, 1..) => Coverage::Partial {
+            reason: reason("unreadable_files"),
+            omitted: Some(unreadable),
+        },
+        (None, 0) => Coverage::Complete {},
     };
     Ok(Manifest {
         entries,
@@ -230,8 +247,11 @@ fn reason(code: &str) -> Reason {
     Reason::new(code).expect("reason codes in this file are valid")
 }
 
-/// The commit's `ignore` lists. A root config that can't be read doesn't stop indexing:
-/// the default list applies and the manifest says so.
+/// The commit's `ignore` lists. A root config that can't be read (unreadable object, not
+/// UTF-8, invalid TOML) doesn't stop indexing: the default list applies, child configs
+/// are dropped with it, and the manifest says so. A child config that isn't UTF-8 is
+/// skipped, so its folder inherits its parent's list, as for any broken nested config
+/// (CONFIGURATION §11).
 fn ignore_list(
     repo: &Repo,
     files: &[TreeEntry],
@@ -242,7 +262,7 @@ fn ignore_list(
     let (mut config_files, mut config_bytes) = (0usize, 0u64);
     let defaults = || ignore_rules(&RepoFiles::default()).expect("the built-in defaults are valid");
     for file in files {
-        if file.kind != EntryKind::File {
+        if !matches!(file.kind, EntryKind::File | EntryKind::Executable) {
             continue;
         }
         let Some(path) = std::str::from_utf8(&file.path)
@@ -267,14 +287,23 @@ fn ignore_list(
         // Checked before reading, so a repository full of `.gitcko/` folders can't make
         // discovery read more than the budget (TM-38).
         config_files += 1;
-        config_bytes += repo.blob_size(file.id)?;
+        let Ok(size) = repo.blob_size(file.id) else {
+            return Ok((defaults(), true));
+        };
+        config_bytes += size;
         if config_files > limits.max_config_files || config_bytes > limits.max_config_bytes {
             return Ok((defaults(), true));
         }
         let folder = folder
             .strip_suffix('/')
             .map(|f| RepoPath::parse(f).expect("a prefix of a valid path is valid"));
-        let Ok(content) = String::from_utf8(repo.read_blob_id(file.id)?) else {
+        let Ok(bytes) = repo.read_blob_id(file.id) else {
+            return Ok((defaults(), true));
+        };
+        let Ok(content) = String::from_utf8(bytes) else {
+            if folder.is_none() {
+                return Ok((defaults(), true));
+            }
             continue;
         };
         let entry = folders.entry(folder.clone()).or_insert(FolderConfig {
@@ -296,6 +325,15 @@ fn ignore_list(
         Ok(rules) => (rules, false),
         Err(_) => (defaults(), true),
     })
+}
+
+/// The display form of a tree path (see [`ManifestEntry::path`]).
+fn display_path(bytes: &[u8]) -> String {
+    match std::str::from_utf8(bytes) {
+        Ok(text) => text.replace('\\', "\\\\"),
+        // `escape_ascii` escapes backslashes too, so the two forms can't overlap.
+        Err(_) => bytes.escape_ascii().to_string(),
+    }
 }
 
 /// Flags every path that differs from another only in letter case.
