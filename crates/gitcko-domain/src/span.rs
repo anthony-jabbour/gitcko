@@ -72,9 +72,16 @@ impl SourceSpan {
         self.end
     }
 
-    /// The 1-based first and last line numbers, as an editor shows them.
+    /// The 1-based first and last line numbers, as an editor shows them. The end is
+    /// exclusive, so a span ending at column 0 of a later row (one that took in the line
+    /// break) doesn't count that row.
     pub fn lines(&self) -> (usize, usize) {
-        (self.start.row + 1, self.end.row + 1)
+        let last = if self.end.column == 0 && self.end.row > self.start.row {
+            self.end.row
+        } else {
+            self.end.row + 1
+        };
+        (self.start.row + 1, last)
     }
 }
 

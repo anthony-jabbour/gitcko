@@ -143,6 +143,22 @@ fn span_lines_are_one_based() {
     assert_eq!(span.lines(), (3, 6));
 }
 
+#[test]
+fn span_ending_at_the_start_of_a_line_does_not_count_that_line() {
+    // `a\n` selected from `a\nb`: bytes 0..2 end at row 1, column 0, which is exclusive,
+    // so the span covers line 1 only.
+    let p = |row, column| Position { row, column };
+    assert_eq!(
+        SourceSpan::new(0, 2, p(0, 0), p(1, 0)).unwrap().lines(),
+        (1, 1)
+    );
+    // An empty span at a line start still names that line.
+    assert_eq!(
+        SourceSpan::new(2, 2, p(1, 0), p(1, 0)).unwrap().lines(),
+        (2, 2)
+    );
+}
+
 proptest! {
     #[test]
     fn valid_spans_round_trip_through_json(
