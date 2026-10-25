@@ -674,6 +674,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-graph"
+version = "0.0.0"
+dependencies = [
+ "gitcko-domain",
+ "gitcko-syntax",
+ "insta",
+ "proptest",
+ "sha2",
+ "toml",
+]
+
+[[package]]
 name = "gitcko-index"
 version = "0.0.0"
 dependencies = [

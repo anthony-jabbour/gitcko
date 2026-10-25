@@ -1,0 +1,72 @@
+---
+source: crates/gitcko-graph/tests/graph.rs
+expression: render(&build_from(WORKSPACE).graph)
+---
+crate bin app root=app/src/main.rs
+crate lib my_core root=core/src/lib.rs
+crate test integration root=core/tests/integration.rs
+file app/src/main.rs crate=app mod=[]
+file core/src/lib.rs crate=my_core mod=[]
+file core/src/shapes.rs crate=my_core mod=[shapes]
+file core/src/util.rs crate=my_core mod=[util]
+file core/tests/integration.rs crate=integration mod=[]
+sym Function app::main
+sym Function app::run
+sym Module my_core::shapes
+sym Module my_core::util
+sym Trait my_core::Area
+sym Method my_core::Area::area
+sym Trait my_core::Describe
+sym Method my_core::Describe::describe
+sym Function my_core::total
+sym Module my_core::tests
+sym Test my_core::tests::totals
+sym Struct my_core::shapes::Circle
+sym Field my_core::shapes::Circle::r
+sym Method my_core::shapes::Circle::area <Area>
+sym Method my_core::shapes::Circle::describe <Describe>
+sym Function my_core::util::pi
+sym Test integration::it
+Imports: file:app/src/main.rs -> my_core::total [InferredStatic, High]
+Imports: file:app/src/main.rs -> my_core::shapes::Circle [InferredStatic, High]
+Imports: file:app/src/main.rs -> ? serde::Serialize [Unknown, Unknown] (external_crate)
+References: app::main -> my_core::shapes::Circle [InferredStatic, High]
+Calls: app::main -> app::run [InferredStatic, High]
+Calls: app::main -> my_core::total [InferredStatic, High]
+Calls: app::main -> one of [my_core::Area::area, my_core::shapes::Circle::area] [CandidateAmbiguous, Low] (method_receiver_unknown)
+Calls: app::main -> ? shape [Unknown, Unknown] (unresolved_name)
+Imports: file:core/src/lib.rs -> my_core::shapes::Circle [InferredStatic, High]
+Imports: file:core/src/lib.rs -> mod:my_core:: [InferredStatic, High]
+References: my_core::Area -> my_core::Describe [InferredStatic, High]
+References: my_core::Describe::describe -> ? String [Unknown, Unknown] (external_crate)
+References: my_core::total -> my_core::shapes::Circle [InferredStatic, High]
+Calls: my_core::total -> ? sum [Unknown, Unknown] (method_receiver_unknown)
+Calls: my_core::total -> ? map [Unknown, Unknown] (method_receiver_unknown)
+Calls: my_core::total -> one of [my_core::Area::area, my_core::shapes::Circle::area] [CandidateAmbiguous, Low] (method_receiver_unknown)
+Calls: my_core::total -> ? iter [Unknown, Unknown] (method_receiver_unknown)
+References: my_core::tests::totals -> ? assert_eq [Unknown, Unknown] (external_crate)
+Calls: my_core::tests::totals -> my_core::total [CandidateAmbiguous, Low] (macro_argument_guess)
+Extends: my_core::Area -> my_core::Describe [InferredStatic, High]
+Imports: file:core/src/shapes.rs -> my_core::Area [InferredStatic, High]
+Imports: file:core/src/shapes.rs -> my_core::Describe [InferredStatic, High]
+References: file:core/src/shapes.rs -> my_core::Area [InferredStatic, High]
+References: file:core/src/shapes.rs -> my_core::shapes::Circle [InferredStatic, High]
+Calls: my_core::shapes::Circle::area -> my_core::util::pi [InferredStatic, High]
+References: file:core/src/shapes.rs -> my_core::Describe [InferredStatic, High]
+References: file:core/src/shapes.rs -> my_core::shapes::Circle [InferredStatic, High]
+References: my_core::shapes::Circle::describe -> ? String [Unknown, Unknown] (external_crate)
+Calls: my_core::shapes::Circle::describe -> ? String::new [Unknown, Unknown] (external_crate)
+Implements: my_core::shapes::Circle -> my_core::Area [InferredStatic, High]
+Implements: my_core::shapes::Circle -> my_core::Describe [InferredStatic, High]
+Imports: file:core/tests/integration.rs -> my_core::total [InferredStatic, High]
+Calls: integration::it -> my_core::total [InferredStatic, High]
+Tests: my_core::tests::totals -> my_core::total [InferredStatic, Low] (test_heuristic)
+Tests: integration::it -> my_core::total [InferredStatic, Medium] (test_heuristic)
+coverage Contains: Complete
+coverage Declares: Complete
+coverage Imports: Complete
+coverage References: Partial { reason: Reason("file_references_partial"), omitted: Some(1) }
+coverage Calls: Partial { reason: Reason("unresolved_or_ambiguous"), omitted: Some(4) }
+coverage Implements: Complete
+coverage Extends: Complete
+coverage Tests: Partial { reason: Reason("depends_on_calls"), omitted: None }
