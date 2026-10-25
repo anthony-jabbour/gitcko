@@ -383,18 +383,20 @@ impl LexicalIndex {
             }
             QueryMode::Phrase => {
                 // Whole words only, one per position: what content positions hold.
-                let mut words: Vec<Term> = tokens
+                // Each word at its own position, so a word too long to be indexed still
+                // leaves its gap, as it does in the indexed text.
+                let mut words: Vec<(usize, Term)> = tokens
                     .iter()
                     .filter(|t| t.kind == TokenKind::Word)
-                    .map(|t| Term::from_field_text(f.content_words, &t.text))
+                    .map(|t| (t.position, Term::from_field_text(f.content_words, &t.text)))
                     .collect();
                 match words.len() {
                     0 => return Err(SearchError::EmptyQuery),
                     1 => Box::new(TermQuery::new(
-                        words.remove(0),
+                        words.remove(0).1,
                         IndexRecordOption::WithFreqs,
                     )),
-                    _ => Box::new(PhraseQuery::new(words)),
+                    _ => Box::new(PhraseQuery::new_with_offset(words)),
                 }
             }
         })

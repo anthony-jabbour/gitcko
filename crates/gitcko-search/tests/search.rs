@@ -358,3 +358,27 @@ fn an_index_from_another_lexical_version_is_refused() {
         Some(SearchError::Open)
     );
 }
+
+#[test]
+fn a_phrase_keeps_the_gap_left_by_a_word_too_long_to_index() {
+    let long = "x".repeat(256);
+    let docs = vec![
+        doc(
+            1,
+            "a.rs",
+            "source",
+            None,
+            None,
+            &format!("alpha {long} beta"),
+        ),
+        doc(2, "b.rs", "source", None, None, "alpha beta"),
+    ];
+    let index = LexicalIndex::build(None, docs).unwrap();
+    assert_eq!(
+        ids(
+            &index,
+            &Query::new(QueryMode::Phrase, format!("alpha {long} beta"))
+        ),
+        [1]
+    );
+}
