@@ -11,6 +11,7 @@
 //! The walk keeps its own stack instead of recursing, so a deeply nested file can't
 //! overflow the thread's stack (TM-38).
 
+use std::cell::Cell;
 use std::ops::ControlFlow;
 use std::rc::Rc;
 use std::time::Instant;
@@ -32,8 +33,9 @@ const MAX_SIGNATURE: usize = 200;
 const MAX_NAME: usize = 512;
 /// Segments in a path; longer chains aren't treated as plain paths.
 const MAX_PATH_SEGMENTS: usize = 64;
-/// Generic parameters remembered per declaration.
+/// Generic parameters remembered per declaration, and in scope in all.
 const MAX_GENERICS: usize = 64;
+const MAX_GENERICS_IN_SCOPE: usize = 256;
 /// How often the walk checks its deadline, in nodes.
 const DEADLINE_EVERY: usize = 4_096;
 
@@ -82,6 +84,7 @@ impl LanguageAdapter for RustAdapter {
             src: source,
             limits,
             deadline,
+            next_deadline_check: DEADLINE_EVERY,
             walk_timed_out: false,
             out: Extraction::default(),
             nodes: 0,
@@ -90,6 +93,7 @@ impl LanguageAdapter for RustAdapter {
             symbols_left_out: 0,
             references_left_out: 0,
             macro_arguments: false,
+            long_paths: Cell::new(0),
         }
         .run(tree.root_node())
     }
@@ -120,6 +124,8 @@ struct Walker<'a> {
     src: &'a str,
     limits: &'a ParseLimits,
     deadline: Instant,
+    /// Node count at which the deadline is next checked.
+    next_deadline_check: usize,
     walk_timed_out: bool,
     out: Extraction,
     nodes: usize,
@@ -129,20 +135,16 @@ struct Walker<'a> {
     references_left_out: u64,
     /// A macro call had arguments, which Tree-sitter leaves unparsed.
     macro_arguments: bool,
+    /// Paths dropped for having more than [`MAX_PATH_SEGMENTS`] segments. A `Cell`
+    /// because `path_of` only reads the walker otherwise.
+    long_paths: Cell<u64>,
 }
 
 impl<'a> Walker<'a> {
     fn run(mut self, root: Node<'a>) -> Extraction {
         let mut stack = vec![(root, Context::default())];
         while let Some((node, ctx)) = stack.pop() {
-            self.nodes += 1;
-            if self.nodes > self.limits.max_nodes {
-                self.node_limit_hit = true;
-                break;
-            }
-            // The parse and the walk share one time budget.
-            if self.nodes.is_multiple_of(DEADLINE_EVERY) && Instant::now() >= self.deadline {
-                self.walk_timed_out = true;
+            if !self.tick() {
                 break;
             }
             if (node.is_error() || node.is_missing())
@@ -155,8 +157,30 @@ impl<'a> Walker<'a> {
                 continue;
             }
             self.visit(node, ctx, &mut stack);
+            // `use` trees and macro arguments count against the same budgets.
+            if self.node_limit_hit || self.walk_timed_out {
+                break;
+            }
         }
         self.finish()
+    }
+
+    /// Counts one more node against `max_nodes` and, every few thousand nodes, checks the
+    /// deadline the parse and the walk share. False means stop.
+    fn tick(&mut self) -> bool {
+        self.nodes += 1;
+        if self.nodes > self.limits.max_nodes {
+            self.node_limit_hit = true;
+            return false;
+        }
+        if self.nodes >= self.next_deadline_check {
+            self.next_deadline_check = self.nodes + DEADLINE_EVERY;
+            if Instant::now() >= self.deadline {
+                self.walk_timed_out = true;
+                return false;
+            }
+        }
+        true
     }
 
     fn visit(&mut self, node: Node<'a>, ctx: Context, stack: &mut Vec<(Node<'a>, Context)>) {
@@ -210,8 +234,10 @@ impl<'a> Walker<'a> {
                 });
                 let mut inner = child_context(&ctx);
                 self.add_generics(&mut inner, node);
-                if let Some(name) = type_path.last() {
-                    inner.scope = Some(self.scope(ctx.scope, name));
+                // The whole type path, so `impl a::Thing` and `impl b::Thing` in one file
+                // give their methods different scopes.
+                if !type_path.is_empty() {
+                    inner.scope = Some(self.scope(ctx.scope, &type_path.join("::")));
                 }
                 inner.in_trait_or_impl = true;
                 inner.implementing = trait_path.map(|t| t.join("::"));
@@ -381,36 +407,49 @@ impl<'a> Walker<'a> {
         push_children(stack, node, &inner, &["name"]);
     }
 
-    /// Flattens a `use` tree into one import per name, without recursion.
+    /// Flattens a `use` tree into one import per name, without recursion. Every tree node
+    /// counts against the node and time budgets, nesting against `max_depth`, and every
+    /// import against `max_references`; prefixes are shared, and a combined path longer
+    /// than [`MAX_PATH_SEGMENTS`] is dropped like any other overlong path.
     fn use_declaration(&mut self, node: Node<'a>, ctx: &Context) {
         let public = has_visibility(node);
         let Some(argument) = node.child_by_field_name("argument") else {
             return;
         };
-        let mut found: Vec<Import> = Vec::new();
-        let mut pending: Vec<(Node<'a>, Vec<String>)> = vec![(argument, Vec::new())];
-        while let Some((item, prefix)) = pending.pop() {
-            let mut import = |path: Vec<String>, alias: Option<String>, glob: bool| {
-                found.push(Import {
-                    path,
-                    alias,
-                    glob,
-                    public,
-                    scope: ctx.scope,
-                    span: span(item),
-                });
+        let mut pending: Vec<(Node<'a>, Rc<Vec<String>>, usize)> =
+            vec![(argument, Rc::new(Vec::new()), ctx.depth + 1)];
+        while let Some((item, prefix, depth)) = pending.pop() {
+            if !self.tick() {
+                return;
+            }
+            if depth > self.limits.max_depth {
+                self.depth_limit_hit = true;
+                continue;
+            }
+            let joined = |path: Vec<String>| -> Option<Vec<String>> {
+                let fits = prefix.len() + path.len() <= MAX_PATH_SEGMENTS;
+                if !fits {
+                    self.long_paths.set(self.long_paths.get() + 1);
+                }
+                fits.then(|| [prefix.as_slice(), &path].concat())
             };
+            let mut found: Option<(Vec<String>, Option<String>, bool)> = None;
             match item.kind() {
                 // `use a::{self, b}`: `self` names the list's own path.
-                "self" if !prefix.is_empty() => import(prefix, None, false),
+                "self" if !prefix.is_empty() => found = Some((prefix.to_vec(), None, false)),
                 "use_as_clause" => {
                     let path = item
                         .child_by_field_name("path")
                         .and_then(|p| self.path_of(p));
                     let alias = item.child_by_field_name("alias").map(|a| self.name(a));
-                    if let Some(path) = path {
-                        import([prefix, path].concat(), alias, false);
-                    }
+                    found = match path {
+                        // `use a::{self as b}` renames `a` itself.
+                        Some(p) if p == ["self"] && !prefix.is_empty() => {
+                            Some((prefix.to_vec(), alias, false))
+                        }
+                        Some(p) => joined(p).map(|p| (p, alias, false)),
+                        None => None,
+                    };
                 }
                 "use_wildcard" => {
                     let mut cursor = item.walk();
@@ -419,32 +458,50 @@ impl<'a> Walker<'a> {
                         .next()
                         .and_then(|p| self.path_of(p))
                         .unwrap_or_default();
-                    import([prefix, path].concat(), None, true);
+                    found = joined(path).map(|p| (p, None, true));
                 }
                 "scoped_use_list" => {
                     let path = item
                         .child_by_field_name("path")
                         .and_then(|p| self.path_of(p))
                         .unwrap_or_default();
-                    if let Some(list) = item.child_by_field_name("list") {
-                        pending.push((list, [prefix, path].concat()));
+                    if let (Some(list), Some(path)) =
+                        (item.child_by_field_name("list"), joined(path))
+                    {
+                        pending.push((list, Rc::new(path), depth + 1));
                     }
                 }
                 "use_list" => {
                     let mut cursor = item.walk();
                     let children: Vec<_> = item.named_children(&mut cursor).collect();
                     for child in children.into_iter().rev() {
-                        pending.push((child, prefix.clone()));
+                        pending.push((child, Rc::clone(&prefix), depth + 1));
                     }
                 }
                 _ => {
-                    if let Some(path) = self.path_of(item) {
-                        import([prefix, path].concat(), None, false);
-                    }
+                    found = self
+                        .path_of(item)
+                        .and_then(joined)
+                        .map(|p| (p, None, false))
                 }
             }
+            let Some((path, alias, glob)) = found else {
+                continue;
+            };
+            // Imports share the reference budget: both are names a file points at.
+            if self.out.imports.len() + self.out.references.len() >= self.limits.max_references {
+                self.references_left_out += 1;
+                continue;
+            }
+            self.out.imports.push(Import {
+                path,
+                alias,
+                glob,
+                public,
+                scope: ctx.scope,
+                span: span(item),
+            });
         }
-        self.out.imports.extend(found);
     }
 
     /// Macro arguments are an unparsed token tree. A name followed by `(` there is
@@ -459,9 +516,7 @@ impl<'a> Walker<'a> {
             .collect();
         pending.reverse();
         while let Some(n) = pending.pop() {
-            self.nodes += 1;
-            if self.nodes > self.limits.max_nodes {
-                self.node_limit_hit = true;
+            if !self.tick() {
                 return;
             }
             if n.child_count() == 0 {
@@ -495,7 +550,7 @@ impl<'a> Walker<'a> {
         if path.is_empty() {
             return;
         }
-        if self.out.references.len() >= self.limits.max_references {
+        if self.out.imports.len() + self.out.references.len() >= self.limits.max_references {
             self.references_left_out += 1;
             return;
         }
@@ -515,6 +570,7 @@ impl<'a> Walker<'a> {
         let mut current = node;
         loop {
             if segments.len() >= MAX_PATH_SEGMENTS {
+                self.long_paths.set(self.long_paths.get() + 1);
                 return None;
             }
             match current.kind() {
@@ -568,11 +624,56 @@ impl<'a> Walker<'a> {
     }
 
     /// The value of a `#[path = "…"]` attribute, which puts a module in another file.
+    /// Read from the attribute's string-literal node and decoded, so spaces, escapes and
+    /// raw strings keep their exact meaning.
     fn path_attribute(&self, node: Node<'a>) -> Option<String> {
-        self.attributes(node).iter().find_map(|a| {
-            let value = a.strip_prefix("path=")?;
-            Some(value.trim_matches('"').to_string())
-        })
+        let mut sibling = node.prev_named_sibling();
+        while let Some(s) = sibling {
+            match s.kind() {
+                "attribute_item" => {
+                    let mut cursor = s.walk();
+                    let attribute = s.named_children(&mut cursor).next();
+                    if let Some(attribute) = attribute {
+                        let mut cursor = attribute.walk();
+                        let is_path = attribute
+                            .named_children(&mut cursor)
+                            .next()
+                            .is_some_and(|n| n.kind() == "identifier" && self.text(n) == "path");
+                        if let (true, Some(value)) =
+                            (is_path, attribute.child_by_field_name("value"))
+                        {
+                            return self.string_value(value);
+                        }
+                    }
+                }
+                "line_comment" | "block_comment" => {}
+                _ => break,
+            }
+            sibling = s.prev_named_sibling();
+        }
+        None
+    }
+
+    /// The value of a string literal: its content pieces joined, escapes decoded. `None`
+    /// for anything else, or an escape Rust doesn't have.
+    fn string_value(&self, node: Node<'a>) -> Option<String> {
+        if !matches!(node.kind(), "string_literal" | "raw_string_literal") {
+            return None;
+        }
+        let mut value = String::new();
+        let mut cursor = node.walk();
+        for part in node.named_children(&mut cursor) {
+            let text = self.text(part);
+            match part.kind() {
+                "string_content" => value.push_str(text),
+                "escape_sequence" => value.push(unescape(text)?),
+                _ => {}
+            }
+            if value.len() > MAX_NAME {
+                return None;
+            }
+        }
+        Some(value)
     }
 
     /// Adds a declaration's `<…>` names to the context's generics (at most
@@ -586,7 +687,7 @@ impl<'a> Walker<'a> {
             .named_children(&mut cursor)
             .filter(|p| p.kind() == "type_parameter")
             .filter_map(|p| p.child_by_field_name("name"))
-            .take(MAX_GENERICS)
+            .take(MAX_GENERICS.min(MAX_GENERICS_IN_SCOPE.saturating_sub(ctx.generics.len())))
             .map(|n| self.name(n))
             .collect();
         if !names.is_empty() {
@@ -621,8 +722,15 @@ impl<'a> Walker<'a> {
 
     fn finish(mut self) -> Extraction {
         for symbol in &mut self.out.symbols {
+            let (start, end) = (symbol.span.start_byte(), symbol.span.end_byte());
+            // A missing token is zero-width, often right at the symbol's end, so it counts
+            // when it touches the symbol at all.
             symbol.near_syntax_error = self.out.syntax_errors.iter().any(|e| {
-                e.start_byte() < symbol.span.end_byte() && symbol.span.start_byte() < e.end_byte()
+                if e.start_byte() == e.end_byte() {
+                    (start..=end).contains(&e.start_byte())
+                } else {
+                    e.start_byte() < end && start < e.end_byte()
+                }
             });
         }
         let errors = !self.out.syntax_errors.is_empty();
@@ -651,6 +759,8 @@ impl<'a> Walker<'a> {
         self.out.reference_coverage = walk_cut.unwrap_or_else(|| {
             if self.references_left_out > 0 {
                 partial("reference_limit", Some(self.references_left_out))
+            } else if self.long_paths.get() > 0 {
+                partial("path_too_long", Some(self.long_paths.get()))
             } else if self.macro_arguments {
                 partial("macro_arguments", None)
             } else if errors {
@@ -683,7 +793,8 @@ fn push_children<'a>(
     if cursor.goto_first_child() {
         loop {
             let skip = cursor.field_name().is_some_and(|f| except.contains(&f));
-            if cursor.node().is_named() && !skip {
+            // Missing punctuation is an unnamed node; it's kept so the error is counted.
+            if (cursor.node().is_named() || cursor.node().is_missing()) && !skip {
                 children.push(cursor.node());
             }
             if !cursor.goto_next_sibling() {
@@ -749,6 +860,26 @@ fn visibility(src: &str, node: Node<'_>) -> Visibility {
         "pub" => Visibility::Public,
         "pub(crate)" => Visibility::Crate,
         _ => Visibility::Restricted,
+    }
+}
+
+/// One Rust escape sequence (`\n`, `\x41`, `\u{2e}`, …) as its character.
+fn unescape(escape: &str) -> Option<char> {
+    let body = escape.strip_prefix('\\')?;
+    match body {
+        "n" => Some('\n'),
+        "r" => Some('\r'),
+        "t" => Some('\t'),
+        "0" => Some('\0'),
+        "\\" => Some('\\'),
+        "\"" => Some('"'),
+        "'" => Some('\''),
+        _ => {
+            let hex = body
+                .strip_prefix('x')
+                .or_else(|| body.strip_prefix("u{").and_then(|h| h.strip_suffix('}')))?;
+            char::from_u32(u32::from_str_radix(hex, 16).ok()?)
+        }
     }
 }
 

@@ -61,8 +61,13 @@ fuzz_target!(|data: &[u8]| {
     }
     assert!(x.symbols.len() <= limits.max_symbols);
     assert!(x.references.len() <= limits.max_references);
-    // A timeout makes the result depend on speed, so compare only finished parses.
-    if x.coverage.is_complete() {
-        assert_eq!(rust.extract(source, &limits), x);
+    // A timeout makes a result depend on speed, so compare only when neither run hit one.
+    let again = rust.extract(source, &limits);
+    let timed_out = |c: &gitcko_domain::Coverage| {
+        matches!(c, gitcko_domain::Coverage::Partial { reason, .. } | gitcko_domain::Coverage::Unavailable { reason }
+            if reason.as_str().ends_with("_timeout"))
+    };
+    if !timed_out(&x.coverage) && !timed_out(&again.coverage) {
+        assert_eq!(again, x);
     }
 });

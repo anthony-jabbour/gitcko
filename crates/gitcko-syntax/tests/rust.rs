@@ -381,3 +381,116 @@ fn a_walk_over_its_time_limit_is_partial() {
         "{reason}"
     );
 }
+
+#[test]
+fn use_trees_obey_the_same_limits_as_everything_else() {
+    // `use a::{b::{c::{…}}}` thousands deep, and a list wider than the reference budget.
+    let deep = format!("use {}x{};", "a::{".repeat(3_000), "}".repeat(3_000));
+    let x = extract(&deep, &ParseLimits::default());
+    assert!(!x.coverage.is_complete() || !x.reference_coverage.is_complete());
+    assert!(x.imports.iter().all(|i| i.path.len() <= 64));
+    let names: Vec<String> = (0..50).map(|i| format!("n{i}")).collect();
+    let wide = format!("use a::{{{}}};", names.join(", "));
+    let x = extract(
+        &wide,
+        &ParseLimits {
+            max_references: 10,
+            ..ParseLimits::default()
+        },
+    );
+    assert_eq!(x.imports.len(), 10);
+    assert!(
+        matches!(&x.reference_coverage, Coverage::Partial { reason, omitted: Some(40) } if reason.as_str() == "reference_limit"),
+        "{:?}",
+        x.reference_coverage
+    );
+}
+
+#[test]
+fn self_with_an_alias_imports_the_list_path() {
+    let x = extract("use a::b::{self as renamed, c};", &ParseLimits::default());
+    let imports: Vec<_> = x
+        .imports
+        .iter()
+        .map(|i| (i.path.join("::"), i.alias.clone()))
+        .collect();
+    assert_eq!(
+        imports,
+        [
+            ("a::b".to_string(), Some("renamed".to_string())),
+            ("a::b::c".to_string(), None)
+        ]
+    );
+}
+
+#[test]
+fn a_path_attribute_keeps_its_exact_value() {
+    let source = "#[path = \"some dir/x\\u{2e}rs\"]\nmod a;\n#[path = r\"raw dir/y.rs\"]\nmod b;\n";
+    let x = extract(source, &ParseLimits::default());
+    let paths: Vec<_> = x.modules.iter().map(|m| m.path_attr.clone()).collect();
+    assert_eq!(
+        paths,
+        [
+            Some("some dir/x.rs".to_string()),
+            Some("raw dir/y.rs".to_string())
+        ]
+    );
+}
+
+#[test]
+fn methods_of_two_types_with_the_same_last_name_stay_distinct() {
+    let x = extract(
+        "impl a::Thing { fn run() {} }\nimpl b::Thing { fn run() {} }\n",
+        &ParseLimits::default(),
+    );
+    let scopes: Vec<_> = x.symbols.iter().map(|s| x.scope_path(s.scope)).collect();
+    assert_ne!(scopes[0], scopes[1], "{scopes:?}");
+}
+
+#[test]
+fn an_unfinished_file_is_not_complete() {
+    // Tree-sitter recovers these as whole items with an unnamed `MISSING "}"` token.
+    for source in ["struct S { a: u32", "mod m { fn f() {} "] {
+        let x = extract(source, &ParseLimits::default());
+        assert!(!x.coverage.is_complete(), "{source}: {:?}", x.coverage);
+        assert!(x.symbols[0].near_syntax_error, "{source}");
+    }
+}
+
+#[test]
+fn use_tree_nesting_counts_against_max_depth() {
+    let x = extract(
+        "use a::{b::{c::{d::{e::x}}}};",
+        &ParseLimits {
+            max_depth: 6,
+            ..ParseLimits::default()
+        },
+    );
+    assert!(
+        matches!(&x.coverage, Coverage::Partial { reason, .. } if reason.as_str() == "depth_limit"),
+        "{:?}",
+        x.coverage
+    );
+}
+
+#[test]
+fn generics_in_scope_are_capped_in_total() {
+    // Ten nested functions with 64 type parameters each: only the first 256 names are
+    // remembered, so a parameter from the innermost level is treated as a type name.
+    let mut source = String::new();
+    for level in 0..10 {
+        let params: Vec<String> = (0..64).map(|i| format!("T{level}x{i}")).collect();
+        source += &format!("fn f{level}<{}>() {{\n", params.join(", "));
+    }
+    source += "let _: T0x0; let _: T9x0;\n";
+    source += &"}\n".repeat(10);
+    let x = extract(&source, &ParseLimits::default());
+    let types: Vec<&str> = x
+        .references
+        .iter()
+        .filter(|r| format!("{:?}", r.kind) == "Type")
+        .map(|r| r.path[0].as_str())
+        .collect();
+    assert!(!types.contains(&"T0x0"), "{types:?}");
+    assert!(types.contains(&"T9x0"), "{types:?}");
+}
