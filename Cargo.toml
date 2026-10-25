@@ -16,7 +16,7 @@ repository = "https://github.com/anthony-jabbour/gitcko"
 # an entry only reaches Cargo.lock once a crate uses it.
 gitcko-protocol = { path = "crates/gitcko-protocol" }
 criterion = "0.8"
-gix = { version = "0.89", default-features = false }
+gix = { version = "0.90", default-features = false }
 gix-validate = "0.13"
 ignore = "0.4"
 insta = { version = "1.49", features = ["json"] }
