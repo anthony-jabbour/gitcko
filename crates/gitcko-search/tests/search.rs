@@ -317,6 +317,15 @@ fn combining_accents_stay_inside_their_word() {
         .map(|t| t.text)
         .collect();
     assert_eq!(texts, [word.to_string(), "bar".to_string()]);
+    // A mark doesn't hide the camelCase boundary after the letter it sits on.
+    let texts: Vec<String> = code_tokens(&format!("{word}Foo"))
+        .into_iter()
+        .map(|t| t.text)
+        .collect();
+    assert_eq!(
+        texts,
+        [word.to_string(), "foo".to_string(), format!("{word}foo")]
+    );
     let index = LexicalIndex::build(
         None,
         vec![doc(

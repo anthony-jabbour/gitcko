@@ -118,7 +118,13 @@ fn parts(word: &str) -> Vec<&str> {
             start = i + c.len_utf8();
             continue;
         }
-        let prev = k.checked_sub(1).map(|p| chars[p].1);
+        // The letter before, looking past combining marks (anything in a word that is
+        // neither alphanumeric nor `_`), which have no case of their own.
+        let prev = chars[..k]
+            .iter()
+            .rev()
+            .map(|&(_, p)| p)
+            .find(|p| p.is_alphanumeric() || *p == '_');
         let next = chars.get(k + 1).map(|&(_, n)| n);
         // `aB` starts a part at B; so does `HTTPRequest` at the R of `Request`.
         let boundary = c.is_uppercase()
