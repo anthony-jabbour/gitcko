@@ -15,6 +15,11 @@ use crate::tokenize::{CodeTokenizer, TokenKind, code_tokens};
 /// version is rebuilt rather than read (INDEXING §6).
 pub const LEXICAL_SCHEMA_VERSION: u32 = 1;
 
+/// The file beside an on-disk index recording [`LEXICAL_SCHEMA_VERSION`]. Tantivy stores
+/// field layouts but not what a tokenizer does, so this is what notices an index built
+/// with older tokenization.
+const VERSION_FILE: &str = "lexical-version";
+
 /// Most results one query returns (INDEXING §35.2); asking for more is clamped, and the
 /// result says it was truncated.
 pub const MAX_RESULTS: usize = 500;
@@ -230,11 +235,21 @@ impl LexicalIndex {
         writer
             .wait_merging_threads()
             .map_err(|_| SearchError::Build)?;
+        if let Some(dir) = dir {
+            std::fs::write(dir.join(VERSION_FILE), LEXICAL_SCHEMA_VERSION.to_string())
+                .map_err(|_| SearchError::Build)?;
+        }
         Self::with_reader(&index, f)
     }
 
-    /// Opens an index built earlier in `dir`.
+    /// Opens an index built earlier in `dir`, refusing one from another lexical version or
+    /// with other fields.
     pub fn open(dir: &Path) -> Result<LexicalIndex, SearchError> {
+        let version =
+            std::fs::read_to_string(dir.join(VERSION_FILE)).map_err(|_| SearchError::Open)?;
+        if version.trim() != LEXICAL_SCHEMA_VERSION.to_string() {
+            return Err(SearchError::Open);
+        }
         let index = Index::open_in_dir(dir).map_err(|_| SearchError::Open)?;
         register(&index);
         let (expected, f) = schema();

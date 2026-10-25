@@ -307,3 +307,45 @@ fn an_index_built_with_another_schema_is_refused_not_misread() {
         Some(SearchError::Open)
     );
 }
+
+#[test]
+fn combining_accents_stay_inside_their_word() {
+    // `café` spelled with a combining acute (U+0301), as some editors write it.
+    let word = "cafe\u{301}";
+    let texts: Vec<String> = code_tokens(&format!("{word} bar"))
+        .into_iter()
+        .map(|t| t.text)
+        .collect();
+    assert_eq!(texts, [word.to_string(), "bar".to_string()]);
+    let index = LexicalIndex::build(
+        None,
+        vec![doc(
+            1,
+            "a.rs",
+            "source",
+            None,
+            None,
+            &format!("let {word} = 1;"),
+        )],
+    )
+    .unwrap();
+    assert_eq!(ids(&index, &Query::new(QueryMode::Identifier, word)), [1]);
+    assert!(ids(&index, &Query::new(QueryMode::Identifier, "cafe")).is_empty());
+}
+
+#[test]
+fn an_index_from_another_lexical_version_is_refused() {
+    // Same fields, different tokenization: only the stored version can tell.
+    let dir = TempDir::new("lexical-version");
+    LexicalIndex::build(Some(dir.path()), corpus()).unwrap();
+    std::fs::write(dir.path().join("lexical-version"), "0").unwrap();
+    assert_eq!(
+        LexicalIndex::open(dir.path()).err(),
+        Some(SearchError::Open)
+    );
+    std::fs::remove_file(dir.path().join("lexical-version")).unwrap();
+    assert_eq!(
+        LexicalIndex::open(dir.path()).err(),
+        Some(SearchError::Open)
+    );
+}

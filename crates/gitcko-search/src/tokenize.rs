@@ -80,12 +80,15 @@ pub fn code_tokens(text: &str) -> Vec<CodeToken> {
     tokens
 }
 
-/// Byte ranges of identifier-like words: runs of letters, digits and `_`.
+/// Byte ranges of identifier-like words: runs of identifier-continuation characters.
 fn words(text: &str) -> Vec<(usize, usize)> {
     let mut words = Vec::new();
     let mut start = None;
     for (i, c) in text.char_indices() {
-        let in_word = c.is_alphanumeric() || c == '_';
+        // Unicode's identifier-continuation set, the one Rust and most languages use:
+        // letters, digits, `_`, and combining marks, so `café` written with a combining
+        // accent stays one word.
+        let in_word = c == '_' || unicode_ident::is_xid_continue(c);
         match (in_word, start) {
             (true, None) => start = Some(i),
             (false, Some(s)) => {
