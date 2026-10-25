@@ -7,9 +7,22 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[features]
+default = ["lang-rust"]
+# One feature per grammar (CONTRIBUTING §8.1), so a build can leave out languages it
+# doesn't need; each grammar is C code compiled at build time.
+lang-rust = ["dep:tree-sitter-rust"]
+
 [dependencies]
 gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
 serde.workspace = true
+tree-sitter.workspace = true
+tree-sitter-rust = { workspace = true, optional = true }
+
+[dev-dependencies]
+gitcko-test-support = { path = "../gitcko-test-support" }
+insta.workspace = true
+proptest.workspace = true
 
 [lints]
 workspace = true

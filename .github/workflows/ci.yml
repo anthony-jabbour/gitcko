@@ -61,6 +61,8 @@ jobs:
               - 'crates/gitcko-domain/**'
               - 'crates/gitcko-protocol/**'
               - 'crates/gitcko-redact/**'
+              - 'crates/gitcko-syntax/**'
+              - 'tests/fixtures/lang/**'
               - 'fuzz/**'
               - 'xtask/src/fuzz.rs'
 
