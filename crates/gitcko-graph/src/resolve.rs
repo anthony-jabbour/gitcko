@@ -18,6 +18,9 @@ const MAX_USE_DEPTH: usize = 16;
 /// counts against coverage) rather than letting crafted glob imports take unbounded
 /// time (TM-38).
 const MAX_LOOKUPS: usize = 20_000;
+/// Most distinct places one lookup may return; more is a crafted ambiguity, cut and
+/// counted like the depth limit.
+const MAX_PLACES: usize = 256;
 
 /// A module's identity: crate unit (if any root reaches it) and path.
 pub(crate) type ModuleId = (Option<usize>, Vec<String>);
@@ -38,6 +41,9 @@ pub(crate) enum Resolved {
     External,
     /// A repository path that leads nowhere.
     Missing,
+    /// A limit (use depth, lookup budget, places cap) stopped the search early: what it
+    /// found so far may not be all there is, so none of it is settled.
+    Cut(Vec<Endpoint>),
 }
 
 /// One `use` binding in a module.
@@ -347,6 +353,9 @@ impl<'a> Resolver<'a> {
             .collect();
         found.sort();
         found.dedup();
+        if memo.cut {
+            return Resolved::Cut(found);
+        }
         if !found.is_empty() {
             return Resolved::Found(found);
         }
@@ -522,16 +531,17 @@ impl<'a> Resolver<'a> {
         depth: usize,
     ) -> Vec<Place> {
         let key = (unit, module.to_vec(), name.to_string());
+        // Cache hits count too, so the budget bounds the real work, not just misses.
+        memo.lookups += 1;
+        if memo.lookups > MAX_LOOKUPS {
+            memo.cut = true;
+            return Vec::new();
+        }
         if let Some((done, cut_at)) = memo.done.get(&key)
             && cut_at.is_none_or(|at| depth >= at)
         {
             memo.cut |= cut_at.is_some();
             return done.clone();
-        }
-        memo.lookups += 1;
-        if memo.lookups > MAX_LOOKUPS {
-            memo.cut = true;
-            return Vec::new();
         }
         if !memo.running.insert(key.clone()) {
             return Vec::new();
@@ -580,6 +590,14 @@ impl<'a> Resolver<'a> {
             }
         }
         memo.running.remove(&key);
+        // The same declaration reached by many glob routes is one result: deduplicated
+        // before caching, or layered globs would multiply the lists' size.
+        found.sort();
+        found.dedup();
+        if found.len() > MAX_PLACES {
+            found.truncate(MAX_PLACES);
+            memo.cut = true;
+        }
         let cut_at = memo.cut.then_some(depth);
         memo.done.insert(key, (found.clone(), cut_at));
         memo.cut |= outer_cut;

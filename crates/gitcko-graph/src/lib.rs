@@ -498,6 +498,24 @@ fn resolved_edge(
                 limitations,
             )
         }
+        resolve::Resolved::Cut(found) if found.is_empty() => (
+            Target::Unresolved(path.to_vec()),
+            Resolution::Unknown,
+            GraphConfidence::Unknown,
+            vec![reason("resolution_limit")],
+        ),
+        resolve::Resolved::Cut(found) => {
+            let mut limitations = vec![reason("resolution_limit")];
+            if found.len() > MAX_CANDIDATES {
+                limitations.push(reason("candidates_truncated"));
+            }
+            (
+                Target::Candidates(found.into_iter().take(MAX_CANDIDATES).collect()),
+                Resolution::CandidateAmbiguous,
+                GraphConfidence::Low,
+                limitations,
+            )
+        }
         resolve::Resolved::External => (
             Target::Unresolved(path.to_vec()),
             Resolution::Unknown,
@@ -616,7 +634,10 @@ fn coverage(edges: &[Edge], extractions: &[&Extraction]) -> BTreeMap<EdgeKind, C
                 // on a repository type the syntax couldn't connect: unknown either way.
                 e.resolution == Resolution::CandidateAmbiguous
                     || e.limitations.iter().any(|r| {
-                        matches!(r.as_str(), "unresolved_name" | "method_receiver_unknown")
+                        matches!(
+                            r.as_str(),
+                            "unresolved_name" | "method_receiver_unknown" | "resolution_limit"
+                        )
                     })
             })
             .count() as u64

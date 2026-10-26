@@ -801,10 +801,10 @@ fn a_lookup_cut_by_the_depth_limit_is_not_cached_for_shorter_routes() {
         .map(|(p, s)| (p.as_str(), s.as_str()))
         .collect();
     let g = build_from(&refs).graph;
-    assert!(
-        find(&g, EdgeKind::Calls, "deep::f", "deep::leaf::target").is_some(),
-        "{:?}",
-        resolved(&g, EdgeKind::Calls, "deep::f")
+    // The a0 chain was cut, so the answer is a candidate, not settled; but it's there.
+    assert_eq!(
+        resolved(&g, EdgeKind::Calls, "deep::f"),
+        ["one of [deep::leaf::target]"]
     );
 }
 
@@ -844,4 +844,99 @@ fn glob_graphs_deeper_than_the_use_limit_still_resolve_in_bounded_time() {
         started.elapsed()
     );
     assert!(find(&g, EdgeKind::Calls, "wide::f", "? missing").is_some());
+}
+
+#[test]
+fn layered_glob_imports_dont_multiply_results() {
+    // Eight layers of nine modules, each glob-importing every module of the next layer,
+    // the last re-exporting one function: 9^8 routes to the same declaration. Results
+    // must stay deduplicated so neither time nor memory multiplies.
+    let (layers, width) = (8, 9);
+    let mut files = vec![(
+        "Cargo.toml".to_string(),
+        "[package]\nname = \"lay\"\n".to_string(),
+    )];
+    let mut lib = String::from("mod leaf;\n");
+    for l in 0..layers {
+        for w in 0..width {
+            lib += &format!("mod l{l}w{w};\n");
+        }
+    }
+    for w in 0..width {
+        lib += &format!("use crate::l0w{w}::*;\n");
+    }
+    lib += "pub fn f() { target(); }\n";
+    files.push(("src/lib.rs".into(), lib));
+    files.push(("src/leaf.rs".into(), "pub fn target() {}\n".into()));
+    for l in 0..layers {
+        for w in 0..width {
+            let body = if l + 1 == layers {
+                "pub use crate::leaf::target;\n".to_string()
+            } else {
+                (0..width)
+                    .map(|n| format!("pub use crate::l{}w{n}::*;\n", l + 1))
+                    .collect()
+            };
+            files.push((format!("src/l{l}w{w}.rs"), body));
+        }
+    }
+    let refs: Vec<(&str, &str)> = files
+        .iter()
+        .map(|(p, s)| (p.as_str(), s.as_str()))
+        .collect();
+    let started = std::time::Instant::now();
+    let g = build_from(&refs).graph;
+    assert!(
+        started.elapsed() < std::time::Duration::from_secs(2),
+        "{:?}",
+        started.elapsed()
+    );
+    assert!(
+        find(&g, EdgeKind::Calls, "lay::f", "lay::leaf::target").is_some(),
+        "{:?}",
+        resolved(&g, EdgeKind::Calls, "lay::f")
+    );
+}
+
+#[test]
+fn a_lookup_cut_short_by_its_budget_is_not_settled() {
+    // `first` and `last` both define `hit`, with enough empty glob-imported modules
+    // between them to spend the lookup budget: finding `first::hit` alone mustn't read
+    // as the one answer, and calls coverage mustn't stay complete.
+    const N: usize = 16_000;
+    let mut lib = String::from("mod first { pub fn hit() {} }\n");
+    for i in 0..N {
+        lib += &format!("mod m{i} {{}}\n");
+    }
+    lib += "mod last { pub fn hit() {} }\nuse first::*;\n";
+    for i in 0..N {
+        lib += &format!("use m{i}::*;\n");
+    }
+    lib += "use last::*;\npub fn f() { hit(); }\n";
+    let g = build_from(&[
+        ("Cargo.toml", "[package]\nname = \"cut\"\n"),
+        ("src/lib.rs", &lib),
+    ])
+    .graph;
+    let call = edges_of(&g, EdgeKind::Calls)
+        .into_iter()
+        .find(|e| endpoint(&g, &e.from) == "cut::f")
+        .expect("the call is recorded");
+    assert!(!matches!(call.to, Target::Resolved(_)), "{:?}", call.to);
+    assert!(
+        call.limitations
+            .iter()
+            .any(|r| r.as_str() == "resolution_limit")
+    );
+    assert!(!g.coverage[&EdgeKind::Calls].is_complete());
+
+    // Cut short with nothing found yet: unknown, not missing, and still not complete.
+    let lib = lib.replace("pub fn hit() {}", "");
+    let g = build_from(&[
+        ("Cargo.toml", "[package]\nname = \"cut\"\n"),
+        ("src/lib.rs", &lib),
+    ])
+    .graph;
+    assert_eq!(resolved(&g, EdgeKind::Calls, "cut::f"), ["? hit"]);
+    assert!(!g.coverage[&EdgeKind::Calls].is_complete());
 }
