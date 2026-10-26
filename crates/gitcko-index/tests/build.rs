@@ -164,3 +164,113 @@ fn canary_a_failed_check_names_the_check_only() {
         assert!(!format!("{err} {err:?}").contains(&canary));
     }
 }
+
+#[test]
+fn validation_rejects_versions_other_than_this_builds() {
+    let (mut rev, _dir) = built(FILES);
+    let current = rev.versions.clone();
+    rev.versions.chunk += 1;
+    assert_eq!(
+        validate(&rev, source_of(FILES)),
+        Err(IndexError::Invalid { check: "versions" })
+    );
+    rev.versions = current;
+    rev.versions.adapters = vec!["rust-0+tree-sitter-rust-0".into()];
+    assert_eq!(
+        validate(&rev, source_of(FILES)),
+        Err(IndexError::Invalid { check: "versions" })
+    );
+}
+
+#[test]
+fn validation_rejects_a_lexical_index_of_other_chunks_with_the_same_count() {
+    let (mut rev, _dir) = built(FILES);
+    let other: Vec<(&[u8], &str, &[u8])> = FILES
+        .iter()
+        .map(|(p, m, c)| {
+            let c: &[u8] = if *p == b"src/util.rs" {
+                b"pub fn helper(xs: &[u32]) -> u32 {\n    xs.len() as u32\n}\n"
+            } else {
+                c
+            };
+            (*p, *m, c)
+        })
+        .collect();
+    let (swap, _dir2) = built(&other);
+    assert_eq!(swap.lexical.len(), rev.lexical.len());
+    rev.lexical = swap.lexical;
+    assert_eq!(
+        validate(&rev, source_of(FILES)),
+        Err(IndexError::Invalid {
+            check: "lexical_docs"
+        })
+    );
+}
+
+#[test]
+fn a_file_discovery_couldnt_read_makes_lexical_coverage_partial() {
+    let dir = empty_repo("build-unreadable");
+    let commit = literal_commit(dir.path(), FILES);
+    let out = gitcko_test_support::git(dir.path())
+        .args(["rev-parse", &format!("{commit}:src/util.rs")])
+        .output()
+        .unwrap();
+    let id = String::from_utf8(out.stdout).unwrap();
+    let id = id.trim();
+    std::fs::remove_file(
+        dir.path()
+            .join(".git/objects")
+            .join(&id[..2])
+            .join(&id[2..]),
+    )
+    .unwrap();
+    let repo = Repo::open(dir.path()).unwrap();
+    let rev = build(
+        &repo,
+        repo.resolve(&commit).unwrap(),
+        &IndexLimits::default(),
+    )
+    .unwrap();
+    assert!(
+        !rev.coverage.lexical.is_complete(),
+        "{:?}",
+        rev.coverage.lexical
+    );
+}
+
+#[test]
+fn once_the_chunk_budget_is_spent_later_files_arent_chunked_at_all() {
+    let dir = empty_repo("build-budget");
+    let commit = literal_commit(dir.path(), FILES);
+    let repo = Repo::open(dir.path()).unwrap();
+    // Cargo.toml, README.md and config/app.yaml take one chunk each; src/lib.rs, which
+    // has several, gets one, and src/util.rs none.
+    let limits = IndexLimits {
+        max_chunks: 4,
+        ..IndexLimits::default()
+    };
+    let rev = build(&repo, repo.resolve(&commit).unwrap(), &limits).unwrap();
+    assert_eq!(rev.chunks.len(), 4);
+    assert_eq!(rev.chunks[3].path.as_str(), "src/lib.rs");
+    // Skipped rather than built and thrown away, so how many is unknown, not a count.
+    assert!(
+        matches!(
+            rev.coverage.chunking,
+            gitcko_domain::Coverage::Partial { omitted: None, .. }
+        ),
+        "{:?}",
+        rev.coverage.chunking
+    );
+    // A file cut by its own limit, with nothing skipped after it, is just as uncounted.
+    let mut limits = IndexLimits::default();
+    limits.chunks.max_chunks_per_file = 1;
+    let rev = build(&repo, repo.resolve(&commit).unwrap(), &limits).unwrap();
+    assert!(
+        matches!(
+            rev.coverage.chunking,
+            gitcko_domain::Coverage::Partial { omitted: None, .. }
+        ),
+        "{:?}",
+        rev.coverage.chunking
+    );
+}

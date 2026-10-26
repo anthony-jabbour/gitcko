@@ -728,6 +728,7 @@ dependencies = [
  "gitcko-redact",
  "gitcko-test-support",
  "regex",
+ "sha2",
  "tantivy",
  "thiserror",
  "unicode-ident",

@@ -388,3 +388,44 @@ fn the_index_reports_how_many_documents_it_holds() {
     assert_eq!(LexicalIndex::build(None, corpus()).unwrap().len(), 4);
     assert!(LexicalIndex::build(None, Vec::new()).unwrap().is_empty());
 }
+
+#[test]
+fn each_document_keeps_a_digest_of_what_it_was_built_from() {
+    let docs = corpus();
+    let index = LexicalIndex::build(None, docs.clone()).unwrap();
+    let mut expected: Vec<(u64, String)> = docs.iter().map(|d| (d.id, d.digest())).collect();
+    expected.sort();
+    assert_eq!(index.digests().unwrap(), expected);
+    // Any field changes it; the id alone doesn't, since the id is checked apart.
+    let base = &docs[0];
+    let changed = [
+        LexicalDoc {
+            path: "other.rs".into(),
+            ..base.clone()
+        },
+        LexicalDoc {
+            symbol_key: Some("k".into()),
+            ..base.clone()
+        },
+        LexicalDoc {
+            content: format!("{} ", base.content),
+            ..base.clone()
+        },
+        LexicalDoc {
+            name: None,
+            qualified_name: base.name.clone(),
+            ..base.clone()
+        },
+    ];
+    for c in changed {
+        assert_ne!(c.digest(), base.digest(), "{c:?}");
+    }
+    assert_eq!(
+        LexicalDoc {
+            id: 99,
+            ..base.clone()
+        }
+        .digest(),
+        base.digest()
+    );
+}

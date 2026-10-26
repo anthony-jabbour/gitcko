@@ -210,10 +210,7 @@ fn the_per_file_chunk_limit_cuts_with_a_reason() {
     assert!(
         matches!(
             coverage,
-            gitcko_domain::Coverage::Partial {
-                omitted: Some(7),
-                ..
-            }
+            gitcko_domain::Coverage::Partial { omitted: None, .. }
         ),
         "{coverage:?}"
     );
@@ -262,4 +259,109 @@ proptest! {
             prop_assert!(same_split || pair[0].span.end_byte() <= pair[1].span.start_byte(), "{:?} overlaps {:?}", pair[0].span, pair[1].span);
         }
     }
+}
+
+#[test]
+fn an_oversized_function_with_a_local_declaration_still_splits_into_segments() {
+    // A local `const` is a symbol inside the function, but a function isn't a container:
+    // its body must still come out as its own ordered segments.
+    let body: String = (0..300)
+        .map(|i| format!("    let v{i} = compute({i});\n"))
+        .collect();
+    let source = format!("fn big() {{\n    const LIMIT: usize = 10;\n{body}}}\n");
+    let chunks = rust_chunks(&source, &ChunkPolicy::default());
+    assert!(
+        chunks.len() >= 2 && chunks.iter().all(|c| c.kind == ChunkKind::SymbolSegment),
+        "{:?}",
+        kinds(&chunks)
+    );
+}
+
+#[test]
+fn multiline_attributes_and_block_docs_stay_with_their_declaration() {
+    let source = "#[derive(\n    Debug, Clone\n)]\nstruct Item;\n\n/**\n * Makes one.\n */\nfn make() {}\n\n/// Detached by a blank line.\n\nfn alone() {}\n";
+    let chunks = rust_chunks(source, &ChunkPolicy::default());
+    let symbols: Vec<&str> = chunks
+        .iter()
+        .filter(|c| c.kind == ChunkKind::Symbol)
+        .map(|c| c.text.as_str())
+        .collect();
+    assert_eq!(symbols.len(), 3, "{symbols:?}");
+    assert!(symbols[0].starts_with("#[derive(\n"), "{:?}", symbols[0]);
+    assert!(
+        symbols[1].starts_with("/**\n * Makes one."),
+        "{:?}",
+        symbols[1]
+    );
+    assert!(symbols[2].starts_with("fn alone"), "{:?}", symbols[2]);
+}
+
+#[test]
+fn the_per_file_limit_stops_planning_not_just_output() {
+    // A tiny policy over a large file would plan millions of pieces to keep three.
+    let source = "x".repeat(4_000_000);
+    let policy = ChunkPolicy {
+        target_bytes: 1,
+        soft_max_bytes: 1,
+        hard_max_bytes: 1,
+        overlap_bytes: 0,
+        max_chunks_per_file: 3,
+    };
+    let p = path("a.txt");
+    let file = FileContext {
+        path: &p,
+        language: None,
+        role: FileRole::Source,
+    };
+    let started = std::time::Instant::now();
+    let (chunks, coverage) = chunk_code(&file, &source, &[], &policy);
+    let (texts, text_coverage) = chunk_text(&file, &source, &policy);
+    assert!(
+        started.elapsed() < std::time::Duration::from_millis(300),
+        "{:?}",
+        started.elapsed()
+    );
+    assert_eq!((chunks.len(), texts.len()), (3, 3));
+    assert!(!coverage.is_complete() && !text_coverage.is_complete());
+}
+
+#[test]
+fn a_split_cut_by_the_file_limit_still_counts_its_segments() {
+    let body: String = (0..300)
+        .map(|i| format!("    let v{i} = compute({i});\n"))
+        .collect();
+    let source = format!("fn big() {{\n{body}}}\n");
+    let all = rust_chunks(&source, &ChunkPolicy::default());
+    let one = rust_chunks(
+        &source,
+        &ChunkPolicy {
+            max_chunks_per_file: 1,
+            ..ChunkPolicy::default()
+        },
+    );
+    assert!(all.len() >= 3, "{:?}", kinds(&all));
+    assert_eq!(one.len(), 1);
+    // Planning stopped one past the limit, so the count is a lower bound: two planned,
+    // and more beyond them, so at least three.
+    assert!(one[0].segment.unwrap().count > 2);
+}
+
+#[test]
+fn attribute_scanning_skips_brackets_in_strings_and_leaves_inner_docs_alone() {
+    let source = "//! Module docs.\n#[doc = \"a \\\" ] b\"]\nfn quoted() {}\n\n#[doc = r#\"x \"] y\"#]\n#[inline]\nfn raw() {}\n\nimpl Item {\n    /* outer /* nested */ still */\n    /// Doc.\n    fn method() {}\n}\n";
+    let chunks = rust_chunks(source, &ChunkPolicy::default());
+    let symbol = |name: &str| {
+        chunks
+            .iter()
+            .find(|c| c.kind == ChunkKind::Symbol && c.text.contains(name))
+            .map(|c| c.text.as_str())
+            .unwrap_or_else(|| panic!("{name}: {:?}", kinds(&chunks)))
+    };
+    assert!(symbol("fn quoted").starts_with("#[doc = \"a \\\" ] b\"]\n"));
+    assert!(symbol("fn raw").starts_with("#[doc = r#\"x \"] y\"#]\n#[inline]\n"));
+    // Indented members keep their indentation, and a nested block comment counts whole.
+    assert!(symbol("fn method").starts_with("    /* outer /* nested */ still */\n    /// Doc."));
+    // `//!` documents the module: it stays in the preamble.
+    assert_eq!(chunks[0].kind, ChunkKind::FilePreamble);
+    assert!(chunks[0].text.starts_with("//! Module docs."));
 }

@@ -2,7 +2,7 @@
 source: crates/gitcko-index/tests/build.rs
 expression: out
 ---
-versions: idx1.1.1.1-rust-1+tree-sitter-rust-0.24
+versions: idx1.1.1.2-rust-1+tree-sitter-rust-0.24
 parsed files: 2
 symbols: 3
 chunks: {"configuration_block": 2, "documentation_section": 1, "file_preamble": 1, "symbol": 3}

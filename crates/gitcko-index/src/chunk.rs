@@ -80,6 +80,8 @@ impl ChunkKind {
 pub struct Segment {
     /// From 1.
     pub index: usize,
+    /// How many segments the declaration has. When its file hit the chunk limit inside
+    /// it, segments past the limit weren't planned and this is a lower bound.
     pub count: usize,
 }
 
@@ -131,35 +133,50 @@ pub fn chunk_code(
     let lines = LineIndex::new(source);
     let mut sorted: Vec<&ChunkSymbol<'_>> = symbols.iter().collect();
     sorted.sort_by_key(|s| (s.span.start_byte(), std::cmp::Reverse(s.span.end_byte())));
-    let mut pieces: Vec<Piece<'_>> = Vec::new();
+    // Pieces are planned in source order and planning stops one past the per-file limit,
+    // so a tiny policy over a huge file never plans pieces it would throw away.
+    let mut plan = Plan::new(policy.max_chunks_per_file);
     let mut covered_until = 0;
     for (i, symbol) in sorted.iter().enumerate() {
+        if plan.full() {
+            break;
+        }
         let end = symbol.span.end_byte().min(source.len());
         if symbol.span.start_byte() < covered_until || symbol.span.start_byte() >= end {
             continue;
         }
         let start = with_leading_docs(source, &lines, symbol.span.start_byte(), covered_until);
         if end - start <= policy.hard_max_bytes {
-            pieces.push(Piece::Symbol(symbol, start, end));
+            plan.text_until(source, start, policy);
+            plan.push(Piece::Symbol(symbol, start, end));
             covered_until = end;
             continue;
         }
-        // Too big. If declarations sit inside it, they become chunks of their own and
-        // the text around them becomes context; otherwise it's split into segments.
+        // Too big. A container (module, trait) with declarations inside gives way to
+        // them, the text around them becoming context; anything else, a function with
+        // local items included, is split into segments.
+        let container = matches!(symbol.kind, SymbolKind::Module | SymbolKind::Trait);
         let has_children = sorted[i + 1..].iter().any(|c| c.span.start_byte() < end);
-        if has_children {
+        if container && has_children {
             continue;
         }
+        plan.text_until(source, start, policy);
         let ranges = split(
             source,
             start,
             end,
             policy.soft_max_bytes,
             policy.overlap_bytes,
+            plan.room(),
         );
-        let count = ranges.len();
+        // Every segment knows how many there are, so a cut split is counted in full.
+        let count = if ranges.last().is_some_and(|r| r.1 < end) {
+            ranges.len() + 1
+        } else {
+            ranges.len()
+        };
         for (k, (a, b)) in ranges.into_iter().enumerate() {
-            pieces.push(Piece::Segment(
+            plan.push(Piece::Segment(
                 symbol,
                 a,
                 b,
@@ -171,40 +188,73 @@ pub fn chunk_code(
         }
         covered_until = end;
     }
-    // The text between pieces.
-    let mut ordered: Vec<(usize, usize)> = pieces.iter().map(Piece::range).collect();
-    ordered.sort_unstable();
-    let mut gaps = Vec::new();
-    let mut at = 0;
-    for &(a, b) in &ordered {
-        if a > at {
-            gaps.push((at, a));
-        }
-        at = at.max(b);
+    if !plan.full() {
+        plan.text_until(source, source.len(), policy);
     }
-    gaps.push((at, source.len()));
-    let first_symbol = ordered.first().map_or(usize::MAX, |r| r.0);
-    for (a, b) in gaps {
-        // Trimmed to the text in it, so a gap chunk starts and ends on something.
-        let text = &source[a..b];
-        let Some(first) = text.find(|c: char| !c.is_whitespace()) else {
-            continue;
+    finish(file, source, &lines, plan, policy)
+}
+
+/// Chunks planned so far, in source order, and where the text between them resumes.
+struct Plan<'a> {
+    pieces: Vec<Piece<'a>>,
+    /// End of the last piece: text from here to the next piece is context.
+    at: usize,
+    /// No symbol yet, so text so far is the file's preamble.
+    preamble: bool,
+    cap: usize,
+}
+
+impl<'a> Plan<'a> {
+    fn new(max_chunks_per_file: usize) -> Plan<'a> {
+        Plan {
+            pieces: Vec::new(),
+            at: 0,
+            preamble: true,
+            cap: max_chunks_per_file,
+        }
+    }
+
+    /// Past the limit: anything more would be cut, so planning stops.
+    fn full(&self) -> bool {
+        self.pieces.len() > self.cap
+    }
+
+    /// Pieces that can still be planned, one past the limit so a cut is visible.
+    fn room(&self) -> usize {
+        (self.cap + 1).saturating_sub(self.pieces.len())
+    }
+
+    fn push(&mut self, piece: Piece<'a>) {
+        if !matches!(piece, Piece::Text(..)) {
+            self.preamble = false;
+        }
+        self.at = self.at.max(piece.range().1);
+        self.pieces.push(piece);
+    }
+
+    /// The text from the last piece up to `end`, trimmed to what's in it.
+    fn text_until(&mut self, source: &str, end: usize, policy: &ChunkPolicy) {
+        if end <= self.at {
+            return;
+        }
+        let gap = &source[self.at..end];
+        let Some(first) = gap.find(|c: char| !c.is_whitespace()) else {
+            self.at = end;
+            return;
         };
-        let last = text.trim_end().len();
-        let (a, b) = (a + first, a + last);
-        let kind = if b <= first_symbol {
+        let (a, b) = (self.at + first, self.at + gap.trim_end().len());
+        let kind = if self.preamble {
             ChunkKind::FilePreamble
         } else {
             ChunkKind::ModuleContext
         };
-        for (x, y) in split(source, a, b, policy.hard_max_bytes, 0) {
+        for (x, y) in split(source, a, b, policy.hard_max_bytes, 0, self.room()) {
             if !source[x..y].trim().is_empty() {
-                pieces.push(Piece::Text(kind, x, y));
+                self.pieces.push(Piece::Text(kind, x, y));
             }
         }
+        self.at = end;
     }
-    pieces.sort_by_key(|p| p.range());
-    finish(file, source, &lines, pieces, policy)
 }
 
 /// Chunks a text file with no parser (§14.2): Markdown by section, configuration by
@@ -253,40 +303,148 @@ pub fn chunk_text(
             _ => merged.push((a, b)),
         }
     }
-    let mut pieces = Vec::new();
+    let mut plan = Plan::new(policy.max_chunks_per_file);
     for (a, b) in merged {
-        for (x, y) in split(source, a, b, policy.hard_max_bytes, 0) {
+        if plan.full() {
+            break;
+        }
+        for (x, y) in split(source, a, b, policy.hard_max_bytes, 0, plan.room()) {
             if !source[x..y].trim().is_empty() {
-                pieces.push(Piece::Text(kind, x, y));
+                plan.pieces.push(Piece::Text(kind, x, y));
             }
         }
     }
-    finish(file, source, &lines, pieces, policy)
+    finish(file, source, &lines, plan, policy)
 }
 
 /// Moves a declaration's start back over the doc comments and attributes written right
 /// above it (Tree-sitter's span leaves them out), stopping at a blank line, other code, or
 /// `floor` (the previous chunk's end). They belong with the declaration for retrieval.
+///
+/// Scans forward from `floor`, so a multi-line `#[derive(…)]` or `/** … */` counts whole:
+/// line prefixes alone can't tell an attribute's `)]` from code.
 fn with_leading_docs(source: &str, lines: &LineIndex, start: usize, floor: usize) -> usize {
-    let mut row = lines.row(start);
-    let mut best = start;
-    while row > 0 {
-        let line_start = lines.starts[row - 1];
-        if line_start < floor {
-            break;
+    let gap = &source.as_bytes()[..start];
+    let mut at = floor;
+    let mut run: Option<usize> = None;
+    while at < start {
+        let rest = &gap[at..];
+        let c = rest[0];
+        if c.is_ascii_whitespace() {
+            let n = rest.iter().take_while(|b| b.is_ascii_whitespace()).count();
+            if rest[..n].iter().filter(|&&b| b == b'\n').count() > 1 {
+                run = None;
+            }
+            at += n;
+            continue;
         }
-        let line = source[line_start..lines.starts[row]].trim();
-        let attached = line.starts_with("//")
-            || line.starts_with("#[")
-            || line.starts_with("/*")
-            || line.starts_with('*');
-        if !attached {
-            break;
+        // Inner docs and attributes (`//!`, `/*!`, `#!`) belong to the module, not to
+        // what follows.
+        let inner = rest.starts_with(b"//!") || rest.starts_with(b"/*!") || rest.starts_with(b"#!");
+        let end = if rest.starts_with(b"//") {
+            line_end(gap, at)
+        } else if rest.starts_with(b"/*") {
+            block_comment_end(gap, at)
+        } else if rest.starts_with(b"#[") || rest.starts_with(b"#![") {
+            attribute_end(gap, at)
+        } else {
+            run = None;
+            at = line_end(gap, at);
+            continue;
+        };
+        if inner {
+            run = None;
+        } else if run.is_none() {
+            run = Some(at);
         }
-        best = line_start;
-        row -= 1;
+        at = end.max(at + 1);
     }
-    best
+    match run {
+        // From its line start when only indentation comes before it.
+        Some(r) => {
+            let line = lines.starts[lines.row(r)];
+            if line >= floor && source[line..r].trim().is_empty() {
+                line
+            } else {
+                r
+            }
+        }
+        None => start,
+    }
+}
+
+fn line_end(s: &[u8], at: usize) -> usize {
+    s[at..]
+        .iter()
+        .position(|&b| b == b'\n')
+        .map_or(s.len(), |n| at + n)
+}
+
+/// The end of a (possibly nested) block comment starting at `at`, or the end of `s`.
+fn block_comment_end(s: &[u8], at: usize) -> usize {
+    let (mut i, mut depth) = (at, 0usize);
+    while i + 1 < s.len() {
+        match &s[i..i + 2] {
+            b"/*" => {
+                depth += 1;
+                i += 2;
+            }
+            b"*/" => {
+                depth -= 1;
+                i += 2;
+                if depth == 0 {
+                    return i;
+                }
+            }
+            _ => i += 1,
+        }
+    }
+    s.len()
+}
+
+/// The end of the attribute starting at `at` (`#[`…`]`), brackets balanced and string
+/// literals skipped, or the end of `s`.
+fn attribute_end(s: &[u8], at: usize) -> usize {
+    let (mut i, mut depth) = (at, 0usize);
+    while i < s.len() {
+        match s[i] {
+            b'[' => depth += 1,
+            b']' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    return i + 1;
+                }
+            }
+            b'"' => {
+                // A raw string's `r#…#"` prefix is outside the quotes; count its hashes.
+                let hashes = s[at..i].iter().rev().take_while(|&&b| b == b'#').count();
+                let raw = i > hashes && s[i - hashes - 1] == b'r';
+                i += 1;
+                while i < s.len() {
+                    if !raw && s[i] == b'\\' {
+                        i += 2;
+                        continue;
+                    }
+                    if s[i] == b'"'
+                        && (!raw
+                            || s[i + 1..]
+                                .iter()
+                                .take(hashes)
+                                .filter(|&&b| b == b'#')
+                                .count()
+                                == hashes)
+                    {
+                        i += if raw { hashes } else { 0 };
+                        break;
+                    }
+                    i += 1;
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    s.len()
 }
 
 /// A planned chunk, before its header and hash are made.
@@ -308,11 +466,13 @@ fn finish(
     file: &FileContext<'_>,
     source: &str,
     lines: &LineIndex,
-    pieces: Vec<Piece<'_>>,
+    plan: Plan<'_>,
     policy: &ChunkPolicy,
 ) -> (Vec<Chunk>, Coverage) {
-    let omitted = pieces.len().saturating_sub(policy.max_chunks_per_file) as u64;
-    let chunks = pieces
+    // Planning stopped past the limit, so how much more there was isn't known.
+    let cut = plan.full();
+    let chunks = plan
+        .pieces
         .into_iter()
         .take(policy.max_chunks_per_file)
         .map(|piece| {
@@ -335,10 +495,10 @@ fn finish(
             }
         })
         .collect();
-    let coverage = if omitted > 0 {
+    let coverage = if cut {
         Coverage::Partial {
             reason: Reason::new("chunk_limit").expect("valid code"),
-            omitted: Some(omitted),
+            omitted: None,
         }
     } else {
         Coverage::Complete {}
@@ -405,19 +565,20 @@ fn snake(debug: &str) -> String {
 }
 
 /// Cuts `start..end` into pieces of at most `max` bytes at line ends where possible,
-/// each next piece starting `overlap` bytes back (at a line start). Always progresses, and
-/// always on character boundaries.
+/// each next piece starting `overlap` bytes back (at a line start), stopping after
+/// `limit` pieces. Always progresses, and always on character boundaries.
 fn split(
     source: &str,
     start: usize,
     end: usize,
     max: usize,
     overlap: usize,
+    limit: usize,
 ) -> Vec<(usize, usize)> {
     let mut out = Vec::new();
     let mut s = start;
     let max = max.max(1);
-    while s < end {
+    while s < end && out.len() < limit {
         let mut e = (s + max).min(end);
         if e < end {
             if let Some(nl) = source[s..floor(source, e)].rfind('\n') {

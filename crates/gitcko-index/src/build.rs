@@ -15,8 +15,8 @@ use gitcko_search::{LEXICAL_SCHEMA_VERSION, LexicalDoc, LexicalIndex};
 use gitcko_syntax::{Extraction, FileRole, Language, SymbolKind, adapter};
 
 use crate::{
-    CHUNK_SCHEMA_VERSION, Chunk, ChunkSymbol, Disposition, FileContext, IndexError, IndexLimits,
-    Manifest, chunk_code, chunk_text, discover,
+    CHUNK_SCHEMA_VERSION, Chunk, ChunkPolicy, ChunkSymbol, Disposition, FileContext, IndexError,
+    IndexLimits, Manifest, chunk_code, chunk_text, discover,
 };
 
 /// Changes whenever the revision's overall layout changes (INDEXING §6).
@@ -52,7 +52,7 @@ impl Versions {
         }
     }
 
-    /// One short label for all of them, `idx1.1.1.1-rust-1+tree-sitter-rust-0.24`: what a
+    /// One short label for all of them, `idx1.1.1.2-rust-1+tree-sitter-rust-0.24`: what a
     /// review records as `versions.index`, and what names the cache folder, so a change
     /// in any version means a fresh index.
     pub fn label(&self) -> String {
@@ -165,12 +165,12 @@ pub fn build(repo: &Repo, commit: CommitId, limits: &IndexLimits) -> Result<Revi
     });
 
     let (chunks, chunk_coverage) = make_chunks(&manifest, &parsed, &graph, &texts, limits);
-    let lexical =
-        LexicalIndex::build(None, lexical_docs(&manifest, &graph, &chunks)).map_err(|_| {
-            IndexError::Invalid {
-                check: "lexical_build",
-            }
-        })?;
+    let docs = lexical_docs(&manifest, &graph, &chunks).ok_or(IndexError::Invalid {
+        check: "chunk_source",
+    })?;
+    let lexical = LexicalIndex::build(None, docs).map_err(|_| IndexError::Invalid {
+        check: "lexical_build",
+    })?;
     let partial = |code: &str, omitted: u64| Coverage::Partial {
         reason: Reason::new(code).expect("valid code"),
         omitted: Some(omitted),
@@ -178,7 +178,12 @@ pub fn build(repo: &Repo, commit: CommitId, limits: &IndexLimits) -> Result<Revi
     let not_searchable = manifest
         .entries
         .iter()
-        .filter(|e| matches!(e.disposition, Disposition::ExcludedResourceLimit))
+        .filter(|e| {
+            matches!(
+                e.disposition,
+                Disposition::ExcludedResourceLimit | Disposition::Unavailable
+            )
+        })
         .count() as u64
         + unreadable;
     let coverage = RevisionCoverage {
@@ -239,6 +244,9 @@ fn make_chunks(
     }
     let mut chunks = Vec::new();
     let mut omitted = 0u64;
+    // A file cut short, or skipped once the revision's budget ran out: more was left out
+    // than was counted.
+    let mut uncounted = false;
     for (i, entry) in manifest.entries.iter().enumerate() {
         let Some(path) = &entry.repo_path else {
             continue;
@@ -246,12 +254,22 @@ fn make_chunks(
         let Some(text) = texts.get(path) else {
             continue;
         };
+        let room = limits.max_chunks.saturating_sub(chunks.len());
+        if room == 0 {
+            uncounted = true;
+            break;
+        }
         let file = FileContext {
             path,
             language: entry.language,
             role: entry.role,
         };
-        let (mut file_chunks, coverage) = match (by_entry.get(&i), graph_file.get(path.as_str())) {
+        // Never plan more for one file than the revision can still hold.
+        let policy = ChunkPolicy {
+            max_chunks_per_file: limits.chunks.max_chunks_per_file.min(room),
+            ..limits.chunks.clone()
+        };
+        let (file_chunks, coverage) = match (by_entry.get(&i), graph_file.get(path.as_str())) {
             (Some(p), Some(&gf)) => {
                 let x = &p.extraction;
                 let parent_name = |local: usize| qualified.get(&(gf, local)).copied();
@@ -273,27 +291,23 @@ fn make_chunks(
                         parent: x.symbols[s.local].parent.and_then(parent_name),
                     })
                     .collect();
-                chunk_code(&file, text, &symbols, &limits.chunks)
+                chunk_code(&file, text, &symbols, &policy)
             }
-            _ => chunk_text(&file, text, &limits.chunks),
+            _ => chunk_text(&file, text, &policy),
         };
-        if let Coverage::Partial {
-            omitted: Some(n), ..
-        } = coverage
-        {
-            omitted += n;
-        }
-        let room = limits.max_chunks.saturating_sub(chunks.len());
-        if file_chunks.len() > room {
-            omitted += (file_chunks.len() - room) as u64;
-            file_chunks.truncate(room);
+        match coverage {
+            Coverage::Partial {
+                omitted: Some(n), ..
+            } => omitted += n,
+            Coverage::Partial { omitted: None, .. } => uncounted = true,
+            _ => {}
         }
         chunks.extend(file_chunks);
     }
-    let coverage = if omitted > 0 {
+    let coverage = if uncounted || omitted > 0 {
         Coverage::Partial {
             reason: Reason::new("chunk_limit").expect("valid code"),
-            omitted: Some(omitted),
+            omitted: (!uncounted).then_some(omitted),
         }
     } else {
         Coverage::Complete {}
@@ -302,7 +316,9 @@ fn make_chunks(
 }
 
 /// One lexical document per chunk, with the symbol's names in their own fields.
-fn lexical_docs(manifest: &Manifest, graph: &Graph, chunks: &[Chunk]) -> Vec<LexicalDoc> {
+/// One search document per chunk, chunk `i` as document `i`; `None` if a chunk names a
+/// file or symbol the revision doesn't have.
+fn lexical_docs(manifest: &Manifest, graph: &Graph, chunks: &[Chunk]) -> Option<Vec<LexicalDoc>> {
     let entry_of: HashMap<&str, usize> = manifest
         .entries
         .iter()
@@ -313,9 +329,12 @@ fn lexical_docs(manifest: &Manifest, graph: &Graph, chunks: &[Chunk]) -> Vec<Lex
         .iter()
         .enumerate()
         .map(|(id, c)| {
-            let entry = &manifest.entries[entry_of[c.path.as_str()]];
-            let symbol = c.symbol.map(|s| &graph.symbols[s]);
-            LexicalDoc {
+            let entry = &manifest.entries[*entry_of.get(c.path.as_str())?];
+            let symbol = match c.symbol {
+                Some(s) => Some(graph.symbols.get(s)?),
+                None => None,
+            };
+            Some(LexicalDoc {
                 id: id as u64,
                 path: c.path.as_str().to_string(),
                 language: entry.language.map(|l| format!("{l:?}").to_lowercase()),
@@ -326,7 +345,7 @@ fn lexical_docs(manifest: &Manifest, graph: &Graph, chunks: &[Chunk]) -> Vec<Lex
                 qualified_name: symbol.map(|s| s.qualified_name.clone()),
                 signature: None,
                 content: c.text.clone(),
-            }
+            })
         })
         .collect()
 }
@@ -390,7 +409,22 @@ pub fn validate(
     if revision.lexical.len() != revision.chunks.len() as u64 {
         return fail("lexical_count");
     }
-    if revision.versions.adapters.is_empty() {
+    // Document `i` must be chunk `i`'s, field for field, not just one per chunk.
+    let Some(expected) = lexical_docs(&revision.manifest, g, &revision.chunks) else {
+        return fail("chunk_source");
+    };
+    let Ok(stored) = revision.lexical.digests() else {
+        return fail("lexical_docs");
+    };
+    let expected: Vec<(u64, String)> = expected
+        .iter()
+        .enumerate()
+        .map(|(i, doc)| (i as u64, doc.digest()))
+        .collect();
+    if stored != expected {
+        return fail("lexical_docs");
+    }
+    if revision.versions != Versions::current() {
         return fail("versions");
     }
     Ok(())
