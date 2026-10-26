@@ -250,6 +250,36 @@ impl Default for Extraction {
 }
 
 impl Extraction {
+    /// Whether every index points inside its list and every parent comes before its child,
+    /// as an adapter writes them. An extraction read back from disk is checked before use:
+    /// [`Extraction::scope_path`] and the graph index without bounds checks and follow
+    /// parents until they end.
+    pub fn is_well_formed(&self) -> bool {
+        let (scopes, symbols) = (self.scopes.len(), self.symbols.len());
+        let scope = |s: Option<usize>| s.is_none_or(|i| i < scopes);
+        let symbol = |s: Option<usize>| s.is_none_or(|i| i < symbols);
+        self.scopes
+            .iter()
+            .enumerate()
+            .all(|(i, s)| s.parent.is_none_or(|p| p < i))
+            && self
+                .symbols
+                .iter()
+                .enumerate()
+                .all(|(i, s)| scope(s.scope) && s.parent.is_none_or(|p| p < i))
+            && self.imports.iter().all(|x| scope(x.scope))
+            && self
+                .references
+                .iter()
+                .all(|x| scope(x.scope) && symbol(x.enclosing))
+            && self
+                .modules
+                .iter()
+                .all(|x| scope(x.scope) && symbol(Some(x.symbol)))
+            && self.implementations.iter().all(|x| scope(x.scope))
+            && self.extensions.iter().all(|x| symbol(Some(x.symbol)))
+    }
+
     /// The names from file level down to `scope`, outermost first.
     pub fn scope_path(&self, scope: Option<usize>) -> Vec<String> {
         let mut path = Vec::new();

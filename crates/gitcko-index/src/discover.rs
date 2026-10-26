@@ -321,7 +321,7 @@ fn ignore_list(repo: &Repo, files: &[TreeEntry], limits: &IndexLimits) -> (Ignor
 }
 
 /// The display form of a tree path (see [`ManifestEntry::path`]).
-fn display_path(bytes: &[u8]) -> String {
+pub(crate) fn display_path(bytes: &[u8]) -> String {
     match std::str::from_utf8(bytes) {
         Ok(text) => text.replace('\\', "\\\\"),
         // `escape_ascii` escapes backslashes too, so the two forms can't overlap.

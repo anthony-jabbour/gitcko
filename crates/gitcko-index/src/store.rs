@@ -4,8 +4,9 @@
 //! atomically, checked on every load, purged and evicted without touching one in use.
 //!
 //! ```text
+//! <root>/locks/<repo-id>.lock
 //! <root>/repos/<repo-id>/last_used
-//! <root>/repos/<repo-id>/index/<versions-label>/{active, publish.lock, staging/,
+//! <root>/repos/<repo-id>/index/<versions-label>/{active, staging/,
 //!     revisions/<rev-id>/{lock, revision.json, manifest.json, parsed.json,
 //!                         chunks.json, coverage.json, lexical/}}
 //! ```
@@ -134,11 +135,12 @@ impl Store {
         let dir = self.index_dir(repo_id)?;
         let staging = dir.join("staging");
         let revisions = dir.join("revisions");
+        // One publisher per repository, and no purge meanwhile; anything left in staging
+        // is from a crash.
+        let _lock = self.repo_lock(repo_id, true)?;
         make_dir(&staging).map_err(io("create the store"))?;
         make_dir(&revisions).map_err(io("create the store"))?;
-        // One publisher per index folder; anything left in staging is from a crash.
-        let lock = create_file(&dir.join("publish.lock")).map_err(io("lock the store"))?;
-        lock.lock().map_err(io("lock the store"))?;
+        sync_up(&revisions, &self.root).map_err(io("create the store"))?;
         for e in fs::read_dir(&staging).map_err(io("read the store"))? {
             let _ = fs::remove_dir_all(e.map_err(io("read the store"))?.path());
         }
@@ -217,9 +219,11 @@ impl Store {
         match &loaded {
             Ok(_) => self.touch(repo_id),
             // Removed, a corrupt revision is rebuilt by the next publish instead of being
-            // found again. Best effort: another reader may still hold it.
+            // found again. Best effort: skipped while a publish or another reader holds it.
             Err(StoreError::Corrupt { .. }) => {
-                let _ = remove_unlocked(&rdir);
+                if let Ok(_lock) = self.repo_lock(repo_id, false) {
+                    let _ = remove_unlocked(&rdir);
+                }
             }
             Err(_) => {}
         }
@@ -230,6 +234,8 @@ impl Store {
     /// other versions, skipping any revision being read. Returns how many were removed.
     pub fn purge_stale(&self, repo_id: &str) -> Result<usize, StoreError> {
         let current = self.index_dir(repo_id)?;
+        // A publish holds this between making its revision and pointing `active` at it.
+        let _lock = self.repo_lock(repo_id, false)?;
         let Some(base) = current.parent() else {
             return Ok(0);
         };
@@ -255,6 +261,7 @@ impl Store {
     /// Removes everything stored for one repository, unless a revision is being read.
     pub fn purge_repo(&self, repo_id: &str) -> Result<(), StoreError> {
         check_repo_id(repo_id)?;
+        let _lock = self.repo_lock(repo_id, false)?;
         let dir = self.root.join("repos").join(repo_id);
         if dir.exists() {
             remove_unlocked(&dir)?;
@@ -313,6 +320,26 @@ impl Store {
         Ok(evicted)
     }
 
+    /// The repository's lock, held by a publish and by anything that deletes: kept
+    /// outside the folders it guards, so deleting them never deletes it. Waits for it, or
+    /// with `wait` false, returns [`StoreError::InUse`] while it's held.
+    fn repo_lock(&self, repo_id: &str, wait: bool) -> Result<File, StoreError> {
+        let locks = self.root.join("locks");
+        make_dir(&locks).map_err(io("lock the store"))?;
+        let f = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(locks.join(format!("{repo_id}.lock")))
+            .map_err(io("lock the store"))?;
+        if wait {
+            f.lock().map_err(io("lock the store"))?;
+        } else if f.try_lock().is_err() {
+            return Err(StoreError::InUse);
+        }
+        Ok(f)
+    }
+
     fn index_dir(&self, repo_id: &str) -> Result<PathBuf, StoreError> {
         check_repo_id(repo_id)?;
         Ok(self
@@ -349,8 +376,28 @@ fn load(repo: &Repo, rdir: &Path, id: &str) -> Result<StoredRevision, StoreError
     let parsed: Vec<ParsedFile> = read_json(rdir, "parsed.json")?;
     let chunks: Vec<Chunk> = read_json(rdir, "chunks.json")?;
     let mut coverage: RevisionCoverage = read_json(rdir, "coverage.json")?;
-    if parsed.iter().any(|p| p.entry >= manifest.entries.len()) {
+    // Read back from disk, so checked before anything indexes by them.
+    if parsed
+        .iter()
+        .any(|p| p.entry >= manifest.entries.len() || !p.extraction.is_well_formed())
+    {
         return Err(StoreError::Corrupt { check: "parsed" });
+    }
+    // The manifest must be this commit's: every tree entry, in order, with its object.
+    let commit = repo
+        .resolve(&header.commit)
+        .ok()
+        .filter(|c| c.to_string() == header.commit)
+        .ok_or(StoreError::Corrupt { check: "commit" })?;
+    let tree = repo
+        .files(commit)
+        .map_err(|_| StoreError::Corrupt { check: "commit" })?;
+    let same = tree.len() == manifest.entries.len()
+        && tree.iter().zip(&manifest.entries).all(|(t, e)| {
+            t.id == e.object && t.kind == e.kind && crate::discover::display_path(&t.path) == e.path
+        });
+    if !same {
+        return Err(StoreError::Corrupt { check: "manifest" });
     }
     let objects: BTreeMap<RepoPath, gitcko_git::ObjectId> = manifest
         .entries
@@ -437,7 +484,9 @@ fn write_revision(dir: &Path, revision: &Revision) -> Result<(), StoreError> {
         files.insert(name.to_owned(), hash_file(&dir.join(name))?);
     }
     for (name, path) in walk_files(&lexical, "lexical").map_err(io("write the store"))? {
-        files.insert(name, hash_file(&path)?);
+        if !is_lock_file(&name) {
+            files.insert(name, hash_file(&path)?);
+        }
     }
     let header = Header {
         format: STORE_FORMAT,
@@ -458,7 +507,13 @@ fn read_header(dir: &Path, id: &str) -> Result<Header, StoreError> {
     if header.format != STORE_FORMAT || revision_id(&header.commit, &header.versions) != id {
         return Err(StoreError::Corrupt { check: "header" });
     }
-    if DATA_FILES.iter().any(|f| !header.files.contains_key(*f)) {
+    let search_files = walk_files(&dir.join("lexical"), "lexical")
+        .map_err(|_| StoreError::Corrupt { check: "files" })?;
+    if DATA_FILES.iter().any(|f| !header.files.contains_key(*f))
+        || search_files
+            .iter()
+            .any(|(name, _)| !is_lock_file(name) && !header.files.contains_key(name))
+    {
         return Err(StoreError::Corrupt { check: "files" });
     }
     for (name, hash) in &header.files {
@@ -471,6 +526,13 @@ fn read_header(dir: &Path, id: &str) -> Result<Header, StoreError> {
         }
     }
     Ok(header)
+}
+
+/// Tantivy's own lock files come and go as the index is opened; they hold no data.
+fn is_lock_file(name: &str) -> bool {
+    name.rsplit('/')
+        .next()
+        .is_some_and(|n| n.starts_with(".tantivy-") && n.ends_with(".lock"))
 }
 
 fn read_json<T: serde::de::DeserializeOwned>(dir: &Path, name: &str) -> Result<T, StoreError> {
@@ -590,13 +652,28 @@ fn restrict(dir: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-/// Flushes every file under `dir`, then the folders, so a rename publishes only data
-/// that is on disk.
+/// Flushes every file under `dir`, then each folder after everything in it, so a rename
+/// publishes only data whose names are on disk too.
 fn sync_tree(dir: &Path) -> std::io::Result<()> {
-    for (_, path) in walk_files(dir, "")? {
-        File::open(path)?.sync_all()?;
+    for e in fs::read_dir(dir)? {
+        let e = e?;
+        if e.file_type()?.is_dir() {
+            sync_tree(&e.path())?;
+        } else {
+            // Windows flushes only through a handle that can write.
+            OpenOptions::new().write(true).open(e.path())?.sync_all()?;
+        }
     }
     sync_dir(dir)
+}
+
+/// Flushes `dir` and each folder above it up to `root`, so folders a publish just
+/// created are recorded in their parents.
+fn sync_up(dir: &Path, root: &Path) -> std::io::Result<()> {
+    for d in dir.ancestors().take_while(|d| d.starts_with(root)) {
+        sync_dir(d)?;
+    }
+    Ok(())
 }
 
 fn sync_dir(dir: &Path) -> std::io::Result<()> {

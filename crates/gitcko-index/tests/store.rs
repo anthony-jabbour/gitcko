@@ -433,3 +433,131 @@ fn eviction_goes_oldest_first_and_stops_at_the_cap() {
     assert_eq!(store.evict_to(total - 1, "kept").unwrap(), ["old"]);
     assert!(store.active("mid").unwrap().is_some());
 }
+
+#[test]
+fn malformed_parse_results_are_corrupt_not_a_crash() {
+    let (repo, _dir, a, _) = two_revisions();
+    let root = TempDir::new("store-root");
+    let store = Store::new(root.path());
+    let id = store.publish("demo", &a, &mut go).unwrap();
+    let rdir = index_dir(root.path(), "demo").join("revisions").join(&id);
+    let lib = |p: &serde_json::Value| {
+        p.as_array()
+            .unwrap()
+            .iter()
+            .position(|f| !f["extraction"]["symbols"].as_array().unwrap().is_empty())
+            .unwrap()
+    };
+    // A scope index past the scopes.
+    tamper(&rdir, "parsed.json", &mut |p| {
+        let i = lib(p);
+        p[i]["extraction"]["symbols"][0]["scope"] = 999.into();
+    });
+    assert!(matches!(
+        store.open(&repo, "demo", &id),
+        Err(StoreError::Corrupt { .. })
+    ));
+    store.publish("demo", &a, &mut go).unwrap();
+    // A scope that is its own parent.
+    tamper(&rdir, "parsed.json", &mut |p| {
+        let i = lib(p);
+        p[i]["extraction"]["scopes"] = serde_json::json!([{"parent": 0, "name": "x"}]);
+        p[i]["extraction"]["symbols"][0]["scope"] = 0.into();
+    });
+    assert!(matches!(
+        store.open(&repo, "demo", &id),
+        Err(StoreError::Corrupt { .. })
+    ));
+}
+
+#[test]
+fn a_revision_relabelled_with_another_commit_is_corrupt() {
+    let (repo, _dir, a, b) = two_revisions();
+    let root = TempDir::new("store-root");
+    let store = Store::new(root.path());
+    let id_a = store.publish("demo", &a, &mut go).unwrap();
+    let id_b = store.publish("demo", &b, &mut go).unwrap();
+    let revisions = index_dir(root.path(), "demo").join("revisions");
+    std::fs::remove_dir_all(revisions.join(&id_a)).unwrap();
+    std::fs::rename(revisions.join(&id_b), revisions.join(&id_a)).unwrap();
+    let commit = a.commit.clone();
+    tamper(&revisions.join(&id_a), "revision.json", &mut |h| {
+        h["commit"] = commit.clone().into()
+    });
+    assert!(matches!(
+        store.open(&repo, "demo", &id_a),
+        Err(StoreError::Corrupt { .. })
+    ));
+}
+
+#[test]
+fn every_search_file_must_be_vouched_for() {
+    let (repo, _dir, a, _) = two_revisions();
+    let root = TempDir::new("store-root");
+    let store = Store::new(root.path());
+    let id = store.publish("demo", &a, &mut go).unwrap();
+    let rdir = index_dir(root.path(), "demo").join("revisions").join(&id);
+    tamper(&rdir, "revision.json", &mut |h| {
+        let files = h["files"].as_object_mut().unwrap();
+        let lexical = files
+            .keys()
+            .find(|k| k.starts_with("lexical/"))
+            .unwrap()
+            .clone();
+        files.remove(&lexical);
+    });
+    assert!(matches!(
+        store.open(&repo, "demo", &id),
+        Err(StoreError::Corrupt { .. })
+    ));
+}
+
+#[test]
+fn purge_waits_for_a_publish_in_progress() {
+    let (repo, _dir, a, b) = two_revisions();
+    let root = TempDir::new("store-root");
+    let store = Store::new(root.path());
+    store.publish("demo", &a, &mut go).unwrap();
+    // Between the rename and the `active` swap, the new revision isn't active yet.
+    let mut during = Vec::new();
+    let id = store
+        .publish("demo", &b, &mut |step| {
+            if step == PublishStep::Activate {
+                during.push(store.purge_stale("demo"));
+                during.push(store.purge_repo("demo").map(|()| 0));
+            }
+            true
+        })
+        .unwrap();
+    assert_eq!(during, [Err(StoreError::InUse), Err(StoreError::InUse)]);
+    assert_same(&store.open(&repo, "demo", &id).unwrap(), &b);
+}
+
+#[test]
+fn a_revision_of_same_shaped_commit_is_not_this_one() {
+    // Same paths and kinds, different content: only the object ids tell them apart.
+    let dir = empty_repo("store-shape");
+    let first = literal_commit(dir.path(), V1);
+    let mut edited: Vec<(&[u8], &str, &[u8])> = V1.to_vec();
+    edited[2].2 = b"pub fn helper(xs: &[u32]) -> u32 {\n    0\n}\n";
+    let second = literal_commit(dir.path(), &edited);
+    let repo = Repo::open(dir.path()).unwrap();
+    let limits = IndexLimits::default();
+    let a = build(&repo, repo.resolve(&first).unwrap(), &limits).unwrap();
+    let c = build(&repo, repo.resolve(&second).unwrap(), &limits).unwrap();
+    let root = TempDir::new("store-root");
+    let store = Store::new(root.path());
+    let id_a = store.publish("demo", &a, &mut go).unwrap();
+    let id_c = store.publish("demo", &c, &mut go).unwrap();
+    let revisions = index_dir(root.path(), "demo").join("revisions");
+    std::fs::remove_dir_all(revisions.join(&id_a)).unwrap();
+    std::fs::rename(revisions.join(&id_c), revisions.join(&id_a)).unwrap();
+    let commit = a.commit.clone();
+    tamper(&revisions.join(&id_a), "revision.json", &mut |h| {
+        h["commit"] = commit.clone().into()
+    });
+    assert!(matches!(
+        store.open(&repo, "demo", &id_a),
+        Err(StoreError::Corrupt { .. })
+    ));
+}
