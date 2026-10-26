@@ -356,3 +356,260 @@ fn literal_search_honours_language_and_role_filters() {
     let r = rev.search_code(&repo, &q, 1 << 20).unwrap();
     assert!(r.hits.is_empty(), "{:?}", r.hits);
 }
+
+fn built_with(files: &[(&[u8], &str, &[u8])], limits: &IndexLimits) -> (Revision, Repo, TempDir) {
+    let dir = empty_repo("query");
+    let commit = literal_commit(dir.path(), files);
+    let repo = Repo::open(dir.path()).unwrap();
+    let rev = build(&repo, repo.resolve(&commit).unwrap(), limits).unwrap();
+    (rev, repo, dir)
+}
+
+fn has(item: &gitcko_index::ContextItem, source: Source) -> bool {
+    item.sources.iter().any(|(s, _)| *s == source)
+}
+
+#[test]
+fn a_declaration_in_a_file_too_big_to_parse_is_not_proven_absent() {
+    let big = format!("pub fn hidden() {{}}\n{}", "// pad\n".repeat(40));
+    let files: &[(&[u8], &str, &[u8])] = &[
+        (b"Cargo.toml", "100644", b"[package]\nname = \"demo\"\n"),
+        (b"src/lib.rs", "100644", b"mod big;\npub fn shown() {}\n"),
+        (b"src/big.rs", "100644", big.as_bytes()),
+    ];
+    let limits = IndexLimits {
+        max_parse_bytes: 100,
+        ..IndexLimits::default()
+    };
+    let (rev, _repo, _dir) = built_with(files, &limits);
+    assert!(rev.coverage.parsing.is_complete(), "the premise");
+    let m = rev.find_symbol("hidden", None, 10);
+    assert!(m.symbols.is_empty());
+    assert!(!m.coverage.is_complete(), "{:?}", m.coverage);
+    // Scoped to a file that was parsed, the answer is complete.
+    let lib = RepoPath::parse("src/lib.rs").unwrap();
+    assert!(
+        rev.find_symbol("hidden", Some(&lib), 10)
+            .coverage
+            .is_complete()
+    );
+}
+
+#[test]
+fn literal_search_counts_unavailable_files_in_its_scope() {
+    let mut files: Vec<(&[u8], &str, &[u8])> = FILES.to_vec();
+    files.push((b"bad\xff.rs", "100644", b"pub fn x() {}\n"));
+    let (rev, repo, _dir) = built(&files);
+    let r = rev
+        .search_code(
+            &repo,
+            &query("helper", CodeSearchMode::Literal, 10),
+            1 << 20,
+        )
+        .unwrap();
+    assert!(!r.coverage.is_complete(), "{:?}", r.coverage);
+    // Outside the scope it isn't a gap.
+    let mut q = query("helper", CodeSearchMode::Literal, 10);
+    q.path_prefix = Some("src/".into());
+    let r = rev.search_code(&repo, &q, 1 << 20).unwrap();
+    assert!(r.coverage.is_complete(), "{:?}", r.coverage);
+}
+
+#[test]
+fn a_full_page_does_not_hide_a_scan_limit() {
+    let big = "// pad\n".repeat(200);
+    let (rev, repo, _dir) = built(&[
+        (b"Cargo.toml", "100644", b"[package]\nname = \"demo\"\n"),
+        (b"src/a.rs", "100644", b"fn needle() {}\n"),
+        (b"src/b.rs", "100644", big.as_bytes()),
+    ]);
+    let mut q = query("needle", CodeSearchMode::Literal, 1);
+    q.path_prefix = Some("src/".into());
+    let r = rev.search_code(&repo, &q, 100).unwrap();
+    assert_eq!(r.hits.len(), 1);
+    assert!(!r.coverage.is_complete(), "{:?}", r.coverage);
+}
+
+#[test]
+fn a_large_lexical_limit_with_few_matches_is_not_truncated() {
+    let (rev, repo, _dir) = built(FILES);
+    let r = rev
+        .search_code(
+            &repo,
+            &query(
+                "helper",
+                CodeSearchMode::Lexical(QueryMode::Identifier),
+                600,
+            ),
+            0,
+        )
+        .unwrap();
+    assert!(!r.truncated && r.hits.len() < 500);
+}
+
+#[test]
+fn same_module_tests_follow_real_module_ownership() {
+    let (rev, _repo, _dir) = built(&[
+        (b"Cargo.toml", "100644", b"[package]\nname = \"demo\"\n"),
+        (
+            b"src/lib.rs",
+            "100644",
+            b"pub struct Foo;\nimpl Foo {\n    pub fn render(&self) {}\n}\n\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn draws() {}\n}\n",
+        ),
+        (
+            b"src/main.rs",
+            "100644",
+            b"fn main() {}\n\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn elsewhere() {}\n}\n",
+        ),
+    ]);
+    let render = rev
+        .graph
+        .symbols
+        .iter()
+        .position(|s| s.name == "render")
+        .unwrap();
+    let found: Vec<(&str, TestEvidence)> = rev
+        .find_tests(render, 10)
+        .tests
+        .iter()
+        .map(|&(t, why)| (rev.graph.symbols[t].name.as_str(), why))
+        .collect();
+    assert_eq!(found, [("draws", TestEvidence::SameModule)]);
+}
+
+#[test]
+fn context_anchors_only_on_changed_lines() {
+    let src = b"pub fn a() -> u32 {\n    1\n}\n\npub fn b() -> u32 {\n    3\n}\n";
+    let (rev, _repo, _dir) = built(&[
+        (b"Cargo.toml", "100644", b"[package]\nname = \"demo\"\n"),
+        (b"src/lib.rs", "100644", src),
+    ]);
+    let diff = "diff --git a/src/lib.rs b/src/lib.rs\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -3,5 +3,5 @@\n }\n \n pub fn b() -> u32 {\n-    2\n+    3\n }\n";
+    let change = gitcko_diff::parse(diff).unwrap();
+    let bundle = rev.retrieve(&change, &RetrievalBudget::default());
+    let anchors: Vec<&str> = bundle
+        .items
+        .iter()
+        .filter(|i| has(i, Source::Anchor))
+        .map(|i| i.text.as_str())
+        .collect();
+    assert_eq!(anchors.len(), 1, "{anchors:?}");
+    assert!(anchors[0].contains("pub fn b"));
+}
+
+const NESTED: &[u8] = b"pub mod inner {\n    pub fn nested() -> u32 {\n        1\n    }\n}\n\npub fn caller() -> u32 {\n    inner::nested()\n}\n\npub fn changed() {}\n\npub mod callers {\n    pub fn one() {\n        super::changed();\n    }\n    pub fn two() {\n        super::changed();\n    }\n}\n\n/// Mentions inner, nothing more.\npub fn unrelated() {}\n";
+
+fn nested_change(line: u32, old: &str, new: &str) -> gitcko_diff::ChangeSet {
+    let diff = format!(
+        "diff --git a/src/lib.rs b/src/lib.rs\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -{line},1 +{line},1 @@\n-{old}\n+{new}\n"
+    );
+    gitcko_diff::parse(&diff).unwrap()
+}
+
+#[test]
+fn a_nested_change_seeds_the_graph_from_the_symbol_it_touches() {
+    let (rev, _repo, _dir) = built(&[
+        (b"Cargo.toml", "100644", b"[package]\nname = \"demo\"\n"),
+        (b"src/lib.rs", "100644", NESTED),
+    ]);
+    let bundle = rev.retrieve(
+        &nested_change(3, "        0", "        1"),
+        &RetrievalBudget::default(),
+    );
+    assert!(
+        bundle
+            .items
+            .iter()
+            .any(|i| i.text.contains("pub fn caller") && has(i, Source::Graph)),
+        "{:?}",
+        bundle.items.iter().map(|i| &i.sources).collect::<Vec<_>>()
+    );
+    // The module itself isn't a changed symbol: its name isn't searched for.
+    assert!(
+        !bundle
+            .items
+            .iter()
+            .any(|i| i.text.contains("pub fn unrelated")),
+        "{:?}",
+        bundle.items.iter().map(|i| &i.text).collect::<Vec<_>>()
+    );
+    // The call into the module's nested function is related.
+    let nested = sym(&rev, "demo::inner::nested");
+    assert!(bundle.relationships.iter().any(|&e| {
+        rev.graph.edges[e].to == gitcko_graph::Target::Resolved(Endpoint::Symbol(nested))
+    }));
+}
+
+#[test]
+fn several_graph_hits_in_one_chunk_count_once() {
+    let (rev, _repo, _dir) = built(&[
+        (b"Cargo.toml", "100644", b"[package]\nname = \"demo\"\n"),
+        (b"src/lib.rs", "100644", NESTED),
+    ]);
+    let bundle = rev.retrieve(
+        &nested_change(11, "pub fn changed() { }", "pub fn changed() {}"),
+        &RetrievalBudget::default(),
+    );
+    let callers = bundle
+        .items
+        .iter()
+        .find(|i| i.text.contains("pub mod callers"))
+        .expect("the callers' module");
+    let graph = callers
+        .sources
+        .iter()
+        .filter(|(s, _)| *s == Source::Graph)
+        .count();
+    assert_eq!(graph, 1, "{:?}", callers.sources);
+}
+
+#[test]
+fn context_keeps_the_lexical_search_cutoff() {
+    let (rev, _repo, _dir) = built(FILES);
+    let diff = "diff --git a/src/util.rs b/src/util.rs\n--- a/src/util.rs\n+++ b/src/util.rs\n@@ -4,1 +4,1 @@\n-        sum += x;\n+        sum += *x;\n";
+    let change = gitcko_diff::parse(diff).unwrap();
+    let bundle = rev.retrieve(
+        &change,
+        &RetrievalBudget {
+            lexical_hits: 1,
+            ..RetrievalBudget::default()
+        },
+    );
+    assert!(bundle.truncated && bundle.omitted > 0, "{}", bundle.omitted);
+}
+
+#[test]
+fn a_pure_deletion_anchors_where_the_lines_were() {
+    let (rev, _repo, _dir) = built(&[
+        (b"Cargo.toml", "100644", b"[package]\nname = \"demo\"\n"),
+        (b"src/lib.rs", "100644", b"pub fn a() {}\n\npub fn b() {}\n"),
+    ]);
+    // `// gone` was line 3, just above `b`; git writes the new side as "after line 2".
+    let diff = "diff --git a/src/lib.rs b/src/lib.rs\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -3,1 +2,0 @@\n-// gone\n";
+    let bundle = rev.retrieve(
+        &gitcko_diff::parse(diff).unwrap(),
+        &RetrievalBudget::default(),
+    );
+    let anchors: Vec<&str> = bundle
+        .items
+        .iter()
+        .filter(|i| has(i, Source::Anchor))
+        .map(|i| i.text.as_str())
+        .collect();
+    assert_eq!(anchors.len(), 1, "{anchors:?}");
+    assert!(anchors[0].contains("pub fn b"), "{anchors:?}");
+    // Deleting the file's last lines leaves no line after them: the one before anchors.
+    let diff = "diff --git a/src/lib.rs b/src/lib.rs\n--- a/src/lib.rs\n+++ b/src/lib.rs\n@@ -4,1 +3,0 @@\n-// tail\n";
+    let bundle = rev.retrieve(
+        &gitcko_diff::parse(diff).unwrap(),
+        &RetrievalBudget::default(),
+    );
+    assert!(
+        bundle
+            .items
+            .iter()
+            .any(|i| has(i, Source::Anchor) && i.text.contains("pub fn b")),
+        "{:?}",
+        bundle.items.iter().map(|i| &i.text).collect::<Vec<_>>()
+    );
+}

@@ -6,7 +6,7 @@
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 
-use gitcko_diff::ChangeSet;
+use gitcko_diff::{ChangeSet, LineKind};
 use gitcko_domain::{ContentHash, Coverage, Reason, RepoPath, SourceSpan};
 use gitcko_graph::{EdgeKind, Endpoint, Target};
 use gitcko_search::{Query, QueryMode};
@@ -114,30 +114,61 @@ impl Revision {
     /// anything cut is counted, never silently dropped (§20.5).
     pub fn retrieve(&self, change: &ChangeSet, budget: &RetrievalBudget) -> ContextBundle {
         let chunks_of = self.chunks_by_path();
-        // 1. Anchors: chunks overlapping the changed lines of each file.
+        let mut symbols_of: HashMap<&str, Vec<usize>> = HashMap::new();
+        for (i, s) in self.graph.symbols.iter().enumerate() {
+            symbols_of
+                .entry(self.graph.files[s.file].path.as_str())
+                .or_default()
+                .push(i);
+        }
+        // 1. Anchors: chunks overlapping the changed lines of each file. The changed
+        // symbols are the innermost declarations those lines touch, so an edit inside a
+        // module's nested function seeds the function, not the module.
         let mut anchors: Vec<usize> = Vec::new();
+        let mut changed: BTreeSet<usize> = BTreeSet::new();
         for file in &change.files {
             let Some(path) = &file.new_path else { continue };
-            let Some(chunks) = chunks_of.get(path.as_str()) else {
-                continue;
-            };
-            for hunk in &file.hunks {
-                let (first, last) = (
-                    hunk.new_start as usize,
-                    (hunk.new_start + hunk.new_lines.max(1) - 1) as usize,
-                );
+            let chunks = chunks_of.get(path.as_str()).map_or(&[][..], Vec::as_slice);
+            let symbols = symbols_of.get(path.as_str()).map_or(&[][..], Vec::as_slice);
+            for (first, last) in file.hunks.iter().flat_map(changed_lines) {
+                let overlaps = |(a, b): (usize, usize)| a <= last && first <= b;
+                let mut here = Vec::new();
                 for &c in chunks {
-                    let (a, b) = self.chunks[c].span.lines();
-                    if a <= last && first <= b && !anchors.contains(&c) {
-                        anchors.push(c);
+                    if overlaps(self.chunks[c].span.lines()) {
+                        here.push(c);
+                        if !anchors.contains(&c) {
+                            anchors.push(c);
+                        }
                     }
+                }
+                let touched: Vec<usize> = symbols
+                    .iter()
+                    .copied()
+                    .filter(|&s| overlaps(self.graph.symbols[s].span.lines()))
+                    .collect();
+                let inside = |outer: usize, inner: usize| {
+                    let (o, i) = (
+                        &self.graph.symbols[outer].span,
+                        &self.graph.symbols[inner].span,
+                    );
+                    outer != inner
+                        && o.start_byte() <= i.start_byte()
+                        && i.end_byte() <= o.end_byte()
+                };
+                let innermost: Vec<usize> = touched
+                    .iter()
+                    .copied()
+                    .filter(|&s| !touched.iter().any(|&t| inside(s, t)))
+                    .collect();
+                if innermost.is_empty() {
+                    // Lines outside any declaration (a doc comment, an attribute): the
+                    // chunk's own symbol.
+                    changed.extend(here.iter().filter_map(|&c| self.chunks[c].symbol));
+                } else {
+                    changed.extend(innermost);
                 }
             }
         }
-        let changed: BTreeSet<usize> = anchors
-            .iter()
-            .filter_map(|&c| self.chunks[c].symbol)
-            .collect();
 
         // 2. Graph neighbourhood, nearest first.
         let symbol_chunk = self.symbol_chunks();
@@ -150,7 +181,11 @@ impl Revision {
             }
             for neighbour in self.neighbours(s) {
                 if seen.insert(neighbour) {
-                    if let Some(&c) = symbol_chunk.get(&neighbour) {
+                    // Several neighbours in one chunk (functions of one small module)
+                    // rank it once, at the nearest.
+                    if let Some(&c) = symbol_chunk.get(&neighbour)
+                        && !graph_ranked.contains(&c)
+                    {
                         graph_ranked.push(c);
                     }
                     queue.push_back((neighbour, depth + 1));
@@ -163,8 +198,9 @@ impl Revision {
             .iter()
             .map(|&s| self.graph.symbols[s].name.as_str())
             .collect();
-        let lexical_ranked: Vec<usize> = if names.is_empty() {
-            Vec::new()
+        // Matches past `lexical_hits` are left out, and counted like any other cut.
+        let (lexical_ranked, lexical_cut): (Vec<usize>, usize) = if names.is_empty() {
+            (Vec::new(), 0)
         } else {
             self.lexical
                 .search(
@@ -172,7 +208,11 @@ impl Revision {
                     budget.lexical_hits,
                     0,
                 )
-                .map(|r| r.hits.iter().map(|h| h.id as usize).collect())
+                .map(|r| {
+                    let ids: Vec<usize> = r.hits.iter().map(|h| h.id as usize).collect();
+                    let cut = r.total.saturating_sub(ids.len());
+                    (ids, cut)
+                })
                 .unwrap_or_default()
         };
 
@@ -205,7 +245,7 @@ impl Revision {
         // 5. Pack into the budget.
         let mut items = Vec::new();
         let mut bytes = 0;
-        let mut omitted = 0;
+        let mut omitted = lexical_cut;
         for (c, score, sources) in order {
             let chunk = &self.chunks[c];
             let text = format!("{}\n{}", chunk.header, chunk.text);
@@ -226,9 +266,12 @@ impl Revision {
                 score,
             });
         }
-        let included: BTreeSet<usize> = items
+        // Every symbol a packed chunk holds, nested ones included.
+        let packed: BTreeSet<usize> = items.iter().map(|i| i.chunk).collect();
+        let included: BTreeSet<usize> = symbol_chunk
             .iter()
-            .filter_map(|i| self.chunks[i.chunk].symbol)
+            .filter(|(_, c)| packed.contains(c))
+            .map(|(&s, _)| s)
             .collect();
         let relationships = self
             .graph
@@ -336,4 +379,23 @@ impl Revision {
         }
         map
     }
+}
+
+/// The new-side line ranges a hunk changes: each added line, and the boundary where lines
+/// were removed (the lines either side of it). Unchanged context lines aren't changes.
+fn changed_lines(hunk: &gitcko_diff::Hunk) -> Vec<(usize, usize)> {
+    let mut out = Vec::new();
+    // A hunk adding nothing (`+N,0`) starts after line N.
+    let mut line = hunk.new_start as usize + usize::from(hunk.new_lines == 0);
+    for l in &hunk.lines {
+        match l.kind {
+            LineKind::Added => {
+                out.push((line, line));
+                line += 1;
+            }
+            LineKind::Removed => out.push((line.saturating_sub(1).max(1), line)),
+            LineKind::Context => line += 1,
+        }
+    }
+    out
 }

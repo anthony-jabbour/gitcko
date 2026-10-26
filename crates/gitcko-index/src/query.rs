@@ -139,8 +139,38 @@ impl Revision {
         let (symbols, truncated) = page(ranked.into_iter().map(|(_, i)| i).collect(), limit, 0);
         SymbolMatches {
             symbols,
-            coverage: self.coverage.parsing.clone(),
+            coverage: self.declaration_coverage(path),
             truncated,
+        }
+    }
+
+    /// Parsing coverage, made partial by source files in scope that were never parsed
+    /// (too big, unreadable, over a limit): a declaration there can't be seen.
+    fn declaration_coverage(&self, path: Option<&RepoPath>) -> Coverage {
+        let parsed: std::collections::BTreeSet<usize> =
+            self.parsed.iter().map(|p| p.entry).collect();
+        let unparsed = self
+            .manifest
+            .entries
+            .iter()
+            .enumerate()
+            .filter(|(i, e)| {
+                path.is_none_or(|p| e.path == p.as_str())
+                    && !parsed.contains(i)
+                    && (e.language.is_some_and(|l| l.has_adapter())
+                        || matches!(
+                            e.disposition,
+                            Disposition::ExcludedResourceLimit | Disposition::Unavailable
+                        ))
+            })
+            .count() as u64;
+        if unparsed == 0 {
+            return self.coverage.parsing.clone();
+        }
+        Coverage::Partial {
+            reason: Reason::new("files_not_parsed").expect("valid code"),
+            // Already partial parses are a second gap, of unknown size.
+            omitted: self.coverage.parsing.is_complete().then_some(unparsed),
         }
     }
 
@@ -192,10 +222,7 @@ impl Revision {
     pub fn find_tests(&self, symbol: usize, limit: usize) -> TestCandidates {
         let g = &self.graph;
         let target = &g.symbols[symbol];
-        let module_prefix = target
-            .qualified_name
-            .rsplit_once("::")
-            .map_or(String::new(), |(m, _)| format!("{m}::"));
+        let home = self.modules_of(symbol);
         let mut found: Vec<(usize, TestEvidence)> = Vec::new();
         let mut add = |s: usize, why| {
             if !found.iter().any(|(t, _)| *t == s) {
@@ -211,10 +238,15 @@ impl Revision {
             }
         }
         let is_test = |s: &gitcko_graph::GraphSymbol| s.kind == SymbolKind::Test;
+        // The symbol's own module, or a module directly inside it (`mod tests`), in the
+        // same crate target.
         for (i, s) in g.symbols.iter().enumerate() {
             if is_test(s)
-                && s.qualified_name.starts_with(&module_prefix)
-                && !module_prefix.is_empty()
+                && self.modules_of(i).iter().any(|(c, m)| {
+                    home.iter().any(|(hc, hm)| {
+                        c == hc && (m == hm || m.split_last().is_some_and(|(_, p)| p == hm))
+                    })
+                })
             {
                 add(i, TestEvidence::SameModule);
             }
@@ -268,6 +300,36 @@ impl Revision {
             crates,
             languages: languages.into_iter().collect(),
         }
+    }
+
+    /// Every (crate target, module path) a symbol lives in: its file's module in each
+    /// target, plus the inline `mod` blocks around it.
+    fn modules_of(&self, symbol: usize) -> Vec<(usize, Vec<String>)> {
+        let g = &self.graph;
+        let s = &g.symbols[symbol];
+        let mut inline: Vec<&gitcko_graph::GraphSymbol> = g
+            .symbols
+            .iter()
+            .enumerate()
+            .filter(|&(i, m)| {
+                i != symbol
+                    && m.file == s.file
+                    && m.kind == SymbolKind::Module
+                    && m.span.start_byte() <= s.span.start_byte()
+                    && s.span.end_byte() <= m.span.end_byte()
+            })
+            .map(|(_, m)| m)
+            .collect();
+        inline.sort_by_key(|m| m.span.start_byte());
+        g.files[s.file]
+            .memberships
+            .iter()
+            .map(|(c, module)| {
+                let mut path = module.clone();
+                path.extend(inline.iter().map(|m| m.name.clone()));
+                (*c, path)
+            })
+            .collect()
     }
 
     fn incoming(&self, kind: EdgeKind, target: &Endpoint, limit: usize) -> Relations {
@@ -330,7 +392,7 @@ impl Revision {
         Ok(CodeResults {
             hits,
             total: Some(results.total),
-            truncated: results.truncated || query.limit > MAX_RESULTS,
+            truncated: results.truncated,
             coverage: self.coverage.lexical.clone(),
         })
     }
@@ -348,30 +410,33 @@ impl Revision {
         let mut hits = Vec::new();
         let mut skipped = 0u64;
         let mut scanned = 0u64;
-        let mut cut = false;
+        let (mut page_full, mut budget_spent) = (false, false);
         let mut seen = 0usize;
-        'files: for e in &self.manifest.entries {
-            let Some(path) = &e.repo_path else { continue };
-            if !matches!(e.disposition, Disposition::Parse | Disposition::LexicalOnly) {
-                continue;
-            }
-            // The same filters, spelled the same way, as a lexical search.
-            let language = e.language.map(crate::build::language_name);
-            if query
+        // The same filters, spelled the same way, as a lexical search. A file whose
+        // language isn't known (unreadable) may be in scope.
+        let in_scope = |e: &crate::ManifestEntry| {
+            query
                 .path_prefix
                 .as_ref()
-                .is_some_and(|p| !path.as_str().starts_with(p.as_str()))
-                || query.language.is_some() && query.language != language
-                || query
+                .is_none_or(|p| e.path.starts_with(p.as_str()))
+                && (query.language.is_none()
+                    || e.language.is_none()
+                    || query.language == e.language.map(crate::build::language_name))
+                && query
                     .role
                     .as_ref()
-                    .is_some_and(|r| *r != crate::build::role_name(e.role))
+                    .is_none_or(|r| *r == crate::build::role_name(e.role))
+        };
+        'files: for e in &self.manifest.entries {
+            let Some(path) = &e.repo_path else { continue };
+            if !matches!(e.disposition, Disposition::Parse | Disposition::LexicalOnly)
+                || !in_scope(e)
             {
                 continue;
             }
             let size = e.size.unwrap_or(0);
             if scanned + size > max_scan_bytes {
-                cut = true;
+                budget_spent = true;
                 break;
             }
             scanned += size;
@@ -390,7 +455,7 @@ impl Revision {
                     continue;
                 }
                 if hits.len() == limit {
-                    cut = true;
+                    page_full = true;
                     break 'files;
                 }
                 hits.push(CodeHit {
@@ -404,14 +469,20 @@ impl Revision {
             .manifest
             .entries
             .iter()
-            .filter(|e| matches!(e.disposition, Disposition::ExcludedResourceLimit))
+            .filter(|e| {
+                matches!(
+                    e.disposition,
+                    Disposition::ExcludedResourceLimit | Disposition::Unavailable
+                ) && in_scope(e)
+            })
             .count() as u64;
         let coverage = if skipped + excluded > 0 {
             Coverage::Partial {
                 reason: Reason::new("files_not_searchable").expect("valid code"),
-                omitted: Some(skipped + excluded),
+                // A spent scan budget leaves a second gap, of unknown size.
+                omitted: (!budget_spent).then_some(skipped + excluded),
             }
-        } else if cut && hits.len() < limit {
+        } else if budget_spent {
             Coverage::Partial {
                 reason: Reason::new("scan_limit").expect("valid code"),
                 omitted: None,
@@ -422,7 +493,7 @@ impl Revision {
         Ok(CodeResults {
             hits,
             total: None,
-            truncated: cut,
+            truncated: page_full || budget_spent,
             coverage,
         })
     }
