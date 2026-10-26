@@ -4,6 +4,8 @@
 //! carries its coverage, so "nothing found" is never mistaken for "nothing exists" when
 //! the index couldn't see everything (IX-024), and says when it was cut short (IX-033).
 
+use std::collections::HashMap;
+
 use gitcko_domain::{Coverage, Reason, RepoPath, SourceSpan};
 use gitcko_git::Repo;
 use gitcko_graph::{EdgeKind, Endpoint, Target};
@@ -222,7 +224,14 @@ impl Revision {
     pub fn find_tests(&self, symbol: usize, limit: usize) -> TestCandidates {
         let g = &self.graph;
         let target = &g.symbols[symbol];
-        let home = self.modules_of(symbol);
+        let mut inline: HashMap<usize, Vec<usize>> = HashMap::new();
+        for (i, s) in g.symbols.iter().enumerate() {
+            if s.kind == SymbolKind::Module {
+                inline.entry(s.file).or_default().push(i);
+            }
+        }
+        let modules_of = |s: usize| self.modules_of(s, inline.get(&g.symbols[s].file));
+        let home = modules_of(symbol);
         let mut found: Vec<(usize, TestEvidence)> = Vec::new();
         let mut add = |s: usize, why| {
             if !found.iter().any(|(t, _)| *t == s) {
@@ -242,7 +251,7 @@ impl Revision {
         // same crate target.
         for (i, s) in g.symbols.iter().enumerate() {
             if is_test(s)
-                && self.modules_of(i).iter().any(|(c, m)| {
+                && modules_of(i).iter().any(|(c, m)| {
                     home.iter().any(|(hc, hm)| {
                         c == hc && (m == hm || m.split_last().is_some_and(|(_, p)| p == hm))
                     })
@@ -303,22 +312,19 @@ impl Revision {
     }
 
     /// Every (crate target, module path) a symbol lives in: its file's module in each
-    /// target, plus the inline `mod` blocks around it.
-    fn modules_of(&self, symbol: usize) -> Vec<(usize, Vec<String>)> {
+    /// target, plus the inline `mod` blocks around it, from `modules` (the file's module
+    /// symbols).
+    fn modules_of(&self, symbol: usize, modules: Option<&Vec<usize>>) -> Vec<(usize, Vec<String>)> {
         let g = &self.graph;
         let s = &g.symbols[symbol];
-        let mut inline: Vec<&gitcko_graph::GraphSymbol> = g
-            .symbols
-            .iter()
-            .enumerate()
-            .filter(|&(i, m)| {
-                i != symbol
-                    && m.file == s.file
-                    && m.kind == SymbolKind::Module
-                    && m.span.start_byte() <= s.span.start_byte()
-                    && s.span.end_byte() <= m.span.end_byte()
+        let mut inline: Vec<&gitcko_graph::GraphSymbol> = modules
+            .into_iter()
+            .flatten()
+            .filter(|&&i| i != symbol)
+            .map(|&i| &g.symbols[i])
+            .filter(|m| {
+                m.span.start_byte() <= s.span.start_byte() && s.span.end_byte() <= m.span.end_byte()
             })
-            .map(|(_, m)| m)
             .collect();
         inline.sort_by_key(|m| m.span.start_byte());
         g.files[s.file]
@@ -412,15 +418,15 @@ impl Revision {
         let mut scanned = 0u64;
         let (mut page_full, mut budget_spent) = (false, false);
         let mut seen = 0usize;
-        // The same filters, spelled the same way, as a lexical search. A file whose
-        // language isn't known (unreadable) may be in scope.
-        let in_scope = |e: &crate::ManifestEntry| {
+        // The same filters, spelled the same way, as a lexical search. Counting files that
+        // couldn't be searched, one of unknown language (unreadable) may have matched.
+        let in_scope = |e: &crate::ManifestEntry, unknown_language_matches: bool| {
             query
                 .path_prefix
                 .as_ref()
                 .is_none_or(|p| e.path.starts_with(p.as_str()))
                 && (query.language.is_none()
-                    || e.language.is_none()
+                    || unknown_language_matches && e.language.is_none()
                     || query.language == e.language.map(crate::build::language_name))
                 && query
                     .role
@@ -430,7 +436,7 @@ impl Revision {
         'files: for e in &self.manifest.entries {
             let Some(path) = &e.repo_path else { continue };
             if !matches!(e.disposition, Disposition::Parse | Disposition::LexicalOnly)
-                || !in_scope(e)
+                || !in_scope(e, false)
             {
                 continue;
             }
@@ -473,7 +479,7 @@ impl Revision {
                 matches!(
                     e.disposition,
                     Disposition::ExcludedResourceLimit | Disposition::Unavailable
-                ) && in_scope(e)
+                ) && in_scope(e, true)
             })
             .count() as u64;
         let coverage = if skipped + excluded > 0 {

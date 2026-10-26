@@ -408,6 +408,11 @@ fn literal_search_counts_unavailable_files_in_its_scope() {
         )
         .unwrap();
     assert!(!r.coverage.is_complete(), "{:?}", r.coverage);
+    // Its language is unknown, so a language filter can't rule it out.
+    let mut q = query("helper", CodeSearchMode::Literal, 10);
+    q.language = Some("rust".into());
+    let r = rev.search_code(&repo, &q, 1 << 20).unwrap();
+    assert!(!r.coverage.is_complete(), "{:?}", r.coverage);
     // Outside the scope it isn't a gap.
     let mut q = query("helper", CodeSearchMode::Literal, 10);
     q.path_prefix = Some("src/".into());
@@ -454,7 +459,7 @@ fn same_module_tests_follow_real_module_ownership() {
         (
             b"src/lib.rs",
             "100644",
-            b"pub struct Foo;\nimpl Foo {\n    pub fn render(&self) {}\n}\n\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn draws() {}\n}\n",
+            b"pub struct Foo;\nimpl Foo {\n    pub fn render(&self) {}\n}\n\npub fn outer() {\n    fn local() {}\n}\n\npub mod between {}\n\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn draws() {}\n}\n",
         ),
         (
             b"src/main.rs",
@@ -475,6 +480,15 @@ fn same_module_tests_follow_real_module_ownership() {
         .map(|&(t, why)| (rev.graph.symbols[t].name.as_str(), why))
         .collect();
     assert_eq!(found, [("draws", TestEvidence::SameModule)]);
+    // A function inside a function is still in the file's module.
+    let local = sym(&rev, "demo::outer::local");
+    let found: Vec<&str> = rev
+        .find_tests(local, 10)
+        .tests
+        .iter()
+        .map(|&(t, _)| rev.graph.symbols[t].name.as_str())
+        .collect();
+    assert_eq!(found, ["draws"]);
 }
 
 #[test]
@@ -611,5 +625,26 @@ fn a_pure_deletion_anchors_where_the_lines_were() {
             .any(|i| has(i, Source::Anchor) && i.text.contains("pub fn b")),
         "{:?}",
         bundle.items.iter().map(|i| &i.text).collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn a_language_filter_never_scans_files_of_unknown_language() {
+    let mut files: Vec<(&[u8], &str, &[u8])> = FILES.to_vec();
+    files.push((b"Makefile", "100644", b"all:\n\thelper\n"));
+    let (rev, repo, _dir) = built(&files);
+    let mut q = query("helper", CodeSearchMode::Literal, 50);
+    let all = rev.search_code(&repo, &q, 1 << 20).unwrap();
+    assert!(
+        all.hits.iter().any(|h| h.path.as_str() == "Makefile"),
+        "the premise"
+    );
+    q.language = Some("rust".into());
+    let r = rev.search_code(&repo, &q, 1 << 20).unwrap();
+    assert!(!r.hits.is_empty());
+    assert!(
+        r.hits.iter().all(|h| h.path.as_str().ends_with(".rs")),
+        "{:?}",
+        r.hits
     );
 }
