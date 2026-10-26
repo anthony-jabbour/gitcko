@@ -458,3 +458,229 @@ fn modules_nest_in_folders_and_hyphens_become_underscores() {
             .any(|c| c.name == "my_test" && c.target == "test")
     );
 }
+
+// ---- Review round 1 findings, one test each. ----
+
+fn resolved(g: &Graph, kind: EdgeKind, from: &str) -> Vec<String> {
+    edges_of(g, kind)
+        .into_iter()
+        .filter(|e| endpoint(g, &e.from) == from)
+        .map(|e| target(g, &e.to))
+        .collect()
+}
+
+#[test]
+fn same_named_items_in_two_targets_of_one_package_get_different_keys() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"foo\"\n"),
+        ("src/lib.rs", "pub fn helper() {}\n"),
+        ("src/main.rs", "fn helper() {}\nfn main() {}\n"),
+    ];
+    let g = build_from(&files).graph;
+    let keys: Vec<_> = g
+        .symbols
+        .iter()
+        .filter(|s| s.name == "helper")
+        .map(|s| s.key.clone())
+        .collect();
+    assert_eq!(keys.len(), 2);
+    assert_ne!(keys[0], keys[1]);
+}
+
+#[test]
+fn a_repeated_module_prefix_is_not_a_cycle() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"r\"\n"),
+        (
+            "src/lib.rs",
+            "pub mod a;\npub fn f() { crate::a::alias::Thing(); }\n",
+        ),
+        (
+            "src/a.rs",
+            "pub fn Thing() {}\npub mod alias { pub use crate::a::Thing; }\n",
+        ),
+    ];
+    let g = build_from(&files).graph;
+    assert!(
+        find(&g, EdgeKind::Calls, "r::f", "r::a::Thing").is_some(),
+        "{:?}",
+        resolved(&g, EdgeKind::Calls, "r::f")
+    );
+}
+
+#[test]
+fn self_in_a_method_means_the_impl_type() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"p\"\n"),
+        (
+            "src/lib.rs",
+            "pub struct Point;\nimpl Point {\n    pub fn new() -> Point { Point }\n    pub fn copy() -> Point { Self::new() }\n}\n",
+        ),
+    ];
+    let g = build_from(&files).graph;
+    assert!(
+        find(&g, EdgeKind::Calls, "p::Point::copy", "p::Point::new").is_some(),
+        "{:?}",
+        resolved(&g, EdgeKind::Calls, "p::Point::copy")
+    );
+}
+
+#[test]
+fn every_leading_super_steps_up_a_module() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"s\"\n"),
+        (
+            "src/lib.rs",
+            "pub fn top() {}\nmod a { mod b { fn g() { super::super::top(); } } }\n",
+        ),
+    ];
+    let g = build_from(&files).graph;
+    assert!(
+        find(&g, EdgeKind::Calls, "s::a::b::g", "s::top").is_some(),
+        "{:?}",
+        resolved(&g, EdgeKind::Calls, "s::a::b::g")
+    );
+}
+
+#[test]
+fn a_function_local_import_stays_in_its_function() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"l\"\n"),
+        (
+            "src/lib.rs",
+            "mod x { pub fn go() {} }\nmod y { pub fn go() {} }\nfn one() { use crate::x::go as run; run(); }\nfn two() { use crate::y::go as run; run(); }\n",
+        ),
+    ];
+    let g = build_from(&files).graph;
+    assert_eq!(resolved(&g, EdgeKind::Calls, "l::one"), ["l::x::go"]);
+    assert_eq!(resolved(&g, EdgeKind::Calls, "l::two"), ["l::y::go"]);
+}
+
+#[test]
+fn a_missing_item_under_a_local_module_is_unresolved_not_external() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"m\"\n"),
+        (
+            "src/lib.rs",
+            "mod util { pub fn kept() {} }\npub fn f() { util::deleted(); }\n",
+        ),
+    ];
+    let g = build_from(&files).graph;
+    let e = find(&g, EdgeKind::Calls, "m::f", "? util::deleted").expect("kept as unresolved");
+    assert!(
+        e.limitations
+            .iter()
+            .any(|r| r.as_str() == "unresolved_name"),
+        "{:?}",
+        e.limitations
+    );
+    assert!(!g.coverage[&EdgeKind::Calls].is_complete());
+}
+
+#[test]
+fn walk_limits_make_import_impl_and_extends_coverage_partial() {
+    use gitcko_syntax::ParseLimits;
+    let source = "use a::b;\nuse c::d;\nuse e::f;\npub trait T: U {}\nimpl T for X {}\n";
+    let x = adapter(Language::Rust).unwrap().extract(
+        source,
+        &ParseLimits {
+            max_references: 1,
+            ..ParseLimits::default()
+        },
+    );
+    let path = RepoPath::parse("src/lib.rs").unwrap();
+    let g = build(&GraphInput {
+        files: vec![FileInput {
+            path,
+            extraction: &x,
+        }],
+        manifests: vec![(
+            RepoPath::parse("Cargo.toml").unwrap(),
+            "[package]\nname = \"w\"\n",
+        )],
+    });
+    assert!(
+        !g.coverage[&EdgeKind::Imports].is_complete(),
+        "{:?}",
+        g.coverage
+    );
+}
+
+#[test]
+fn a_file_shared_by_two_targets_belongs_to_both() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"sh\"\n"),
+        ("src/lib.rs", "mod shared;\n"),
+        (
+            "src/main.rs",
+            "mod shared;\nfn main() { crate::shared::util(); }\n",
+        ),
+        ("src/shared.rs", "pub fn util() {}\n"),
+    ];
+    let g = build_from(&files).graph;
+    let calls = resolved(&g, EdgeKind::Calls, "sh::main");
+    assert_eq!(calls, ["sh::shared::util"]);
+}
+
+#[test]
+fn a_path_attribute_inside_an_inline_module_is_relative_to_that_module() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"pa\"\n"),
+        (
+            "src/lib.rs",
+            "mod outer {\n    #[path = \"actual.rs\"]\n    mod inner;\n}\n",
+        ),
+        ("src/outer/actual.rs", "pub fn here() {}\n"),
+    ];
+    let g = build_from(&files).graph;
+    let f = g
+        .files
+        .iter()
+        .find(|f| f.path.as_str() == "src/outer/actual.rs")
+        .unwrap();
+    assert_eq!(
+        (f.module.clone(), f.module_inferred),
+        (vec!["outer".to_string(), "inner".to_string()], false)
+    );
+}
+
+#[test]
+fn folder_binaries_and_explicit_targets_are_found() {
+    let files = [
+        (
+            "Cargo.toml",
+            "[package]\nname = \"t\"\n\n[[test]]\nname = \"spec\"\npath = \"checks/spec.rs\"\n\n[[example]]\nname = \"demo\"\npath = \"demos/demo.rs\"\n",
+        ),
+        ("src/bin/tool/main.rs", "fn main() {}\n"),
+        ("checks/spec.rs", "#[test]\nfn s() {}\n"),
+        ("demos/demo.rs", "fn main() {}\n"),
+    ];
+    let g = build_from(&files).graph;
+    let targets: Vec<(String, String)> = g
+        .crates
+        .iter()
+        .map(|c| (c.target.clone(), c.name.clone()))
+        .collect();
+    for want in [("bin", "tool"), ("test", "spec"), ("example", "demo")] {
+        assert!(
+            targets.contains(&(want.0.to_string(), want.1.to_string())),
+            "{want:?} in {targets:?}"
+        );
+    }
+}
+
+#[test]
+fn importing_a_module_is_one_target_not_two() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"mi\"\n"),
+        ("src/lib.rs", "mod a {}\nuse crate::a;\n"),
+    ];
+    let g = build_from(&files).graph;
+    let e = edges_of(&g, EdgeKind::Imports).into_iter().next().unwrap();
+    assert_eq!(
+        e.resolution,
+        Resolution::InferredStatic,
+        "{}",
+        target(&g, &e.to)
+    );
+}

@@ -86,6 +86,28 @@ pub(crate) fn layout(input: &GraphInput<'_>) -> Layout {
             let file = bin.get("path").and_then(|p| p.as_str()).unwrap_or(&default);
             add(name.replace('-', "_"), file, "bin");
         }
+        for (key, folder) in [
+            ("test", "tests"),
+            ("bench", "benches"),
+            ("example", "examples"),
+        ] {
+            for entry in table
+                .get(key)
+                .and_then(|t| t.as_array())
+                .into_iter()
+                .flatten()
+            {
+                let Some(name) = entry.get("name").and_then(|n| n.as_str()) else {
+                    continue;
+                };
+                let default = format!("{folder}/{name}.rs");
+                let file = entry
+                    .get("path")
+                    .and_then(|p| p.as_str())
+                    .unwrap_or(&default);
+                add(name.replace('-', "_"), file, key);
+            }
+        }
         add(package.replace('-', "_"), "src/main.rs", "bin");
         add("build_script_build".into(), "build.rs", "build");
         // Cargo's automatic targets: one crate per file in these folders.
@@ -109,19 +131,35 @@ pub(crate) fn layout(input: &GraphInput<'_>) -> Layout {
                     .replace('-', "_");
                 add(stem, &file[dir.len()..], target);
             }
+            // A folder target: `src/bin/tool/main.rs`, `tests/suite/main.rs`.
+            let folders: Vec<&str> = present
+                .iter()
+                .filter_map(|p| p.strip_prefix(&prefix)?.strip_suffix("/main.rs"))
+                .filter(|name| !name.contains('/'))
+                .collect();
+            for name in folders {
+                add(
+                    name.replace('-', "_"),
+                    &format!("{folder}{name}/main.rs"),
+                    target,
+                );
+            }
         }
     }
 
     let extraction: BTreeMap<&str, &crate::FileInput<'_>> =
         input.files.iter().map(|f| (f.path.as_str(), f)).collect();
-    let mut assigned: BTreeMap<String, (usize, Vec<String>)> = BTreeMap::new();
+    // A file can be in several targets (`mod shared;` in both `lib.rs` and `main.rs`), so
+    // membership is per target; the first target to reach a file is its primary one.
+    let mut assigned: BTreeMap<String, Vec<(usize, Vec<String>)>> = BTreeMap::new();
     for (unit, krate) in crates.iter().enumerate() {
         let mut queue = VecDeque::from([(krate.root.as_str().to_string(), Vec::<String>::new())]);
         while let Some((file, module)) = queue.pop_front() {
-            if assigned.contains_key(&file) {
+            let memberships = assigned.entry(file.clone()).or_default();
+            if memberships.iter().any(|(u, _)| *u == unit) {
                 continue;
             }
-            assigned.insert(file.clone(), (unit, module.clone()));
+            memberships.push((unit, module.clone()));
             let Some(input) = extraction.get(file.as_str()) else {
                 continue;
             };
@@ -132,7 +170,20 @@ pub(crate) fn layout(input: &GraphInput<'_>) -> Layout {
                 child_module.extend(scope.iter().cloned());
                 child_module.push(decl.name.clone());
                 let candidates = match &decl.path_attr {
-                    Some(path) => vec![normalize(&format!("{}{path}", parent_dir(&file)))],
+                    // Relative to the file's folder at top level; inside inline modules, to
+                    // their folders, as for a plain `mod` (the Rust reference, "The path
+                    // attribute").
+                    Some(path) if scope.is_empty() => {
+                        vec![normalize(&format!("{}{path}", parent_dir(&file)))]
+                    }
+                    Some(path) => {
+                        let mut base = child_dir(&file, &crates[unit].root);
+                        for part in &scope {
+                            base.push_str(part);
+                            base.push('/');
+                        }
+                        vec![normalize(&format!("{base}{path}"))]
+                    }
                     None => {
                         let mut base = child_dir(&file, &crates[unit].root);
                         for part in &scope {
@@ -160,11 +211,12 @@ pub(crate) fn layout(input: &GraphInput<'_>) -> Layout {
     let files = paths
         .into_iter()
         .map(|path| match assigned.get(path.as_str()) {
-            Some((unit, module)) => FileNode {
+            Some(memberships) => FileNode {
                 path: path.clone(),
-                crate_unit: Some(*unit),
-                module: module.clone(),
+                crate_unit: Some(memberships[0].0),
+                module: memberships[0].1.clone(),
                 module_inferred: false,
+                memberships: memberships.clone(),
             },
             None => {
                 // No root reaches it: guess from the path, and say it's a guess.
@@ -182,7 +234,7 @@ pub(crate) fn layout(input: &GraphInput<'_>) -> Layout {
                     .strip_prefix("src/")
                     .unwrap_or(rest)
                     .trim_end_matches(".rs");
-                let module = rest
+                let module: Vec<String> = rest
                     .split('/')
                     .filter(|p| !matches!(*p, "mod" | "lib" | "main"))
                     .map(String::from)
@@ -190,6 +242,7 @@ pub(crate) fn layout(input: &GraphInput<'_>) -> Layout {
                 FileNode {
                     path: path.clone(),
                     crate_unit: unit,
+                    memberships: unit.map(|u| vec![(u, module.clone())]).unwrap_or_default(),
                     module,
                     module_inferred: true,
                 }

@@ -61,6 +61,10 @@ pub struct FileNode {
     /// Its module path inside that crate (`["shapes", "circle"]`), or a guess from the path.
     pub module: Vec<String>,
     pub module_inferred: bool,
+    /// Every crate target the file is part of, with its module path there; the first is
+    /// `crate_unit`/`module`. A file `mod`-declared by both `lib.rs` and `main.rs` is in
+    /// both, and names resolve in each.
+    pub memberships: Vec<(usize, Vec<String>)>,
 }
 
 /// A declaration in the graph.
@@ -194,9 +198,15 @@ pub fn build(input: &GraphInput<'_>) -> Graph {
             parts.extend(x.scope_path(s.scope));
             parts.push(s.name.clone());
             let qualified_name = parts.join("::");
+            // The target, not just its name: a package's library and binary are both
+            // `foo`, and the same item name in each must stay two identities.
+            let target_identity = f.crate_unit.map_or(String::new(), |u| {
+                let c = &crates[u];
+                format!("{}/{}/{}", c.name, c.target, c.root.as_str())
+            });
             symbols.push(GraphSymbol {
                 key: symbol_key(
-                    crate_name,
+                    &target_identity,
                     &f.module,
                     s.kind,
                     &qualified_name,
@@ -565,6 +575,20 @@ fn coverage(edges: &[Edge], extractions: &[&Extraction]) -> BTreeMap<EdgeKind, C
         .iter()
         .filter(|x| !x.reference_coverage.is_complete())
         .count() as u64;
+    // Files where a limit stopped the walk early or the shared reference budget ran out:
+    // imports, impls and supertraits there may simply not have been seen. (Calls guessed
+    // in macro arguments don't count: they hide no declarations or imports.)
+    let cut_files = extractions
+        .iter()
+        .filter(|x| {
+            let cut = |c: &Coverage| match c {
+                Coverage::Complete {} => false,
+                Coverage::Partial { reason, .. } => reason.as_str() != "macro_arguments",
+                Coverage::Unknown { .. } | Coverage::Unavailable { .. } => true,
+            };
+            cut(&x.coverage) || cut(&x.reference_coverage)
+        })
+        .count() as u64;
     let uncertain = |kind: EdgeKind| {
         edges
             .iter()
@@ -594,6 +618,8 @@ fn coverage(edges: &[Edge], extractions: &[&Extraction]) -> BTreeMap<EdgeKind, C
             kind,
             if n > 0 {
                 partial("unresolved_or_ambiguous", n)
+            } else if cut_files > 0 {
+                partial("file_partial", cut_files)
             } else {
                 Coverage::Complete {}
             },
@@ -626,7 +652,7 @@ fn coverage(edges: &[Edge], extractions: &[&Extraction]) -> BTreeMap<EdgeKind, C
 
 /// The logical identity of a symbol (INDEXING §11.3): no line numbers in it.
 fn symbol_key(
-    crate_name: &str,
+    target_identity: &str,
     module: &[String],
     kind: SymbolKind,
     qualified: &str,
@@ -636,7 +662,7 @@ fn symbol_key(
     let mut hash = sha2::Sha256::new();
     for part in [
         "rust",
-        crate_name,
+        target_identity,
         &module.join("::"),
         &format!("{kind:?}"),
         qualified,

@@ -6,7 +6,7 @@
 //! candidates, never exact. Visibility isn't checked, so a private item can be a
 //! candidate: for review context a lead is worth more than a strict answer.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use gitcko_syntax::{Extraction, SymbolKind};
 
@@ -109,17 +109,31 @@ const EXTERNAL_ROOTS: &[&str] = &[
     "env",
 ];
 
+/// One lookup's identity: module and name.
+type Key = (Option<usize>, Vec<String>, String);
+
+/// Per-resolution memory. Finished lookups are cached, so a name reached by two routes
+/// is resolved once (dense glob imports stay linear); lookups still running are tracked
+/// apart, so only a real cycle (a lookup needing itself) is cut.
+#[derive(Default)]
+struct Memo {
+    done: HashMap<Key, Vec<Place>>,
+    running: HashSet<Key>,
+}
+
 /// Everything name lookups need, built once per graph.
 pub(crate) struct Resolver<'a> {
     files: &'a [FileNode],
     symbols: &'a [GraphSymbol],
-    /// Items declared directly in each module.
+    /// Items declared directly in each module (modules themselves are in `children`).
     items: HashMap<ModuleId, HashMap<String, Vec<usize>>>,
     /// Submodules of each module.
     children: HashMap<ModuleId, BTreeSet<String>>,
     uses: HashMap<ModuleId, Vec<Use>>,
     /// Items declared inside a non-module scope (nested functions), by file and scope.
     local: HashMap<(usize, Vec<String>), HashMap<String, Vec<usize>>>,
+    /// `use` written inside a function, visible only there, by file and scope.
+    local_uses: HashMap<(usize, Vec<String>), Vec<Use>>,
     /// Methods, fields and variants of a type or trait, by its symbol.
     pub(crate) members: HashMap<usize, HashMap<String, Vec<usize>>>,
     /// Every method by name, for calls whose receiver type is unknown.
@@ -155,6 +169,7 @@ impl<'a> Resolver<'a> {
             children: HashMap::new(),
             uses: HashMap::new(),
             local: HashMap::new(),
+            local_uses: HashMap::new(),
             members: HashMap::new(),
             methods: HashMap::new(),
             libraries,
@@ -166,15 +181,6 @@ impl<'a> Resolver<'a> {
             .enumerate()
             .map(|(i, s)| ((s.file, s.local), i))
             .collect();
-        for f in files {
-            // Every file's module exists in its parent, even without a symbol for it.
-            if let Some((name, parent)) = f.module.split_last() {
-                r.children
-                    .entry((f.crate_unit, parent.to_vec()))
-                    .or_default()
-                    .insert(name.clone());
-            }
-        }
         for (i, s) in symbols.iter().enumerate() {
             let x = extractions[s.file];
             let local = &x.symbols[s.local];
@@ -205,19 +211,20 @@ impl<'a> Resolver<'a> {
             }
             match r.module_of(s.file, &scope) {
                 Some(module) if module.len() == scope.len() => {
-                    let id = r.module_id(s.file, &module);
-                    if s.kind == SymbolKind::Module {
-                        r.children
-                            .entry(id.clone())
-                            .or_default()
-                            .insert(s.name.clone());
+                    for id in r.module_ids(s.file, &module) {
+                        // A module is reached as a module, never also as a symbol, so a
+                        // plain `use crate::a;` has one target.
+                        if s.kind == SymbolKind::Module {
+                            r.children.entry(id).or_default().insert(s.name.clone());
+                        } else {
+                            r.items
+                                .entry(id)
+                                .or_default()
+                                .entry(s.name.clone())
+                                .or_default()
+                                .push(i);
+                        }
                     }
-                    r.items
-                        .entry(id)
-                        .or_default()
-                        .entry(s.name.clone())
-                        .or_default()
-                        .push(i);
                 }
                 _ => {
                     r.local
@@ -233,16 +240,25 @@ impl<'a> Resolver<'a> {
             for import in &x.imports {
                 let scope = x.scope_path(import.scope);
                 let module = r.module_of(file, &scope).unwrap_or_default();
-                let id = r.module_id(file, &module);
                 let name = if import.glob {
                     None
                 } else {
                     import.alias.clone().or_else(|| import.path.last().cloned())
                 };
-                r.uses.entry(id).or_default().push(Use {
+                let entry = Use {
                     name,
                     path: import.path.clone(),
-                });
+                };
+                if module.len() < scope.len() {
+                    r.local_uses.entry((file, scope)).or_default().push(entry);
+                } else {
+                    for id in r.module_ids(file, &module) {
+                        r.uses.entry(id).or_default().push(Use {
+                            name: entry.name.clone(),
+                            path: entry.path.clone(),
+                        });
+                    }
+                }
             }
         }
         r
@@ -257,12 +273,28 @@ impl<'a> Resolver<'a> {
             .map(<[String]>::to_vec)
     }
 
-    /// A file's module plus inline modules inside it.
+    /// A file's module plus inline modules inside it, in its primary target.
     fn module_id(&self, file: usize, inline: &[String]) -> ModuleId {
         let f = &self.files[file];
         let mut path = f.module.clone();
         path.extend(inline.iter().cloned());
         (f.crate_unit, path)
+    }
+
+    /// The same, in every target the file belongs to.
+    fn module_ids(&self, file: usize, inline: &[String]) -> Vec<ModuleId> {
+        let f = &self.files[file];
+        if f.memberships.is_empty() {
+            return vec![self.module_id(file, inline)];
+        }
+        f.memberships
+            .iter()
+            .map(|(unit, module)| {
+                let mut path = module.clone();
+                path.extend(inline.iter().cloned());
+                (Some(*unit), path)
+            })
+            .collect()
     }
 
     /// Records the members of a type that live in an `impl` block: the symbols whose
@@ -293,14 +325,8 @@ impl<'a> Resolver<'a> {
     pub(crate) fn resolve(&self, file: usize, scope: &[String], path: &[String]) -> Resolved {
         let inline = self.module_of(file, scope).unwrap_or_default();
         let (unit, module) = self.module_id(file, &inline);
-        let places = self.resolve_from(
-            unit,
-            &module,
-            Some((file, scope)),
-            path,
-            &mut BTreeSet::new(),
-            0,
-        );
+        let mut memo = Memo::default();
+        let places = self.resolve_from(unit, &module, Some((file, scope)), path, &mut memo, 0);
         let mut found: Vec<Endpoint> = places
             .iter()
             .filter_map(|p| match p {
@@ -312,8 +338,23 @@ impl<'a> Resolver<'a> {
         found.sort();
         found.dedup();
         if !found.is_empty() {
-            Resolved::Found(found)
-        } else if places.contains(&Place::External) || looks_external(path) {
+            return Resolved::Found(found);
+        }
+        if places.contains(&Place::External) {
+            return Resolved::External;
+        }
+        // A path whose start is in the repository (a local module, a workspace crate) and
+        // then leads nowhere is missing here, not another crate's.
+        let start = self.resolve_from(
+            unit,
+            &module,
+            Some((file, scope)),
+            &path[..1.min(path.len())],
+            &mut Memo::default(),
+            0,
+        );
+        let starts_inside = start.iter().any(|p| *p != Place::External);
+        if !starts_inside && looks_external(path) {
             Resolved::External
         } else {
             Resolved::Missing
@@ -326,7 +367,7 @@ impl<'a> Resolver<'a> {
         module: &[String],
         local: Option<(usize, &[String])>,
         path: &[String],
-        visiting: &mut BTreeSet<(Option<usize>, Vec<String>, String)>,
+        memo: &mut Memo,
         depth: usize,
     ) -> Vec<Place> {
         let Some((first, rest)) = path.split_first() else {
@@ -342,31 +383,11 @@ impl<'a> Resolver<'a> {
                 Some((_, parent)) => vec![Place::Module(unit, parent.to_vec())],
                 None => Vec::new(),
             },
-            // `Self` is the type of the innermost `impl` or the type being declared.
-            "Self" => local
-                .and_then(|(_, scope)| scope.last())
-                .map(|ty| {
-                    let ty: Vec<String> = ty.split("::").map(String::from).collect();
-                    self.resolve_from(unit, module, None, &ty, visiting, depth + 1)
-                })
-                .unwrap_or_default(),
+            "Self" => self.self_type(unit, module, local, memo, depth),
             name => {
-                let mut found = Vec::new();
-                // Nested items, innermost scope first.
-                if let Some((file, scope)) = local {
-                    for n in (0..=scope.len()).rev() {
-                        if let Some(syms) = self
-                            .local
-                            .get(&(file, scope[..n].to_vec()))
-                            .and_then(|m| m.get(name))
-                        {
-                            found.extend(syms.iter().map(|&s| Place::Symbol(s)));
-                            break;
-                        }
-                    }
-                }
+                let mut found = self.local_lookup(unit, module, local, name, memo, depth);
                 if found.is_empty() {
-                    found = self.lookup(unit, module, name, visiting, depth);
+                    found = self.lookup(unit, module, name, memo, depth);
                 }
                 if found.is_empty() {
                     if let Some(&lib) = self.libraries.get(name) {
@@ -382,9 +403,13 @@ impl<'a> Resolver<'a> {
             let mut next = Vec::new();
             for place in &places {
                 match place {
-                    Place::Module(u, m) => {
-                        next.extend(self.lookup(*u, m, segment, visiting, depth))
+                    // `super::super::…`: each one steps up again.
+                    Place::Module(u, m) if segment == "super" => {
+                        if let Some((_, parent)) = m.split_last() {
+                            next.push(Place::Module(*u, parent.to_vec()));
+                        }
                     }
+                    Place::Module(u, m) => next.extend(self.lookup(*u, m, segment, memo, depth)),
                     Place::Symbol(s) => {
                         if let Some(members) = self.members.get(s).and_then(|m| m.get(segment)) {
                             next.extend(members.iter().map(|&m| Place::Symbol(m)));
@@ -400,20 +425,94 @@ impl<'a> Resolver<'a> {
         places
     }
 
+    /// Items and `use` bindings declared inside the enclosing functions, innermost first:
+    /// they shadow the module's, and are invisible outside their function.
+    fn local_lookup(
+        &self,
+        unit: Option<usize>,
+        module: &[String],
+        local: Option<(usize, &[String])>,
+        name: &str,
+        memo: &mut Memo,
+        depth: usize,
+    ) -> Vec<Place> {
+        let Some((file, scope)) = local else {
+            return Vec::new();
+        };
+        for n in (1..=scope.len()).rev() {
+            let at = (file, scope[..n].to_vec());
+            if let Some(syms) = self.local.get(&at).and_then(|m| m.get(name)) {
+                return syms.iter().map(|&s| Place::Symbol(s)).collect();
+            }
+            let bound: Vec<&Use> = self
+                .local_uses
+                .get(&at)
+                .into_iter()
+                .flatten()
+                .filter(|u| u.name.as_deref() == Some(name))
+                .collect();
+            if !bound.is_empty() {
+                let mut found = Vec::new();
+                for u in bound {
+                    found.extend(self.resolve_from(unit, module, None, &u.path, memo, depth + 1));
+                }
+                return found;
+            }
+        }
+        Vec::new()
+    }
+
+    /// `Self`: the nearest enclosing scope that names a type (an `impl`'s type, a trait,
+    /// a struct), skipping the method and function names in between.
+    fn self_type(
+        &self,
+        unit: Option<usize>,
+        module: &[String],
+        local: Option<(usize, &[String])>,
+        memo: &mut Memo,
+        depth: usize,
+    ) -> Vec<Place> {
+        let Some((_, scope)) = local else {
+            return Vec::new();
+        };
+        for name in scope.iter().rev() {
+            let path: Vec<String> = name.split("::").map(String::from).collect();
+            let types: Vec<Place> = self
+                .resolve_from(unit, module, None, &path, memo, depth + 1)
+                .into_iter()
+                .filter(|p| match p {
+                    Place::Symbol(s) => matches!(
+                        self.symbols[*s].kind,
+                        SymbolKind::Struct
+                            | SymbolKind::Enum
+                            | SymbolKind::Trait
+                            | SymbolKind::TypeAlias
+                    ),
+                    _ => false,
+                })
+                .collect();
+            if !types.is_empty() {
+                return types;
+            }
+        }
+        Vec::new()
+    }
+
     /// `name` inside a module: its own items and submodules, then its `use` bindings,
-    /// then its glob imports. Each (module, name) is looked up at most once per
-    /// resolution: that ends `pub use` cycles and keeps glob-heavy code from making
-    /// lookups exponential.
+    /// then its glob imports (see [`Memo`] for how repeats and cycles are handled).
     fn lookup(
         &self,
         unit: Option<usize>,
         module: &[String],
         name: &str,
-        visiting: &mut BTreeSet<(Option<usize>, Vec<String>, String)>,
+        memo: &mut Memo,
         depth: usize,
     ) -> Vec<Place> {
         let key = (unit, module.to_vec(), name.to_string());
-        if !visiting.insert(key.clone()) {
+        if let Some(done) = memo.done.get(&key) {
+            return done.clone();
+        }
+        if !memo.running.insert(key.clone()) {
             return Vec::new();
         }
         let id: ModuleId = (unit, module.to_vec());
@@ -429,29 +528,24 @@ impl<'a> Resolver<'a> {
         if found.is_empty() {
             for u in self.uses.get(&id).into_iter().flatten() {
                 if u.name.as_deref() == Some(name) {
-                    found.extend(self.resolve_from(
-                        unit,
-                        module,
-                        None,
-                        &u.path,
-                        visiting,
-                        depth + 1,
-                    ));
+                    found.extend(self.resolve_from(unit, module, None, &u.path, memo, depth + 1));
                 }
             }
         }
         if found.is_empty() {
-            for u in self
+            let globs: Vec<Vec<String>> = self
                 .uses
                 .get(&id)
                 .into_iter()
                 .flatten()
                 .filter(|u| u.name.is_none())
-            {
-                for place in self.resolve_from(unit, module, None, &u.path, visiting, depth + 1) {
+                .map(|u| u.path.clone())
+                .collect();
+            for glob in globs {
+                for place in self.resolve_from(unit, module, None, &glob, memo, depth + 1) {
                     match place {
                         Place::Module(gu, gm) => {
-                            found.extend(self.lookup(gu, &gm, name, visiting, depth + 1))
+                            found.extend(self.lookup(gu, &gm, name, memo, depth + 1))
                         }
                         Place::Symbol(s) => {
                             if let Some(members) = self.members.get(&s).and_then(|m| m.get(name)) {
@@ -463,6 +557,8 @@ impl<'a> Resolver<'a> {
                 }
             }
         }
+        memo.running.remove(&key);
+        memo.done.insert(key, found.clone());
         found
     }
 }
