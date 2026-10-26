@@ -692,10 +692,13 @@ dependencies = [
  "gitcko-config",
  "gitcko-domain",
  "gitcko-git",
+ "gitcko-graph",
  "gitcko-redact",
+ "gitcko-search",
  "gitcko-syntax",
  "gitcko-test-support",
  "insta",
+ "proptest",
  "thiserror",
 ]
 

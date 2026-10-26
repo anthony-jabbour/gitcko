@@ -11,6 +11,8 @@ repository.workspace = true
 gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
 gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
 gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
+gitcko-graph = { path = "../gitcko-graph", version = "0.0.0" }
+gitcko-search = { path = "../gitcko-search", version = "0.0.0" }
 gitcko-syntax = { path = "../gitcko-syntax", version = "0.0.0" }
 thiserror.workspace = true
 
@@ -18,6 +20,7 @@ thiserror.workspace = true
 gitcko-redact = { path = "../gitcko-redact" }
 gitcko-test-support = { path = "../gitcko-test-support" }
 insta.workspace = true
+proptest.workspace = true
 
 [lints]
 workspace = true

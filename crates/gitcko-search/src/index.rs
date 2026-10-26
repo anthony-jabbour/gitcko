@@ -259,6 +259,17 @@ impl LexicalIndex {
         Self::with_reader(&index, f)
     }
 
+    /// How many documents the index holds, so a caller can check it holds what it
+    /// should (one per chunk) before trusting it.
+    pub fn len(&self) -> u64 {
+        self.reader.searcher().num_docs()
+    }
+
+    /// True when it holds no documents.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     fn with_reader(index: &Index, fields: Fields) -> Result<LexicalIndex, SearchError> {
         let reader = index.reader().map_err(|_| SearchError::Open)?;
         Ok(LexicalIndex { reader, fields })

@@ -81,6 +81,10 @@ pub enum IndexError {
     Object { id: String },
     #[error("can't read the repository")]
     Repository,
+    /// A built revision failed a consistency check (INDEXING §26), named by `check`; it
+    /// is never exposed.
+    #[error("the index failed its {check} check and wasn't used")]
+    Invalid { check: &'static str },
 }
 
 /// Keeps only what's safe to show: an object id. Every other git error (some name a

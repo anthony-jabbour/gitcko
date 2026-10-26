@@ -20,6 +20,12 @@ pub struct IndexLimits {
     pub max_config_files: usize,
     /// Total bytes of `.gitcko/` files read per commit.
     pub max_config_bytes: u64,
+    /// Bounds on parsing one file (time, nodes, depth, symbols, references).
+    pub parse: gitcko_syntax::ParseLimits,
+    /// Bounds on chunking (sizes, chunks per file).
+    pub chunks: crate::ChunkPolicy,
+    /// Chunks per revision; past it, the rest are left out and lexical coverage says so.
+    pub max_chunks: usize,
 }
 
 impl Default for IndexLimits {
@@ -31,6 +37,9 @@ impl Default for IndexLimits {
             max_lexical_bytes: 4 << 20,
             max_config_files: 1_000,
             max_config_bytes: 8 << 20,
+            parse: gitcko_syntax::ParseLimits::default(),
+            chunks: crate::ChunkPolicy::default(),
+            max_chunks: 2_000_000,
         }
     }
 }

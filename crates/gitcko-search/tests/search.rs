@@ -382,3 +382,9 @@ fn a_phrase_keeps_the_gap_left_by_a_word_too_long_to_index() {
         [1]
     );
 }
+
+#[test]
+fn the_index_reports_how_many_documents_it_holds() {
+    assert_eq!(LexicalIndex::build(None, corpus()).unwrap().len(), 4);
+    assert!(LexicalIndex::build(None, Vec::new()).unwrap().is_empty());
+}
