@@ -1,4 +1,4 @@
-# Every user key from CONFIGURATION §6.
+# Every user key from CONFIGURATION §6 and §7.
 color = true
 telemetry = false
 api_url = "https://api.gitcko.dev"
@@ -10,7 +10,25 @@ layout = "comments"
 context = 15
 width = 100
 
-# Typed in Phase 3 with MODEL_ROUTING; an open table until then.
 [models.bindings.smart]
 provider = "openrouter"
-model = "example/model"
+model = "example/model-1"
+reasoning_effort = "medium"
+family = "anthropic"
+data_policy = "zdr"
+
+[models.bindings.fast]
+provider = "ollama"
+model = "example-coder:7b"
+endpoint = "http://127.0.0.1:11434"
+context = 32768
+
+[models.roles]
+judge = "smart"
+review-light = "fast"
+
+[models.fallbacks]
+fast = ["fast", "smart"]
+
+[models.inversion]
+enabled = true
