@@ -494,3 +494,70 @@ fn generics_in_scope_are_capped_in_total() {
     assert!(!types.contains(&"T0x0"), "{types:?}");
     assert!(types.contains(&"T9x0"), "{types:?}");
 }
+
+#[test]
+fn every_extraction_is_well_formed_and_a_broken_one_is_not() {
+    let limits = ParseLimits::default();
+    let mut checked = 0;
+    for entry in std::fs::read_dir(workspace_root().join("tests/fixtures/lang/rust")).unwrap() {
+        let name = entry.unwrap().file_name().to_string_lossy().into_owned();
+        let x = extract(&fixture(&name), &limits);
+        assert!(x.is_well_formed(), "{name}");
+        if x.scopes.is_empty() || x.symbols.is_empty() {
+            continue;
+        }
+        checked += 1;
+        let mut bad = x.clone();
+        bad.symbols[0].scope = Some(bad.scopes.len());
+        assert!(!bad.is_well_formed(), "{name}: scope past the end");
+        let mut bad = x.clone();
+        let last = bad.scopes.len() - 1;
+        bad.scopes[0].parent = Some(last);
+        assert!(!bad.is_well_formed(), "{name}: parent after its child");
+        let mut bad = x.clone();
+        bad.symbols[0].parent = Some(0);
+        assert!(!bad.is_well_formed(), "{name}: its own parent");
+        if x.symbols.len() > 1 {
+            let mut bad = x.clone();
+            bad.symbols[0].parent = Some(x.symbols.len() - 1);
+            assert!(!bad.is_well_formed(), "{name}: parent after its child");
+        }
+        for broken in [
+            |b: &mut Extraction| {
+                b.imports
+                    .iter_mut()
+                    .for_each(|i| i.scope = Some(usize::MAX))
+            },
+            |b: &mut Extraction| {
+                b.references
+                    .iter_mut()
+                    .for_each(|r| r.enclosing = Some(usize::MAX))
+            },
+            |b: &mut Extraction| {
+                b.references
+                    .iter_mut()
+                    .for_each(|r| r.scope = Some(usize::MAX))
+            },
+            |b: &mut Extraction| b.modules.iter_mut().for_each(|m| m.symbol = usize::MAX),
+            |b: &mut Extraction| {
+                b.modules
+                    .iter_mut()
+                    .for_each(|m| m.scope = Some(usize::MAX))
+            },
+            |b: &mut Extraction| {
+                b.implementations
+                    .iter_mut()
+                    .for_each(|i| i.scope = Some(usize::MAX))
+            },
+            |b: &mut Extraction| b.extensions.iter_mut().for_each(|e| e.symbol = usize::MAX),
+        ] {
+            let mut bad = x.clone();
+            broken(&mut bad);
+            // Only a list the fixture has can be broken.
+            if bad != x {
+                assert!(!bad.is_well_formed(), "{name}");
+            }
+        }
+    }
+    assert!(checked >= 3, "{checked}");
+}

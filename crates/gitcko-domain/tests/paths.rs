@@ -58,3 +58,14 @@ proptest! {
         prop_assert!(RepoPath::parse(&joined).is_ok(), "{}", joined);
     }
 }
+
+#[test]
+fn a_stored_path_passes_the_same_checks_on_the_way_back_in() {
+    let p = RepoPath::parse("src/a b.rs").unwrap();
+    let json = serde_json::to_string(&p).unwrap();
+    assert_eq!(json, "\"src/a b.rs\"");
+    assert_eq!(serde_json::from_str::<RepoPath>(&json).unwrap(), p);
+    for bad in ["\"../x\"", "\"/etc/passwd\"", "\".git/config\"", "\"\""] {
+        assert!(serde_json::from_str::<RepoPath>(bad).is_err(), "{bad}");
+    }
+}

@@ -17,8 +17,27 @@ use gix_validate::path::component::Options;
 /// `gix-validate`. Names that are only a problem on Windows, like `CON` or `a\b`, are
 /// legal files in a Linux repo, so they parse; [`RepoPath::windows_problem`] reports
 /// them for code that is about to touch the disk.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+///
+/// Stored copies (the index cache) deserialize through [`RepoPath::parse`] too.
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+)]
+#[serde(try_from = "String", into = "String")]
 pub struct RepoPath(String);
+
+impl TryFrom<String> for RepoPath {
+    type Error = PathError;
+
+    fn try_from(path: String) -> Result<RepoPath, PathError> {
+        RepoPath::parse(&path)
+    }
+}
+
+impl From<RepoPath> for String {
+    fn from(path: RepoPath) -> String {
+        path.0
+    }
+}
 
 /// Why a string isn't a [`RepoPath`]. Shows the offending path, which is
 /// repository-relative and never an absolute local path.

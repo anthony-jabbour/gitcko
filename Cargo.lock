@@ -670,6 +670,8 @@ dependencies = [
  "gitcko-test-support",
  "gix",
  "rustix",
+ "serde",
+ "serde_json",
  "thiserror",
 ]
 
@@ -700,6 +702,9 @@ dependencies = [
  "gitcko-test-support",
  "insta",
  "proptest",
+ "serde",
+ "serde_json",
+ "tempfile",
  "thiserror",
 ]
 

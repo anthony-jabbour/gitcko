@@ -14,6 +14,7 @@ mod discover;
 mod limits;
 mod query;
 mod retrieve;
+mod store;
 
 pub use build::{
     INDEX_SCHEMA_VERSION, ParsedFile, Revision, RevisionCoverage, Versions, build, validate,
@@ -29,3 +30,4 @@ pub use query::{
     TestCandidates, TestEvidence,
 };
 pub use retrieve::{BundleCoverage, ContextBundle, ContextItem, RetrievalBudget, Source};
+pub use store::{PublishStep, Store, StoreError, StoredRevision};

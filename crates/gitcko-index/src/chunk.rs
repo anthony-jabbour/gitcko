@@ -42,7 +42,7 @@ impl Default for ChunkPolicy {
 }
 
 /// What a chunk holds (INDEXING §14.2).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum ChunkKind {
     /// One whole declaration.
     Symbol,
@@ -76,7 +76,7 @@ impl ChunkKind {
 }
 
 /// Which piece of a split declaration a segment is.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Segment {
     /// From 1.
     pub index: usize,
@@ -86,7 +86,7 @@ pub struct Segment {
 }
 
 /// One chunk.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Chunk {
     pub kind: ChunkKind,
     pub path: RepoPath,

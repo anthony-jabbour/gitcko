@@ -11,7 +11,7 @@ use crate::IndexLimits;
 
 /// What the index does with a path (INDEXING §8). Every path in the commit gets exactly
 /// one, so nothing is silently skipped.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Disposition {
     /// Parsed into symbols and edges, and searched as text.
     Parse,
@@ -29,7 +29,7 @@ pub enum Disposition {
 }
 
 /// One path of the commit and what the index will do with it (INDEXING §8).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct ManifestEntry {
     /// The path as stored in the tree, for display. A name that isn't UTF-8 has its bytes
     /// escaped (`bad\xff.rs`), and a backslash in any name is doubled, so two distinct
@@ -63,7 +63,7 @@ pub struct ManifestEntry {
 }
 
 /// Every path of one commit, in path-byte order, with its disposition.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Manifest {
     pub entries: Vec<ManifestEntry>,
     /// `partial` when a repository-wide limit cut files off.
@@ -321,7 +321,7 @@ fn ignore_list(repo: &Repo, files: &[TreeEntry], limits: &IndexLimits) -> (Ignor
 }
 
 /// The display form of a tree path (see [`ManifestEntry::path`]).
-fn display_path(bytes: &[u8]) -> String {
+pub(crate) fn display_path(bytes: &[u8]) -> String {
     match std::str::from_utf8(bytes) {
         Ok(text) => text.replace('\\', "\\\\"),
         // `escape_ascii` escapes backslashes too, so the two forms can't overlap.
