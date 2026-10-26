@@ -152,6 +152,9 @@ pub(crate) struct Resolver<'a> {
     local_uses: HashMap<(usize, Vec<String>), Vec<Use>>,
     /// Methods, fields and variants of a type or trait, by its symbol.
     pub(crate) members: HashMap<usize, HashMap<String, Vec<usize>>>,
+    /// Members attached through an `impl` whose type lookup was cut short: reaching one
+    /// inherits that cut, so nothing resolved through it is settled.
+    uncertain_members: HashSet<usize>,
     /// Every method by name, for calls whose receiver type is unknown.
     pub(crate) methods: HashMap<String, Vec<usize>>,
     /// Library crates by the name code uses for them.
@@ -187,6 +190,7 @@ impl<'a> Resolver<'a> {
             local: HashMap::new(),
             local_uses: HashMap::new(),
             members: HashMap::new(),
+            uncertain_members: HashSet::new(),
             methods: HashMap::new(),
             libraries,
             module_scopes,
@@ -318,6 +322,7 @@ impl<'a> Resolver<'a> {
     pub(crate) fn add_impl_members(
         &mut self,
         types: &[usize],
+        cut: bool,
         file: usize,
         member_scope: Vec<String>,
     ) {
@@ -327,6 +332,9 @@ impl<'a> Resolver<'a> {
             .cloned()
             .unwrap_or_default();
         for i in members {
+            if cut {
+                self.uncertain_members.insert(i);
+            }
             for &t in types {
                 let name = self.symbols[i].name.clone();
                 let list = self.members.entry(t).or_default().entry(name).or_default();
@@ -334,6 +342,13 @@ impl<'a> Resolver<'a> {
                     list.push(i);
                 }
             }
+        }
+    }
+
+    /// Marks the resolution cut when it reaches a member attached by a cut-short lookup.
+    fn note_uncertain(&self, members: &[usize], memo: &mut Memo) {
+        if members.iter().any(|m| self.uncertain_members.contains(m)) {
+            memo.cut = true;
         }
     }
 
@@ -434,6 +449,7 @@ impl<'a> Resolver<'a> {
                     Place::Module(u, m) => next.extend(self.lookup(*u, m, segment, memo, depth)),
                     Place::Symbol(s) => {
                         if let Some(members) = self.members.get(s).and_then(|m| m.get(segment)) {
+                            self.note_uncertain(members, memo);
                             next.extend(members.iter().map(|&m| Place::Symbol(m)));
                         }
                     }
@@ -581,6 +597,7 @@ impl<'a> Resolver<'a> {
                         }
                         Place::Symbol(s) => {
                             if let Some(members) = self.members.get(&s).and_then(|m| m.get(name)) {
+                                self.note_uncertain(members, memo);
                                 found.extend(members.iter().map(|&m| Place::Symbol(m)));
                             }
                         }

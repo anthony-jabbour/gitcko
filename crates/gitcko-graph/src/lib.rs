@@ -261,10 +261,10 @@ pub fn build(input: &GraphInput<'_>) -> Graph {
     for (fi, x) in extractions.iter().enumerate() {
         for imp in &x.implementations {
             let scope = x.scope_path(imp.scope);
-            let (types, _) = type_symbols(&resolver, &symbols, fi, &scope, &imp.type_path);
+            let (types, cut) = type_symbols(&resolver, &symbols, fi, &scope, &imp.type_path);
             let mut member_scope = scope;
             member_scope.push(imp.type_path.join("::"));
-            resolver.add_impl_members(&types, fi, member_scope);
+            resolver.add_impl_members(&types, cut, fi, member_scope);
         }
     }
 

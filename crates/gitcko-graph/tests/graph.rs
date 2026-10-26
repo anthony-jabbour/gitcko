@@ -981,3 +981,52 @@ fn an_impl_whose_type_lookup_was_cut_short_is_not_complete() {
     assert_eq!(imp[0].confidence, GraphConfidence::Low);
     assert!(!g.coverage[&EdgeKind::Implements].is_complete());
 }
+
+#[test]
+fn a_method_of_an_impl_whose_type_lookup_was_cut_short_is_not_settled() {
+    // As above, but the impl has a method, called through a path that resolves directly:
+    // the call still depends on the unfinished type lookup, so it isn't settled.
+    let mut files: Vec<(String, String)> =
+        vec![("Cargo.toml".into(), "[package]\nname = \"imp\"\n".into())];
+    let mut lib = String::from("mod leaf;\n");
+    for i in 0..20 {
+        lib += &format!("mod a{i};\n");
+    }
+    lib += "use crate::a0::*;\nuse crate::leaf::*;\n\
+            pub trait T { fn make(); }\nimpl T for S { fn make() {} }\n\
+            pub fn g() { leaf::S::make(); }\n\
+            mod inner { use crate::leaf::S::*; pub fn h() { make(); } }\n";
+    files.push(("src/lib.rs".into(), lib));
+    files.push(("src/leaf.rs".into(), "pub struct S;\n".into()));
+    for i in 0..19 {
+        files.push((
+            format!("src/a{i}.rs"),
+            format!("pub use crate::a{}::*;\n", i + 1),
+        ));
+    }
+    files.push(("src/a19.rs".into(), String::new()));
+    let refs: Vec<(&str, &str)> = files
+        .iter()
+        .map(|(p, s)| (p.as_str(), s.as_str()))
+        .collect();
+    let g = build_from(&refs).graph;
+    let call = edges_of(&g, EdgeKind::Calls)
+        .into_iter()
+        .find(|e| endpoint(&g, &e.from) == "imp::g")
+        .expect("the call is recorded");
+    assert!(!matches!(call.to, Target::Resolved(_)), "{:?}", call.to);
+    assert!(
+        call.limitations
+            .iter()
+            .any(|r| r.as_str() == "resolution_limit"),
+        "{:?}",
+        call.limitations
+    );
+    assert!(!g.coverage[&EdgeKind::Calls].is_complete());
+    // The same member reached through a glob of the type.
+    let glob = edges_of(&g, EdgeKind::Calls)
+        .into_iter()
+        .find(|e| endpoint(&g, &e.from) == "imp::inner::h")
+        .expect("the call is recorded");
+    assert!(!matches!(glob.to, Target::Resolved(_)), "{:?}", glob.to);
+}
