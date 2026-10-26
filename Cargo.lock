@@ -690,6 +690,7 @@ name = "gitcko-index"
 version = "0.0.0"
 dependencies = [
  "gitcko-config",
+ "gitcko-diff",
  "gitcko-domain",
  "gitcko-git",
  "gitcko-graph",

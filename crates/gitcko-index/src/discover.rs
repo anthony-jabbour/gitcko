@@ -85,6 +85,10 @@ pub enum IndexError {
     /// is never exposed.
     #[error("the index failed its {check} check and wasn't used")]
     Invalid { check: &'static str },
+    /// A search with nothing to search for: an error rather than "no matches", which
+    /// would read as a real answer (INDEXING §22.1).
+    #[error("the query has nothing to search for")]
+    EmptyQuery,
 }
 
 /// Keeps only what's safe to show: an object id. Every other git error (some name a

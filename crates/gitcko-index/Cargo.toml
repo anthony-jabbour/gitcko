@@ -9,6 +9,7 @@ repository.workspace = true
 
 [dependencies]
 gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
+gitcko-diff = { path = "../gitcko-diff", version = "0.0.0" }
 gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
 gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
 gitcko-graph = { path = "../gitcko-graph", version = "0.0.0" }

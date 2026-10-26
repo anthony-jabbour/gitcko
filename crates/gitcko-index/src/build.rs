@@ -337,7 +337,7 @@ fn lexical_docs(manifest: &Manifest, graph: &Graph, chunks: &[Chunk]) -> Option<
             Some(LexicalDoc {
                 id: id as u64,
                 path: c.path.as_str().to_string(),
-                language: entry.language.map(|l| format!("{l:?}").to_lowercase()),
+                language: entry.language.map(language_name),
                 role: role_name(entry.role),
                 kind: c.kind.as_str().to_string(),
                 symbol_key: symbol.map(|s| s.key.0.clone()),
@@ -350,7 +350,13 @@ fn lexical_docs(manifest: &Manifest, graph: &Graph, chunks: &[Chunk]) -> Option<
         .collect()
 }
 
-fn role_name(role: FileRole) -> String {
+/// A language as search documents and filters spell it (`rust`).
+pub(crate) fn language_name(language: Language) -> String {
+    format!("{language:?}").to_lowercase()
+}
+
+/// A file role as search documents and filters spell it (`dependency_lock`).
+pub(crate) fn role_name(role: FileRole) -> String {
     let debug = format!("{role:?}");
     let mut out = String::new();
     for (i, c) in debug.chars().enumerate() {
