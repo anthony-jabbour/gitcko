@@ -14,6 +14,10 @@ use crate::{Endpoint, FileNode, GraphSymbol};
 
 /// Longest chain of `use` bindings followed; longer is treated as a cycle.
 const MAX_USE_DEPTH: usize = 16;
+/// Most module lookups one resolution may do. Past it the name ends unresolved (and
+/// counts against coverage) rather than letting crafted glob imports take unbounded
+/// time (TM-38).
+const MAX_LOOKUPS: usize = 20_000;
 
 /// A module's identity: crate unit (if any root reaches it) and path.
 pub(crate) type ModuleId = (Option<usize>, Vec<String>);
@@ -117,11 +121,14 @@ type Key = (Option<usize>, Vec<String>, String);
 /// apart, so only a real cycle (a lookup needing itself) is cut.
 #[derive(Default)]
 struct Memo {
-    done: HashMap<Key, Vec<Place>>,
+    /// Finished lookups, with the depth they ran at when the depth limit cut them short:
+    /// a cut result is reused only by a route with no more depth left, which couldn't
+    /// reach further either. Complete results (`None`) are always reused.
+    done: HashMap<Key, (Vec<Place>, Option<usize>)>,
     running: HashSet<Key>,
-    /// Set when the depth limit cut a lookup short: such a result may be incomplete, so
-    /// it isn't cached for routes that could reach further.
+    /// Set when the depth limit cut the current lookup short.
     cut: bool,
+    lookups: usize,
 }
 
 /// Everything name lookups need, built once per graph.
@@ -515,8 +522,16 @@ impl<'a> Resolver<'a> {
         depth: usize,
     ) -> Vec<Place> {
         let key = (unit, module.to_vec(), name.to_string());
-        if let Some(done) = memo.done.get(&key) {
+        if let Some((done, cut_at)) = memo.done.get(&key)
+            && cut_at.is_none_or(|at| depth >= at)
+        {
+            memo.cut |= cut_at.is_some();
             return done.clone();
+        }
+        memo.lookups += 1;
+        if memo.lookups > MAX_LOOKUPS {
+            memo.cut = true;
+            return Vec::new();
         }
         if !memo.running.insert(key.clone()) {
             return Vec::new();
@@ -565,9 +580,8 @@ impl<'a> Resolver<'a> {
             }
         }
         memo.running.remove(&key);
-        if !memo.cut {
-            memo.done.insert(key, found.clone());
-        }
+        let cut_at = memo.cut.then_some(depth);
+        memo.done.insert(key, (found.clone(), cut_at));
         memo.cut |= outer_cut;
         found
     }

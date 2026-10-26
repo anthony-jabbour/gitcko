@@ -807,3 +807,41 @@ fn a_lookup_cut_by_the_depth_limit_is_not_cached_for_shorter_routes() {
         resolved(&g, EdgeKind::Calls, "deep::f")
     );
 }
+
+#[test]
+fn glob_graphs_deeper_than_the_use_limit_still_resolve_in_bounded_time() {
+    // More mutually glob-importing modules than the 16-hop `use` limit, so lookups do hit
+    // the cut; that must not make resolution exponential.
+    let mut files = vec![(
+        "Cargo.toml".to_string(),
+        "[package]\nname = \"wide\"\n".to_string(),
+    )];
+    let mods: Vec<String> = (0..24).map(|i| format!("m{i}")).collect();
+    files.push((
+        "src/lib.rs".into(),
+        mods.iter()
+            .map(|m| format!("mod {m};\n"))
+            .collect::<String>()
+            + "pub fn f() { missing(); }\n",
+    ));
+    for m in &mods {
+        let globs: String = mods
+            .iter()
+            .filter(|o| *o != m)
+            .map(|o| format!("pub use crate::{o}::*;\n"))
+            .collect();
+        files.push((format!("src/{m}.rs"), globs + "pub fn g() { missing(); }\n"));
+    }
+    let refs: Vec<(&str, &str)> = files
+        .iter()
+        .map(|(p, s)| (p.as_str(), s.as_str()))
+        .collect();
+    let started = std::time::Instant::now();
+    let g = build_from(&refs).graph;
+    assert!(
+        started.elapsed() < std::time::Duration::from_secs(10),
+        "{:?}",
+        started.elapsed()
+    );
+    assert!(find(&g, EdgeKind::Calls, "wide::f", "? missing").is_some());
+}
