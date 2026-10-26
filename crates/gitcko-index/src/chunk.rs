@@ -202,6 +202,9 @@ struct Plan<'a> {
     /// No symbol yet, so text so far is the file's preamble.
     preamble: bool,
     cap: usize,
+    /// A split stopped before the end of its range: text was left unplanned, even if
+    /// the windows dropped were whitespace and the piece count stayed under the limit.
+    cut: bool,
 }
 
 impl<'a> Plan<'a> {
@@ -211,12 +214,24 @@ impl<'a> Plan<'a> {
             at: 0,
             preamble: true,
             cap: max_chunks_per_file,
+            cut: false,
         }
     }
 
-    /// Past the limit: anything more would be cut, so planning stops.
+    /// Past the limit, or text already left out: planning stops, coverage is partial.
     fn full(&self) -> bool {
-        self.pieces.len() > self.cap
+        self.cut || self.pieces.len() > self.cap
+    }
+
+    /// Plans `a..b` as text chunks of `kind`, dropping all-whitespace windows.
+    fn text(&mut self, source: &str, a: usize, b: usize, kind: ChunkKind, max: usize) {
+        let ranges = split(source, a, b, max, 0, self.room());
+        self.cut |= ranges.last().is_some_and(|r| r.1 < b);
+        for (x, y) in ranges {
+            if !source[x..y].trim().is_empty() {
+                self.pieces.push(Piece::Text(kind, x, y));
+            }
+        }
     }
 
     /// Pieces that can still be planned, one past the limit so a cut is visible.
@@ -248,11 +263,7 @@ impl<'a> Plan<'a> {
         } else {
             ChunkKind::ModuleContext
         };
-        for (x, y) in split(source, a, b, policy.hard_max_bytes, 0, self.room()) {
-            if !source[x..y].trim().is_empty() {
-                self.pieces.push(Piece::Text(kind, x, y));
-            }
-        }
+        self.text(source, a, b, kind, policy.hard_max_bytes);
         self.at = end;
     }
 }
@@ -308,11 +319,7 @@ pub fn chunk_text(
         if plan.full() {
             break;
         }
-        for (x, y) in split(source, a, b, policy.hard_max_bytes, 0, plan.room()) {
-            if !source[x..y].trim().is_empty() {
-                plan.pieces.push(Piece::Text(kind, x, y));
-            }
-        }
+        plan.text(source, a, b, kind, policy.hard_max_bytes);
     }
     finish(file, source, &lines, plan, policy)
 }

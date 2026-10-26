@@ -365,3 +365,26 @@ fn attribute_scanning_skips_brackets_in_strings_and_leaves_inner_docs_alone() {
     assert_eq!(chunks[0].kind, ChunkKind::FilePreamble);
     assert!(chunks[0].text.starts_with("//! Module docs."));
 }
+
+#[test]
+fn text_cut_after_a_whitespace_window_is_still_partial() {
+    // The limit stops the split after two windows, the second all whitespace and dropped:
+    // one chunk remains, but `tail` was never planned, so coverage can't be complete.
+    let source = format!("x\n{}tail", "\n".repeat(20_000));
+    let policy = ChunkPolicy {
+        max_chunks_per_file: 1,
+        ..ChunkPolicy::default()
+    };
+    let p = path("notes.txt");
+    let file = FileContext {
+        path: &p,
+        language: None,
+        role: FileRole::Source,
+    };
+    let (chunks, coverage) = chunk_code(&file, &source, &[], &policy);
+    assert!(chunks.iter().all(|c| !c.text.contains("tail")));
+    assert!(!coverage.is_complete(), "{coverage:?}");
+    let (chunks, coverage) = chunk_text(&file, &source, &policy);
+    assert!(chunks.iter().all(|c| !c.text.contains("tail")));
+    assert!(!coverage.is_complete(), "{coverage:?}");
+}
