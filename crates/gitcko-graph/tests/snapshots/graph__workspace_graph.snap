@@ -66,7 +66,7 @@ coverage Contains: Complete
 coverage Declares: Complete
 coverage Imports: Complete
 coverage References: Partial { reason: Reason("file_references_partial"), omitted: Some(1) }
-coverage Calls: Partial { reason: Reason("unresolved_or_ambiguous"), omitted: Some(4) }
+coverage Calls: Partial { reason: Reason("unresolved_or_ambiguous"), omitted: Some(7) }
 coverage Implements: Complete
 coverage Extends: Complete
 coverage Tests: Partial { reason: Reason("depends_on_calls"), omitted: None }

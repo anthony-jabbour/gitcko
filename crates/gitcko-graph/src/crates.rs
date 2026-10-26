@@ -108,15 +108,33 @@ pub(crate) fn layout(input: &GraphInput<'_>) -> Layout {
                 add(name.replace('-', "_"), file, key);
             }
         }
-        add(package.replace('-', "_"), "src/main.rs", "bin");
-        add("build_script_build".into(), "build.rs", "build");
+        // Cargo's switches: `autobins = false` etc. turn off automatic targets (explicit
+        // ones stay), and `build` names the build script or turns it off.
+        let auto = |key: &str| {
+            table
+                .get("package")
+                .and_then(|p| p.get(key))
+                .and_then(|v| v.as_bool())
+                .unwrap_or(true)
+        };
+        if auto("autobins") {
+            add(package.replace('-', "_"), "src/main.rs", "bin");
+        }
+        match table.get("package").and_then(|p| p.get("build")) {
+            Some(toml::Value::String(path)) => add("build_script_build".into(), path, "build"),
+            Some(toml::Value::Boolean(false)) => {}
+            _ => add("build_script_build".into(), "build.rs", "build"),
+        }
         // Cargo's automatic targets: one crate per file in these folders.
-        for (folder, target) in [
-            ("src/bin/", "bin"),
-            ("tests/", "test"),
-            ("benches/", "bench"),
-            ("examples/", "example"),
+        for (folder, target, switch) in [
+            ("src/bin/", "bin", "autobins"),
+            ("tests/", "test", "autotests"),
+            ("benches/", "bench", "autobenches"),
+            ("examples/", "example", "autoexamples"),
         ] {
+            if !auto(switch) {
+                continue;
+            }
             let prefix = format!("{dir}{folder}");
             let files: Vec<&str> = present
                 .iter()

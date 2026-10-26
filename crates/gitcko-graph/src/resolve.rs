@@ -119,6 +119,9 @@ type Key = (Option<usize>, Vec<String>, String);
 struct Memo {
     done: HashMap<Key, Vec<Place>>,
     running: HashSet<Key>,
+    /// Set when the depth limit cut a lookup short: such a result may be incomplete, so
+    /// it isn't cached for routes that could reach further.
+    cut: bool,
 }
 
 /// Everything name lookups need, built once per graph.
@@ -374,6 +377,7 @@ impl<'a> Resolver<'a> {
             return Vec::new();
         };
         if depth > MAX_USE_DEPTH {
+            memo.cut = true;
             return Vec::new();
         }
         let mut places: Vec<Place> = match first.as_str() {
@@ -392,7 +396,9 @@ impl<'a> Resolver<'a> {
                 if found.is_empty() {
                     if let Some(&lib) = self.libraries.get(name) {
                         found.push(Place::Module(Some(lib), Vec::new()));
-                    } else if EXTERNAL_ROOTS.contains(&name) {
+                    } else if EXTERNAL_ROOTS.contains(&name) || !rest.is_empty() {
+                        // `dep::x` with `dep` nowhere here: another crate's, and that holds
+                        // through any `use` that binds it.
                         found.push(Place::External);
                     }
                 }
@@ -515,6 +521,7 @@ impl<'a> Resolver<'a> {
         if !memo.running.insert(key.clone()) {
             return Vec::new();
         }
+        let outer_cut = std::mem::take(&mut memo.cut);
         let id: ModuleId = (unit, module.to_vec());
         let mut found: Vec<Place> = Vec::new();
         if let Some(syms) = self.items.get(&id).and_then(|m| m.get(name)) {
@@ -558,7 +565,10 @@ impl<'a> Resolver<'a> {
             }
         }
         memo.running.remove(&key);
-        memo.done.insert(key, found.clone());
+        if !memo.cut {
+            memo.done.insert(key, found.clone());
+        }
+        memo.cut |= outer_cut;
         found
     }
 }

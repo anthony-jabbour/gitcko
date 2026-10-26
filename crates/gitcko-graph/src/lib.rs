@@ -50,6 +50,10 @@ pub enum KeyStability {
     /// The file's module path was inferred (no crate root reaches it), so the key may
     /// change once one does.
     Inferred,
+    /// Another declaration has the same qualified identity (`struct S` in two sibling
+    /// `{ }` blocks), so the key also counts its occurrence in source order: weaker,
+    /// as INDEXING §11.3 prescribes for anonymous constructs, but never shared.
+    Occurrence,
 }
 
 /// A file in the graph.
@@ -226,6 +230,20 @@ pub fn build(input: &GraphInput<'_>) -> Graph {
                 span: s.span,
                 in_test: s.in_test,
             });
+        }
+    }
+    // Keys must be unique. Declarations that tie get an occurrence-scoped key instead.
+    let mut seen: HashMap<SymbolKey, usize> = HashMap::new();
+    for s in &symbols {
+        *seen.entry(s.key.clone()).or_default() += 1;
+    }
+    let mut ordinal: HashMap<SymbolKey, usize> = HashMap::new();
+    for s in &mut symbols {
+        if seen[&s.key] > 1 {
+            let n = ordinal.entry(s.key.clone()).or_default();
+            *n += 1;
+            s.key = occurrence_key(&s.key, *n);
+            s.stability = KeyStability::Occurrence;
         }
     }
     let index: HashMap<(usize, usize), usize> = symbols
@@ -594,10 +612,12 @@ fn coverage(edges: &[Edge], extractions: &[&Extraction]) -> BTreeMap<EdgeKind, C
             .iter()
             .filter(|e| e.kind == kind)
             .filter(|e| {
+                // A method call with no candidate here may be on a dependency's type or
+                // on a repository type the syntax couldn't connect: unknown either way.
                 e.resolution == Resolution::CandidateAmbiguous
-                    || e.limitations
-                        .iter()
-                        .any(|r| r.as_str() == "unresolved_name")
+                    || e.limitations.iter().any(|r| {
+                        matches!(r.as_str(), "unresolved_name" | "method_receiver_unknown")
+                    })
             })
             .count() as u64
     };
@@ -648,6 +668,19 @@ fn coverage(edges: &[Edge], extractions: &[&Extraction]) -> BTreeMap<EdgeKind, C
     };
     map.insert(EdgeKind::Tests, tests);
     map
+}
+
+/// A tied key made unique by its occurrence number.
+fn occurrence_key(key: &SymbolKey, occurrence: usize) -> SymbolKey {
+    use sha2::Digest;
+    let digest = sha2::Sha256::digest(format!("{}#{occurrence}", key.0).as_bytes());
+    SymbolKey(format!(
+        "o_{}",
+        digest[..16]
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+    ))
 }
 
 /// The logical identity of a symbol (INDEXING §11.3): no line numbers in it.

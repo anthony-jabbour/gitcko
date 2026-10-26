@@ -684,3 +684,126 @@ fn importing_a_module_is_one_target_not_two() {
         target(&g, &e.to)
     );
 }
+
+// ---- Review round 2 findings. ----
+
+#[test]
+fn a_method_call_with_no_known_candidates_keeps_calls_coverage_partial() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"u\"\n"),
+        ("src/lib.rs", "pub fn f(x: &str) { x.len(); }\n"),
+    ];
+    let g = build_from(&files).graph;
+    assert!(
+        !g.coverage[&EdgeKind::Calls].is_complete(),
+        "{:?}",
+        g.coverage[&EdgeKind::Calls]
+    );
+}
+
+#[test]
+fn declarations_in_sibling_blocks_get_distinct_occurrence_keys() {
+    use gitcko_graph::KeyStability;
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"b\"\n"),
+        ("src/lib.rs", "fn f() { { struct S; } { struct S; } }\n"),
+    ];
+    let g = build_from(&files).graph;
+    let s: Vec<_> = g.symbols.iter().filter(|s| s.name == "S").collect();
+    assert_eq!(s.len(), 2);
+    assert_ne!(s[0].key, s[1].key);
+    assert!(s.iter().all(|s| s.stability == KeyStability::Occurrence));
+}
+
+#[test]
+fn a_call_through_an_external_import_is_external() {
+    let files = [
+        ("Cargo.toml", "[package]\nname = \"d\"\n"),
+        ("src/lib.rs", "use dep::run;\npub fn f() { run(); }\n"),
+    ];
+    let g = build_from(&files).graph;
+    let e = find(&g, EdgeKind::Calls, "d::f", "? run").expect("call kept");
+    assert!(
+        e.limitations.iter().any(|r| r.as_str() == "external_crate"),
+        "{:?}",
+        e.limitations
+    );
+}
+
+#[test]
+fn cargo_auto_discovery_switches_are_honoured() {
+    let files = [
+        (
+            "Cargo.toml",
+            "[package]\nname = \"a\"\nautobins = false\nautotests = false\nbuild = \"config/setup.rs\"\n\n[[bin]]\nname = \"kept\"\npath = \"src/kept.rs\"\n",
+        ),
+        ("src/main.rs", "fn main() {}\n"),
+        ("src/bin/helper.rs", "fn main() {}\n"),
+        ("src/kept.rs", "fn main() {}\n"),
+        ("tests/helper.rs", "fn h() {}\n"),
+        ("build.rs", "fn main() {}\n"),
+        ("config/setup.rs", "fn main() {}\n"),
+    ];
+    let g = build_from(&files).graph;
+    let roots: Vec<(&str, &str)> = g
+        .crates
+        .iter()
+        .map(|c| (c.target.as_str(), c.root.as_str()))
+        .collect();
+    assert!(roots.contains(&("bin", "src/kept.rs")), "{roots:?}");
+    assert!(roots.contains(&("build", "config/setup.rs")), "{roots:?}");
+    for gone in [
+        "src/main.rs",
+        "src/bin/helper.rs",
+        "tests/helper.rs",
+        "build.rs",
+    ] {
+        assert!(
+            !roots.iter().any(|(_, r)| *r == gone),
+            "{gone} in {roots:?}"
+        );
+    }
+    let no_build = [
+        ("Cargo.toml", "[package]\nname = \"n\"\nbuild = false\n"),
+        ("build.rs", "fn main() {}\n"),
+    ];
+    assert!(
+        build_from(&no_build)
+            .graph
+            .crates
+            .iter()
+            .all(|c| c.target != "build")
+    );
+}
+
+#[test]
+fn a_lookup_cut_by_the_depth_limit_is_not_cached_for_shorter_routes() {
+    // `lib` glob-imports a0 first (a 16-hop chain ending at a15) and then a15 directly;
+    // a15 re-exports `leaf::target`. The direct route must still find it.
+    let mut files: Vec<(String, String)> =
+        vec![("Cargo.toml".into(), "[package]\nname = \"deep\"\n".into())];
+    let mut lib = String::from("mod leaf;\n");
+    for i in 0..16 {
+        lib += &format!("mod a{i};\n");
+    }
+    lib += "use crate::a0::*;\nuse crate::a15::*;\npub fn f() { target(); }\n";
+    files.push(("src/lib.rs".into(), lib));
+    files.push(("src/leaf.rs".into(), "pub fn target() {}\n".into()));
+    for i in 0..15 {
+        files.push((
+            format!("src/a{i}.rs"),
+            format!("pub use crate::a{}::*;\n", i + 1),
+        ));
+    }
+    files.push(("src/a15.rs".into(), "pub use crate::leaf::target;\n".into()));
+    let refs: Vec<(&str, &str)> = files
+        .iter()
+        .map(|(p, s)| (p.as_str(), s.as_str()))
+        .collect();
+    let g = build_from(&refs).graph;
+    assert!(
+        find(&g, EdgeKind::Calls, "deep::f", "deep::leaf::target").is_some(),
+        "{:?}",
+        resolved(&g, EdgeKind::Calls, "deep::f")
+    );
+}
