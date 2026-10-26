@@ -5,7 +5,7 @@
 
 use std::collections::BTreeMap;
 
-use gitcko_protocol::config::{RepoConfig, UserConfig};
+use gitcko_protocol::config::{ModelProvider, ModelsConfig, RepoConfig, UserConfig};
 use gitcko_protocol::review::Tier;
 use serde_json::Value;
 use toml::de::{DeTable, DeValue};
@@ -224,6 +224,105 @@ pub(crate) fn check_user_values(config: &UserConfig) -> Result<(), (&'static str
     Ok(())
 }
 
+/// `[models]` limits the types can't express (MODEL_ROUTING §3). Like every config
+/// error, these name the key but never echo the value.
+fn check_models(models: &ModelsConfig) -> Result<(), (String, &'static str)> {
+    let bindings = models.bindings.as_ref();
+    for (name, binding) in bindings.into_iter().flatten() {
+        let key = |field: &str| format!("models.bindings.{name}.{field}");
+        // Settings are rebuilt from dotted keys, so a dot in a name would split it.
+        let plain = !name.is_empty()
+            && name
+                .bytes()
+                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_' || b == b'-');
+        if !plain {
+            return Err((
+                "models.bindings".into(),
+                "binding names use only a-z, 0-9, _ and -",
+            ));
+        }
+        if !exact_model(binding.provider, &binding.model) {
+            return Err((
+                key("model"),
+                "must be an exact model id (provider/model on OpenRouter, name:tag on Ollama), not a moving alias",
+            ));
+        }
+        let ollama = binding.provider == ModelProvider::Ollama;
+        if ollama && binding.data_policy.is_some() {
+            return Err((key("data_policy"), "is only for openrouter bindings"));
+        }
+        if !ollama && binding.endpoint.is_some() {
+            return Err((key("endpoint"), "is only for ollama bindings"));
+        }
+        if !ollama && binding.context.is_some() {
+            return Err((key("context"), "is only for ollama bindings"));
+        }
+        if binding
+            .endpoint
+            .as_deref()
+            .is_some_and(|e| !valid_origin(e))
+        {
+            return Err((
+                key("endpoint"),
+                "must be an https:// origin with no path (plain http only for localhost)",
+            ));
+        }
+        if binding
+            .context
+            .is_some_and(|c| !(2048..=1_048_576).contains(&c))
+        {
+            return Err((key("context"), "must be 2048 to 1048576"));
+        }
+    }
+    let defined = |name: &String| bindings.is_some_and(|b| b.contains_key(name));
+    for (role, name) in models.roles.iter().flatten() {
+        if !defined(name) {
+            return Err((
+                format!("models.roles.{}", wire_name(role)),
+                "names a binding that isn't defined",
+            ));
+        }
+    }
+    for (class, names) in models.fallbacks.iter().flatten() {
+        if !names.iter().all(defined) {
+            return Err((
+                format!("models.fallbacks.{}", wire_name(class)),
+                "names a binding that isn't defined",
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// The serde name of a key enum, so errors use the spelling the user wrote.
+fn wire_name(key: &impl serde::Serialize) -> String {
+    serde_json::to_value(key)
+        .ok()
+        .and_then(|v| v.as_str().map(str::to_owned))
+        .unwrap_or_default()
+}
+
+/// Exact ids only: OpenRouter `vendor/model` (with an optional variant such as
+/// `:free`), Ollama `name:tag`. `latest`, untagged Ollama names, OpenRouter's own
+/// routers (`openrouter/auto`) and `~` aliases all move without notice.
+fn exact_model(provider: ModelProvider, model: &str) -> bool {
+    let printable = !model.is_empty() && model.bytes().all(|b| b.is_ascii_graphic());
+    let tag_moves = |tag: &str| tag.is_empty() || tag == "latest";
+    printable
+        && match provider {
+            ModelProvider::Ollama => model.rsplit_once(':').is_some_and(|(name, tag)| {
+                !name.is_empty() && !tag_moves(tag) && !tag.contains('/')
+            }),
+            ModelProvider::Openrouter => {
+                let (id, variant) = model.split_once(':').unwrap_or((model, "x"));
+                id.split_once('/').is_some_and(|(vendor, name)| {
+                    !vendor.is_empty() && !name.is_empty() && vendor != "openrouter"
+                }) && !model.starts_with('~')
+                    && !tag_moves(variant)
+            }
+        }
+}
+
 /// A path or glob in a repo file must be a plain repository path relative to its
 /// folder: everything `RepoPath` requires (no `..`, empty parts, control characters or
 /// `.git`), plus no `\\`, no leading `~` and no drive letter, so it can't name a file
@@ -358,6 +457,9 @@ pub(crate) fn load_user(text: &str) -> Result<Items, ConfigError> {
     let parsed = parse(USER_FILE, text)?;
     let config: UserConfig = typed(&parsed, text)?;
     check_user_values(&config).map_err(|(key, message)| parsed.error(Some(key), message))?;
+    if let Some(models) = &config.models {
+        check_models(models).map_err(|(key, message)| parsed.error(Some(&key), message))?;
+    }
     for key in ["api_url", "web_url"] {
         if let Some(url) = parsed.json.get(key).and_then(Value::as_str) {
             check_url(key, url, &parsed.source(Layer::User, key))?;

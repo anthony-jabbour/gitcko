@@ -15,10 +15,37 @@ expression: config
   },
   "models": {
     "bindings": {
+      "fast": {
+        "provider": "ollama",
+        "model": "example-coder:7b",
+        "reasoning_effort": null,
+        "family": null,
+        "data_policy": null,
+        "endpoint": "http://127.0.0.1:11434",
+        "context": 32768
+      },
       "smart": {
-        "model": "example/model",
-        "provider": "openrouter"
+        "provider": "openrouter",
+        "model": "example/model-1",
+        "reasoning_effort": "medium",
+        "family": "anthropic",
+        "data_policy": "zdr",
+        "endpoint": null,
+        "context": null
       }
+    },
+    "roles": {
+      "review-light": "fast",
+      "judge": "smart"
+    },
+    "fallbacks": {
+      "fast": [
+        "fast",
+        "smart"
+      ]
+    },
+    "inversion": {
+      "enabled": true
     }
   }
 }

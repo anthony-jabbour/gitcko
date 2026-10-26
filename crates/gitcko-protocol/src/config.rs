@@ -8,6 +8,8 @@
 //! a repository file from setting models, credentials or network policy (§2). Range and
 //! cross-field checks with file and line numbers happen in `gitcko-config`.
 
+use std::collections::BTreeMap;
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -156,10 +158,129 @@ pub struct UserConfig {
     pub api_url: Option<String>,
     pub web_url: Option<String>,
     pub review: Option<UserReview>,
-    /// Model bindings, roles and fallbacks (MODEL_ROUTING). An open table until the
-    /// model layer types it in Phase 3. Keys never live here; they come from the
-    /// keychain or environment.
-    pub models: Option<serde_json::Map<String, serde_json::Value>>,
+    /// Model bindings, roles and fallbacks (MODEL_ROUTING). Keys never live here; they
+    /// come from the keychain or environment.
+    pub models: Option<ModelsConfig>,
+}
+
+/// `[models]` (MODEL_ROUTING §3). Typed and closed, so a key field or a misspelt
+/// option is an error instead of being silently ignored. Where a request goes
+/// (on device or remote) is computed from the binding, never set here.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ModelsConfig {
+    /// Named bindings. Names are `[a-z0-9_-]`, so dotted config keys stay unambiguous.
+    pub bindings: Option<BTreeMap<String, ModelBinding>>,
+    /// Role → binding name; unset roles use their class default.
+    pub roles: Option<BTreeMap<ModelRole, String>>,
+    /// Class → binding names tried in order after the primary fails.
+    pub fallbacks: Option<BTreeMap<ModelClass, Vec<String>>>,
+    pub inversion: Option<Inversion>,
+}
+
+/// One provider and exact model. A moving alias (`latest`, an untagged Ollama name)
+/// is rejected in `gitcko-config`, because a review must name the model it ran.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ModelBinding {
+    pub provider: ModelProvider,
+    pub model: String,
+    pub reasoning_effort: Option<ReasoningEffort>,
+    /// Overrides the family taken from the OpenRouter vendor prefix (`open-weight`
+    /// for Ollama); the router uses it to keep fallbacks in a different family.
+    pub family: Option<ModelFamily>,
+    /// OpenRouter only. Unset means `deny_collection`.
+    pub data_policy: Option<DataPolicy>,
+    /// Ollama only. Unset means `OLLAMA_HOST`, else `http://127.0.0.1:11434`.
+    pub endpoint: Option<String>,
+    /// Ollama only: sent as `num_ctx`, since Ollama's own default is too small for
+    /// review prompts. Unset means the class floor.
+    #[schemars(range(min = 2048, max = 1048576))]
+    pub context: Option<u32>,
+}
+
+/// The providers Phase 3 ships adapters for.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ModelProvider {
+    Openrouter,
+    Ollama,
+}
+
+/// How hard a reasoning model thinks, where the provider supports it; unset means
+/// the provider's default.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ReasoningEffort {
+    Low,
+    Medium,
+    High,
+}
+
+/// Model families, for keeping a fallback or a judge out of the primary's family.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "kebab-case")]
+pub enum ModelFamily {
+    Anthropic,
+    Openai,
+    Google,
+    OpenWeight,
+}
+
+/// What OpenRouter may let the upstream provider do with prompts.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum DataPolicy {
+    /// Only providers that don't store or train on prompts (`data_collection: deny`).
+    DenyCollection,
+    /// Only zero-data-retention endpoints.
+    Zdr,
+    /// The account's OpenRouter setting.
+    ProviderDefault,
+}
+
+/// The stable role ids of MODEL_ROUTING §2. Renaming one is a breaking change.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "kebab-case")]
+pub enum ModelRole {
+    RiskClassifier,
+    ReviewLight,
+    Review,
+    ReviewDeep,
+    Judge,
+    Refiner,
+    Summary,
+    Scorer,
+    Verify,
+    Ask,
+    Embeddings,
+    ReplyAgent,
+    ReReviewGate,
+    AddressedJudge,
+    MemoryLearner,
+    Digest,
+}
+
+/// Capability classes roles resolve to (MODEL_ROUTING §3).
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum ModelClass {
+    Fast,
+    Smart,
+    Deep,
+    Embed,
+}
+
+/// Model inversion (MODEL_ROUTING §9): review with a model from a different family
+/// than the one that wrote the PR. On by default; a no-op with one family.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct Inversion {
+    pub enabled: Option<bool>,
 }
 
 /// How `gitcko review` prints results on this machine. User settings only change

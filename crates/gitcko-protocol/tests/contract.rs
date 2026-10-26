@@ -98,6 +98,20 @@ fn repo_config_rejects_models() {
 }
 
 #[test]
+fn models_reject_keys_roles_and_providers_they_dont_define() {
+    // A key field has nowhere to go: keys come from the keychain or env (CONFIGURATION §7).
+    for text in [
+        "[models.bindings.smart]\nprovider = \"openrouter\"\nmodel = \"a/b\"\napi_key = \"x\"",
+        "[models.bindings.smart]\nprovider = \"somewhere\"\nmodel = \"a/b\"",
+        "[models.roles]\nnot-a-role = \"smart\"",
+        "[models.fallbacks]\nbig = [\"smart\"]",
+        "[models.local]\nonly = true",
+    ] {
+        assert!(toml::from_str::<UserConfig>(text).is_err(), "{text}");
+    }
+}
+
+#[test]
 fn full_user_config_parses_every_documented_key() {
     let config: UserConfig = toml::from_str(include_str!("data/user-config-full.toml")).unwrap();
     insta::assert_json_snapshot!(config);

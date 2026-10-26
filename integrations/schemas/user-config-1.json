@@ -19,12 +19,15 @@
       ]
     },
     "models": {
-      "description": "Model bindings, roles and fallbacks (MODEL_ROUTING). An open table until the\nmodel layer types it in Phase 3. Keys never live here; they come from the\nkeychain or environment.",
-      "type": [
-        "object",
-        "null"
-      ],
-      "additionalProperties": true
+      "description": "Model bindings, roles and fallbacks (MODEL_ROUTING). Keys never live here; they\ncome from the keychain or environment.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelsConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "review": {
       "anyOf": [
@@ -52,6 +55,39 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "DataPolicy": {
+      "description": "What OpenRouter may let the upstream provider do with prompts.",
+      "oneOf": [
+        {
+          "description": "Only providers that don't store or train on prompts (`data_collection: deny`).",
+          "type": "string",
+          "const": "deny_collection"
+        },
+        {
+          "description": "Only zero-data-retention endpoints.",
+          "type": "string",
+          "const": "zdr"
+        },
+        {
+          "description": "The account's OpenRouter setting.",
+          "type": "string",
+          "const": "provider_default"
+        }
+      ]
+    },
+    "Inversion": {
+      "description": "Model inversion (MODEL_ROUTING §9): review with a model from a different family\nthan the one that wrote the PR. On by default; a no-op with one family.",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "Layout": {
       "description": "`comments` lists findings like review comments; `diff` shows them inline in the\ndiff.",
       "type": "string",
@@ -60,6 +96,209 @@
         "diff"
       ]
     },
+    "ModelBinding": {
+      "description": "One provider and exact model. A moving alias (`latest`, an untagged Ollama name)\nis rejected in `gitcko-config`, because a review must name the model it ran.",
+      "type": "object",
+      "properties": {
+        "context": {
+          "description": "Ollama only: sent as `num_ctx`, since Ollama's own default is too small for\nreview prompts. Unset means the class floor.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "maximum": 1048576,
+          "minimum": 2048
+        },
+        "data_policy": {
+          "description": "OpenRouter only. Unset means `deny_collection`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DataPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "endpoint": {
+          "description": "Ollama only. Unset means `OLLAMA_HOST`, else `http://127.0.0.1:11434`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family": {
+          "description": "Overrides the family taken from the OpenRouter vendor prefix (`open-weight`\nfor Ollama); the router uses it to keep fallbacks in a different family.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelFamily"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "provider": {
+          "$ref": "#/$defs/ModelProvider"
+        },
+        "reasoning_effort": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReasoningEffort"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model"
+      ]
+    },
+    "ModelFamily": {
+      "description": "Model families, for keeping a fallback or a judge out of the primary's family.",
+      "type": "string",
+      "enum": [
+        "anthropic",
+        "openai",
+        "google",
+        "open-weight"
+      ]
+    },
+    "ModelProvider": {
+      "description": "The providers Phase 3 ships adapters for.",
+      "type": "string",
+      "enum": [
+        "openrouter",
+        "ollama"
+      ]
+    },
+    "ModelsConfig": {
+      "description": "`[models]` (MODEL_ROUTING §3). Typed and closed, so a key field or a misspelt\noption is an error instead of being silently ignored. Where a request goes\n(on device or remote) is computed from the binding, never set here.",
+      "type": "object",
+      "properties": {
+        "bindings": {
+          "description": "Named bindings. Names are `[a-z0-9_-]`, so dotted config keys stay unambiguous.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/ModelBinding"
+          }
+        },
+        "fallbacks": {
+          "description": "Class → binding names tried in order after the primary fails.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "deep": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "embed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "fast": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "smart": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "inversion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Inversion"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "roles": {
+          "description": "Role → binding name; unset roles use their class default.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "addressed-judge": {
+              "type": "string"
+            },
+            "ask": {
+              "type": "string"
+            },
+            "digest": {
+              "type": "string"
+            },
+            "embeddings": {
+              "type": "string"
+            },
+            "judge": {
+              "type": "string"
+            },
+            "memory-learner": {
+              "type": "string"
+            },
+            "re-review-gate": {
+              "type": "string"
+            },
+            "refiner": {
+              "type": "string"
+            },
+            "reply-agent": {
+              "type": "string"
+            },
+            "review": {
+              "type": "string"
+            },
+            "review-deep": {
+              "type": "string"
+            },
+            "review-light": {
+              "type": "string"
+            },
+            "risk-classifier": {
+              "type": "string"
+            },
+            "scorer": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "verify": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "OutputFormat": {
       "description": "`auto` shows the interactive view on a terminal and plain text when piped\n(CLI_SPEC); `json` is always asked for explicitly, so its shape is a promise.",
       "type": "string",
@@ -67,6 +306,15 @@
         "auto",
         "text",
         "json"
+      ]
+    },
+    "ReasoningEffort": {
+      "description": "How hard a reasoning model thinks, where the provider supports it; unset means\nthe provider's default.",
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
       ]
     },
     "UserReview": {
