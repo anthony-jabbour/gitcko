@@ -1,0 +1,21 @@
+[package]
+name = "gitcko-graph"
+version = "0.0.0"
+description = "Gitcko's code graph: symbols with stable identities and evidence-bearing edges between them, resolved without a compiler"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+gitcko-syntax = { path = "../gitcko-syntax", version = "0.0.0" }
+sha2.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+proptest.workspace = true
+
+[lints]
+workspace = true
