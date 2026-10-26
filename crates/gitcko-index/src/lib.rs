@@ -12,6 +12,8 @@ mod build;
 mod chunk;
 mod discover;
 mod limits;
+mod query;
+mod retrieve;
 
 pub use build::{
     INDEX_SCHEMA_VERSION, ParsedFile, Revision, RevisionCoverage, Versions, build, validate,
@@ -22,3 +24,8 @@ pub use chunk::{
 };
 pub use discover::{Disposition, IndexError, Manifest, ManifestEntry, discover};
 pub use limits::IndexLimits;
+pub use query::{
+    CodeHit, CodeQuery, CodeResults, CodeSearchMode, Overview, Relations, SymbolMatches,
+    TestCandidates, TestEvidence,
+};
+pub use retrieve::{BundleCoverage, ContextBundle, ContextItem, RetrievalBudget, Source};
