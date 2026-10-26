@@ -243,6 +243,7 @@ fn folders_are_0700_and_files_0600() {
         }
     }
     walk(&root.path().join("repos"));
+    walk(&root.path().join("locks"));
 }
 
 #[test]
@@ -518,19 +519,41 @@ fn purge_waits_for_a_publish_in_progress() {
     let root = TempDir::new("store-root");
     let store = Store::new(root.path());
     store.publish("demo", &a, &mut go).unwrap();
-    // Between the rename and the `active` swap, the new revision isn't active yet.
-    let mut during = Vec::new();
-    let id = store
-        .publish("demo", &b, &mut |step| {
-            if step == PublishStep::Activate {
-                during.push(store.purge_stale("demo"));
-                during.push(store.purge_repo("demo").map(|()| 0));
-            }
-            true
-        })
-        .unwrap();
-    assert_eq!(during, [Err(StoreError::InUse), Err(StoreError::InUse)]);
-    assert_same(&store.open(&repo, "demo", &id).unwrap(), &b);
+    // Between the rename and the `active` swap, the new revision isn't active yet: a
+    // purge started then waits for the publish to finish.
+    std::thread::scope(|scope| {
+        let mut purge = None;
+        let id = store
+            .publish("demo", &b, &mut |step| {
+                if step == PublishStep::Activate {
+                    let handle = scope.spawn(|| store.purge_stale("demo"));
+                    std::thread::sleep(std::time::Duration::from_millis(300));
+                    assert!(!handle.is_finished(), "purge didn't wait");
+                    purge = Some(handle);
+                }
+                true
+            })
+            .unwrap();
+        assert!(purge.unwrap().join().unwrap().is_ok());
+        assert_eq!(store.active("demo").unwrap().as_deref(), Some(id.as_str()));
+        assert_same(&store.open(&repo, "demo", &id).unwrap(), &b);
+
+        // Removing the whole repository waits too, then removes what was published.
+        let mut purge = None;
+        store
+            .publish("demo", &a, &mut |step| {
+                if step == PublishStep::Activate {
+                    let handle = scope.spawn(|| store.purge_repo("demo"));
+                    std::thread::sleep(std::time::Duration::from_millis(300));
+                    assert!(!handle.is_finished(), "purge didn't wait");
+                    purge = Some(handle);
+                }
+                true
+            })
+            .unwrap();
+        assert!(purge.unwrap().join().unwrap().is_ok());
+        assert_eq!(store.active("demo").unwrap(), None);
+    });
 }
 
 #[test]

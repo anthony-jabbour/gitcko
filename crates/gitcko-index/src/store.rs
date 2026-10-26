@@ -235,7 +235,7 @@ impl Store {
     pub fn purge_stale(&self, repo_id: &str) -> Result<usize, StoreError> {
         let current = self.index_dir(repo_id)?;
         // A publish holds this between making its revision and pointing `active` at it.
-        let _lock = self.repo_lock(repo_id, false)?;
+        let _lock = self.repo_lock(repo_id, true)?;
         let Some(base) = current.parent() else {
             return Ok(0);
         };
@@ -259,9 +259,10 @@ impl Store {
     }
 
     /// Removes everything stored for one repository, unless a revision is being read.
+    /// Waits for a publish in progress.
     pub fn purge_repo(&self, repo_id: &str) -> Result<(), StoreError> {
         check_repo_id(repo_id)?;
-        let _lock = self.repo_lock(repo_id, false)?;
+        let _lock = self.repo_lock(repo_id, true)?;
         let dir = self.root.join("repos").join(repo_id);
         if dir.exists() {
             remove_unlocked(&dir)?;
@@ -322,14 +323,16 @@ impl Store {
 
     /// The repository's lock, held by a publish and by anything that deletes: kept
     /// outside the folders it guards, so deleting them never deletes it. Waits for it, or
-    /// with `wait` false, returns [`StoreError::InUse`] while it's held.
+    /// with `wait` false, returns [`StoreError::InUse`] while it's held. Waiting is the
+    /// default: a child process can hold an inherited lock for an instant after a fork.
     fn repo_lock(&self, repo_id: &str, wait: bool) -> Result<File, StoreError> {
         let locks = self.root.join("locks");
         make_dir(&locks).map_err(io("lock the store"))?;
-        let f = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(false)
+        let mut o = OpenOptions::new();
+        o.write(true).create(true).truncate(false);
+        #[cfg(unix)]
+        std::os::unix::fs::OpenOptionsExt::mode(&mut o, 0o600);
+        let f = o
             .open(locks.join(format!("{repo_id}.lock")))
             .map_err(io("lock the store"))?;
         if wait {
