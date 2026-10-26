@@ -7,7 +7,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use gitcko_domain::{Coverage, Reason, RepoPath};
-use gitcko_git::{CommitId, Repo};
+use gitcko_git::{CommitId, ObjectId, Repo};
 use gitcko_graph::{
     EdgeKind, Endpoint, FileInput, GRAPH_SCHEMA_VERSION, Graph, GraphInput, Target,
 };
@@ -107,6 +107,46 @@ pub struct Revision {
 
 /// Builds and validates the revision for `commit`. Reads only git objects; runs nothing.
 pub fn build(repo: &Repo, commit: CommitId, limits: &IndexLimits) -> Result<Revision, IndexError> {
+    build_reusing(repo, commit, limits, &HashMap::new())
+}
+
+/// Builds `commit` like [`build`], but reuses `previous`'s parse of any file whose content
+/// it parsed completely, wherever that file now lives (INDEXING §23). Everything after
+/// parsing (graph, chunks, search index) is rebuilt in full, so the result equals a clean
+/// build by construction, with no dependency tracking to get wrong (§23.5–23.6). Nothing
+/// is reused if `previous` was built with other versions. `previous` must have been built
+/// with the same `limits`: a parse under other limits could have come out differently.
+pub fn build_incremental(
+    repo: &Repo,
+    commit: CommitId,
+    limits: &IndexLimits,
+    previous: &Revision,
+) -> Result<Revision, IndexError> {
+    let mut reuse = HashMap::new();
+    if previous.versions == Versions::current() {
+        for p in &previous.parsed {
+            // A partial parse may have been cut short by a timeout: parse it again.
+            let complete = p.extraction.coverage.is_complete()
+                && p.extraction.reference_coverage.is_complete();
+            if let Some(e) = previous.manifest.entries.get(p.entry)
+                && complete
+            {
+                reuse.insert((e.object, e.language), &p.extraction);
+            }
+        }
+    }
+    build_reusing(repo, commit, limits, &reuse)
+}
+
+/// A parse to reuse, by the file's content and language.
+type Reuse<'a> = HashMap<(ObjectId, Option<Language>), &'a Extraction>;
+
+fn build_reusing(
+    repo: &Repo,
+    commit: CommitId,
+    limits: &IndexLimits,
+    reuse: &Reuse<'_>,
+) -> Result<Revision, IndexError> {
     let manifest = discover(repo, commit, limits)?;
     let mut texts: HashMap<RepoPath, String> = HashMap::new();
     let mut parsed = Vec::new();
@@ -135,7 +175,10 @@ pub fn build(repo: &Repo, commit: CommitId, limits: &IndexLimits) -> Result<Revi
         if entry.disposition == Disposition::Parse
             && let Some(a) = entry.language.and_then(adapter)
         {
-            let extraction = a.extract(&text, &limits.parse);
+            let extraction = match reuse.get(&(entry.object, entry.language)) {
+                Some(x) => (*x).clone(),
+                None => a.extract(&text, &limits.parse),
+            };
             if !extraction.coverage.is_complete() {
                 partial_parses += 1;
             }
