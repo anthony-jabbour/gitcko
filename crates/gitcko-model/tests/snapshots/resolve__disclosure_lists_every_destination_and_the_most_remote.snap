@@ -1,0 +1,39 @@
+---
+source: crates/gitcko-model/tests/resolve.rs
+expression: disclosure
+---
+{
+  "destinations": [
+    {
+      "provider": "openrouter",
+      "host": "openrouter.ai",
+      "port": 443,
+      "class": "customer_remote",
+      "roles": [
+        "review",
+        "judge",
+        "refiner",
+        "scorer",
+        "verify",
+        "ask",
+        "reply-agent",
+        "addressed-judge",
+        "memory-learner"
+      ]
+    },
+    {
+      "provider": "ollama",
+      "host": "127.0.0.1",
+      "port": 11434,
+      "class": "on_device",
+      "roles": [
+        "risk-classifier",
+        "review-light",
+        "summary",
+        "re-review-gate",
+        "digest"
+      ]
+    }
+  ],
+  "most_remote": "customer_remote"
+}

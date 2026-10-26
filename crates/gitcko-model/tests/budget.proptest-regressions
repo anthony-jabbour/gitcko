@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 492b18d21b1aea6567844f4c67f3d12785563535b4bc0cc7746631b6991f8d0a # shrinks to input = 0, output = 0, steps = [Reserve { bytes: 0, wanted: 0 }]
+cc ea820d2e82207dde12f58ce03d13e29beec5d758383bb1fb76874b8fda5b5206 # shrinks to input = 11, output = 1, steps = [Reserve { bytes: 0, wanted: 1 }, Settle { pick: 0, input_pct: None, output_pct: None, streamed: 0 }]

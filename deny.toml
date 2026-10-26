@@ -3,6 +3,18 @@
 # and a commercial licence stay possible. Exceptions need a maintainer's approval
 # and a reason next to them.
 
+[graph]
+# Only the targets Gitcko ships. rustls-platform-verifier pulls a CDLA-licensed root store
+# only on targets outside this list, which we never build.
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+    "aarch64-pc-windows-msvc",
+]
+
 [advisories]
 ignore = []
 
@@ -30,12 +42,16 @@ unused-allowed-license = "allow"
 # needs no entry. Added per phase at once (Phase 1, then Phase 2) so parallel crate PRs don't
 # edit this file.
 exceptions = [
+    { crate = "gitcko-cassette", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-config", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-diff", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-domain", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-git", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-graph", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-index", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-model", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-model-ollama", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-model-openai", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-redact", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-search", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-syntax", allow = ["AGPL-3.0-or-later"] },
