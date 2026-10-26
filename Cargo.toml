@@ -36,6 +36,8 @@ thiserror = "2"
 toml = "1.1"
 tree-sitter = "0.27"
 tree-sitter-rust = "0.24"
+# Unicode identifier tables (XID), already in the build through proc-macro2.
+unicode-ident = "1"
 uuid = { version = "1.28", features = ["v7"] }
 
 [workspace.lints.rust]
