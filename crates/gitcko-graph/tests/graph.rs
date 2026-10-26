@@ -4,7 +4,8 @@
 
 use gitcko_domain::RepoPath;
 use gitcko_graph::{
-    Edge, EdgeKind, Endpoint, FileInput, Graph, GraphInput, Resolution, Target, build,
+    Edge, EdgeKind, Endpoint, FileInput, Graph, GraphConfidence, GraphInput, Resolution, Target,
+    build,
 };
 use gitcko_syntax::{Extraction, Language, ParseLimits, adapter};
 use proptest::prelude::*;
@@ -939,4 +940,44 @@ fn a_lookup_cut_short_by_its_budget_is_not_settled() {
     .graph;
     assert_eq!(resolved(&g, EdgeKind::Calls, "cut::f"), ["? hit"]);
     assert!(!g.coverage[&EdgeKind::Calls].is_complete());
+}
+
+#[test]
+fn an_impl_whose_type_lookup_was_cut_short_is_not_complete() {
+    // `S` is found through `leaf`, but the glob chain through a0 is longer than the 16-hop limit:
+    // the `Implements` edge starts at `S`, says it was cut, and coverage says so.
+    let mut files: Vec<(String, String)> =
+        vec![("Cargo.toml".into(), "[package]\nname = \"imp\"\n".into())];
+    let mut lib = String::from("mod leaf;\n");
+    for i in 0..20 {
+        lib += &format!("mod a{i};\n");
+    }
+    lib += "use crate::a0::*;\nuse crate::leaf::*;\npub trait T {}\nimpl T for S {}\n";
+    files.push(("src/lib.rs".into(), lib));
+    files.push(("src/leaf.rs".into(), "pub struct S;\n".into()));
+    for i in 0..19 {
+        files.push((
+            format!("src/a{i}.rs"),
+            format!("pub use crate::a{}::*;\n", i + 1),
+        ));
+    }
+    files.push(("src/a19.rs".into(), String::new()));
+    let refs: Vec<(&str, &str)> = files
+        .iter()
+        .map(|(p, s)| (p.as_str(), s.as_str()))
+        .collect();
+    let g = build_from(&refs).graph;
+    let imp = edges_of(&g, EdgeKind::Implements);
+    assert_eq!(imp.len(), 1);
+    assert_eq!(endpoint(&g, &imp[0].from), "imp::leaf::S");
+    assert!(
+        imp[0]
+            .limitations
+            .iter()
+            .any(|r| r.as_str() == "resolution_limit"),
+        "{:?}",
+        imp[0].limitations
+    );
+    assert_eq!(imp[0].confidence, GraphConfidence::Low);
+    assert!(!g.coverage[&EdgeKind::Implements].is_complete());
 }

@@ -261,7 +261,7 @@ pub fn build(input: &GraphInput<'_>) -> Graph {
     for (fi, x) in extractions.iter().enumerate() {
         for imp in &x.implementations {
             let scope = x.scope_path(imp.scope);
-            let types = type_symbols(&resolver, &symbols, fi, &scope, &imp.type_path);
+            let (types, _) = type_symbols(&resolver, &symbols, fi, &scope, &imp.type_path);
             let mut member_scope = scope;
             member_scope.push(imp.type_path.join("::"));
             resolver.add_impl_members(&types, fi, member_scope);
@@ -372,7 +372,7 @@ pub fn build(input: &GraphInput<'_>) -> Graph {
                 continue;
             };
             let scope = x.scope_path(imp.scope);
-            let types = type_symbols(&resolver, &symbols, fi, &scope, &imp.type_path);
+            let (types, cut) = type_symbols(&resolver, &symbols, fi, &scope, &imp.type_path);
             let froms: Vec<Endpoint> = if types.is_empty() {
                 vec![Endpoint::File(fi)]
             } else {
@@ -389,6 +389,11 @@ pub fn build(input: &GraphInput<'_>) -> Graph {
                 );
                 if from == Endpoint::File(fi) {
                     e.limitations.push(reason("impl_type_unresolved"));
+                }
+                if cut {
+                    // The type found may not be the only one: not settled.
+                    e.confidence = GraphConfidence::Low;
+                    e.limitations.push(reason("resolution_limit"));
                 }
                 edges.push(e);
             }
@@ -446,27 +451,30 @@ fn type_symbols(
     file: usize,
     scope: &[String],
     path: &[String],
-) -> Vec<usize> {
-    match resolver.resolve(file, scope, path) {
-        resolve::Resolved::Found(found) => found
-            .into_iter()
-            .filter_map(|e| match e {
-                Endpoint::Symbol(s)
-                    if matches!(
-                        symbols[s].kind,
-                        SymbolKind::Struct
-                            | SymbolKind::Enum
-                            | SymbolKind::TypeAlias
-                            | SymbolKind::Trait
-                    ) =>
-                {
-                    Some(s)
-                }
-                _ => None,
-            })
-            .collect(),
-        _ => Vec::new(),
-    }
+) -> (Vec<usize>, bool) {
+    let (found, cut) = match resolver.resolve(file, scope, path) {
+        resolve::Resolved::Found(found) => (found, false),
+        resolve::Resolved::Cut(found) => (found, true),
+        _ => (Vec::new(), false),
+    };
+    let types = found
+        .into_iter()
+        .filter_map(|e| match e {
+            Endpoint::Symbol(s)
+                if matches!(
+                    symbols[s].kind,
+                    SymbolKind::Struct
+                        | SymbolKind::Enum
+                        | SymbolKind::TypeAlias
+                        | SymbolKind::Trait
+                ) =>
+            {
+                Some(s)
+            }
+            _ => None,
+        })
+        .collect();
+    (types, cut)
 }
 
 /// An edge from a resolution: one target is settled, several stay candidates, none is
