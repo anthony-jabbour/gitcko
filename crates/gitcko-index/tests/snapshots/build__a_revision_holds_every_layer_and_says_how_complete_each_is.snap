@@ -1,0 +1,17 @@
+---
+source: crates/gitcko-index/tests/build.rs
+expression: out
+---
+versions: idx1.1.1.2-rust-1+tree-sitter-rust-0.24
+parsed files: 2
+symbols: 3
+chunks: {"configuration_block": 2, "documentation_section": 1, "file_preamble": 1, "symbol": 3}
+lexical docs: 7
+chunk configuration_block Cargo.toml L1-3
+chunk documentation_section README.md L1-7
+chunk configuration_block config/app.yaml L1-2
+chunk file_preamble src/lib.rs L1-2
+chunk symbol src/lib.rs L4-4
+chunk symbol src/lib.rs L6-9
+chunk symbol src/util.rs L1-3
+coverage discovery=Complete parsing=Complete chunking=Complete lexical=Complete semantic=Unavailable { reason: Reason("embeddings_disabled") }

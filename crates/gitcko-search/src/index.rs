@@ -13,7 +13,7 @@ use crate::tokenize::{CodeTokenizer, TokenKind, code_tokens};
 
 /// Changes whenever the fields or tokenization change, so an index built by another
 /// version is rebuilt rather than read (INDEXING §6).
-pub const LEXICAL_SCHEMA_VERSION: u32 = 1;
+pub const LEXICAL_SCHEMA_VERSION: u32 = 2;
 
 /// The file beside an on-disk index recording [`LEXICAL_SCHEMA_VERSION`]. Tantivy stores
 /// field layouts but not what a tokenizer does, so this is what notices an index built
@@ -45,6 +45,30 @@ pub struct LexicalDoc {
     pub signature: Option<String>,
     /// The text to search.
     pub content: String,
+}
+
+impl LexicalDoc {
+    /// SHA-256 over every field but the id, each length-prefixed so no two documents
+    /// share one. Stored with the document, so a caller can confirm document `id` is
+    /// still the one it built (INDEXING §26) rather than trusting a count.
+    pub fn digest(&self) -> String {
+        use sha2::Digest;
+        let mut hash = sha2::Sha256::new();
+        let mut part = |value: Option<&str>| match value {
+            Some(v) => hash.update(format!("{}:{v}|", v.len())),
+            None => hash.update("-|"),
+        };
+        part(Some(&self.path));
+        part(self.language.as_deref());
+        part(Some(&self.role));
+        part(Some(&self.kind));
+        part(self.symbol_key.as_deref());
+        part(self.name.as_deref());
+        part(self.qualified_name.as_deref());
+        part(self.signature.as_deref());
+        part(Some(&self.content));
+        hash.finalize().iter().map(|b| format!("{b:02x}")).collect()
+    }
 }
 
 /// How a query's text is matched (INDEXING §18.4).
@@ -124,6 +148,8 @@ pub enum SearchError {
 #[derive(Clone, Copy)]
 struct Fields {
     id: Field,
+    /// [`LexicalDoc::digest`], stored only.
+    digest: Field,
     path: Field,
     path_tokens: Field,
     language: Field,
@@ -173,6 +199,7 @@ fn schema() -> (Schema, Fields) {
     let mut s = Schema::builder();
     let fields = Fields {
         id: s.add_u64_field("id", STORED),
+        digest: s.add_text_field("digest", STORED),
         path: s.add_text_field("path", STRING),
         path_tokens: s.add_text_field("path_tokens", code("code", false)),
         language: s.add_text_field("language", STRING),
@@ -209,6 +236,7 @@ impl LexicalIndex {
         for d in docs {
             let mut document = doc!(
                 f.id => d.id,
+                f.digest => d.digest(),
                 f.path => d.path.clone(),
                 f.path_tokens => d.path,
                 f.role => d.role,
@@ -257,6 +285,42 @@ impl LexicalIndex {
             return Err(SearchError::Open);
         }
         Self::with_reader(&index, f)
+    }
+
+    /// How many documents the index holds, so a caller can check it holds what it
+    /// should (one per chunk) before trusting it.
+    pub fn len(&self) -> u64 {
+        self.reader.searcher().num_docs()
+    }
+
+    /// Every document's id and stored digest, by id.
+    pub fn digests(&self) -> Result<Vec<(u64, String)>, SearchError> {
+        let f = self.fields;
+        let searcher = self.reader.searcher();
+        let mut out = Vec::new();
+        for (ord, segment) in searcher.segment_readers().iter().enumerate() {
+            for doc in 0..segment.max_doc() {
+                if segment.alive_bitset().is_some_and(|a| !a.is_alive(doc)) {
+                    continue;
+                }
+                let stored: TantivyDocument = searcher
+                    .doc(tantivy::DocAddress::new(ord as u32, doc))
+                    .map_err(|_| SearchError::Read)?;
+                let id = stored.get_first(f.id).and_then(|v| v.as_u64());
+                let digest = stored.get_first(f.digest).and_then(|v| v.as_str());
+                let (Some(id), Some(digest)) = (id, digest) else {
+                    return Err(SearchError::Read);
+                };
+                out.push((id, digest.to_string()));
+            }
+        }
+        out.sort();
+        Ok(out)
+    }
+
+    /// True when it holds no documents.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     fn with_reader(index: &Index, fields: Fields) -> Result<LexicalIndex, SearchError> {

@@ -1,0 +1,40 @@
+---
+source: crates/gitcko-index/tests/chunk.rs
+expression: "chunks.iter().map(|c|\nformat!(\"--- {} L{}-{}\\n{}\", c.kind.as_str(), c.span.lines().0,\nc.span.lines().1, c.header)).collect::<String>()"
+---
+--- file_preamble L1-2
+language: rust
+path: src/lib.rs
+kind: file_preamble
+role: source
+--- symbol L4-7
+language: rust
+path: src/lib.rs
+kind: function
+qualified_name: add
+signature: pub fn add(a: u32, b: u32) -> u32
+role: source
+--- symbol L9-11
+language: rust
+path: src/lib.rs
+kind: function
+qualified_name: sub
+signature: fn sub(a: u32, b: u32) -> u32
+role: source
+--- module_context L13-13
+language: rust
+path: src/lib.rs
+kind: module_context
+role: source
+--- symbol L14-16
+language: rust
+path: src/lib.rs
+kind: method
+qualified_name: Y::fmt
+signature: fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+role: source
+--- module_context L17-17
+language: rust
+path: src/lib.rs
+kind: module_context
+role: source

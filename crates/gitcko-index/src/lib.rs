@@ -8,8 +8,17 @@
 //! Every result says how complete it is ([`gitcko_domain::Coverage`]), so a gap in the
 //! index can't be mistaken for an absence in the code.
 
+mod build;
+mod chunk;
 mod discover;
 mod limits;
 
+pub use build::{
+    INDEX_SCHEMA_VERSION, ParsedFile, Revision, RevisionCoverage, Versions, build, validate,
+};
+pub use chunk::{
+    CHUNK_SCHEMA_VERSION, Chunk, ChunkKind, ChunkPolicy, ChunkSymbol, FileContext, Segment,
+    chunk_code, chunk_text,
+};
 pub use discover::{Disposition, IndexError, Manifest, ManifestEntry, discover};
 pub use limits::IndexLimits;
