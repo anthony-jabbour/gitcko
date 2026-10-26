@@ -21,10 +21,15 @@ tempfile.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
+criterion.workspace = true
 gitcko-redact = { path = "../gitcko-redact" }
 gitcko-test-support = { path = "../gitcko-test-support" }
 insta.workspace = true
 proptest.workspace = true
+
+[[bench]]
+name = "index"
+harness = false
 
 [lints]
 workspace = true

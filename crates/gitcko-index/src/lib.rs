@@ -17,7 +17,8 @@ mod retrieve;
 mod store;
 
 pub use build::{
-    INDEX_SCHEMA_VERSION, ParsedFile, Revision, RevisionCoverage, Versions, build, validate,
+    INDEX_SCHEMA_VERSION, ParsedFile, Revision, RevisionCoverage, Versions, build,
+    build_incremental, validate,
 };
 pub use chunk::{
     CHUNK_SCHEMA_VERSION, Chunk, ChunkKind, ChunkPolicy, ChunkSymbol, FileContext, Segment,
