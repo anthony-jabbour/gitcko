@@ -126,3 +126,21 @@ fn legacy_file_modes_are_read_the_way_git_reads_them() {
         .collect();
     assert_eq!(kinds, [EntryKind::Executable, EntryKind::File]);
 }
+
+#[test]
+fn object_ids_and_kinds_round_trip_through_serde() {
+    let dir = empty_repo("files-serde");
+    let commit = literal_commit(dir.path(), &[(b"a.rs", "100755", b"fn a() {}\n")]);
+    let repo = Repo::open(dir.path()).unwrap();
+    let entry = repo
+        .files(repo.resolve(&commit).unwrap())
+        .unwrap()
+        .remove(0);
+    let json = serde_json::to_string(&(entry.id, entry.kind)).unwrap();
+    assert_eq!(json, format!("[\"{}\",\"executable\"]", entry.id));
+    let back: (gitcko_git::ObjectId, EntryKind) = serde_json::from_str(&json).unwrap();
+    assert_eq!(back, (entry.id, entry.kind));
+    for bad in ["[\"xyz\",\"file\"]", "[\"\",\"file\"]"] {
+        assert!(serde_json::from_str::<(gitcko_git::ObjectId, EntryKind)>(bad).is_err());
+    }
+}

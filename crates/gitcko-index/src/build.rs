@@ -24,7 +24,7 @@ pub const INDEX_SCHEMA_VERSION: u32 = 1;
 
 /// Every schema and extractor version a revision was built with (INDEXING §6). Two
 /// revisions with different versions are never mixed or reused.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Versions {
     pub index: u32,
     pub graph: u32,
@@ -68,7 +68,7 @@ impl Versions {
 }
 
 /// How complete each part of a revision is (INDEXING §27.1).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct RevisionCoverage {
     pub discovery: Coverage,
     /// Parsing and symbol extraction across parsed files.
@@ -79,12 +79,13 @@ pub struct RevisionCoverage {
     pub lexical: Coverage,
     /// Semantic search: unavailable without an embedding provider (IX-013).
     pub semantic: Coverage,
-    /// Per edge kind, from the graph.
+    /// Per edge kind, from the graph. Not stored: the graph is re-resolved on load.
+    #[serde(skip)]
     pub graph: BTreeMap<EdgeKind, Coverage>,
 }
 
 /// One file's parse result in a revision.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct ParsedFile {
     /// Index into the manifest's entries.
     pub entry: usize,
@@ -146,23 +147,7 @@ pub fn build(repo: &Repo, commit: CommitId, limits: &IndexLimits) -> Result<Revi
         texts.insert(path.clone(), text);
     }
 
-    let manifests: Vec<(RepoPath, &str)> = texts
-        .iter()
-        .filter(|(p, _)| p.as_str() == "Cargo.toml" || p.as_str().ends_with("/Cargo.toml"))
-        .map(|(p, t)| (p.clone(), t.as_str()))
-        .collect();
-    let graph = gitcko_graph::build(&GraphInput {
-        files: parsed
-            .iter()
-            .filter_map(|p| {
-                Some(FileInput {
-                    path: manifest.entries[p.entry].repo_path.clone()?,
-                    extraction: &p.extraction,
-                })
-            })
-            .collect(),
-        manifests,
-    });
+    let graph = resolve_graph(&manifest, &parsed, |p| texts.get(p).cloned());
 
     let (chunks, chunk_coverage) = make_chunks(&manifest, &parsed, &graph, &texts, limits);
     let docs = lexical_docs(&manifest, &graph, &chunks).ok_or(IndexError::Invalid {
@@ -216,6 +201,35 @@ pub fn build(repo: &Repo, commit: CommitId, limits: &IndexLimits) -> Result<Revi
     };
     validate(&revision, |path| texts.get(path).cloned())?;
     Ok(revision)
+}
+
+/// Resolves the graph from the parsed files and every `Cargo.toml`'s text (read through
+/// `text`). Deterministic, so the store re-resolves rather than storing it.
+pub(crate) fn resolve_graph(
+    manifest: &Manifest,
+    parsed: &[ParsedFile],
+    text: impl Fn(&RepoPath) -> Option<String>,
+) -> Graph {
+    let cargo: Vec<(RepoPath, String)> = manifest
+        .entries
+        .iter()
+        .filter(|e| matches!(e.disposition, Disposition::Parse | Disposition::LexicalOnly))
+        .filter_map(|e| e.repo_path.clone())
+        .filter(|p| p.as_str() == "Cargo.toml" || p.as_str().ends_with("/Cargo.toml"))
+        .filter_map(|p| Some((p.clone(), text(&p)?)))
+        .collect();
+    gitcko_graph::build(&GraphInput {
+        files: parsed
+            .iter()
+            .filter_map(|p| {
+                Some(FileInput {
+                    path: manifest.entries[p.entry].repo_path.clone()?,
+                    extraction: &p.extraction,
+                })
+            })
+            .collect(),
+        manifests: cargo.iter().map(|(p, t)| (p.clone(), t.as_str())).collect(),
+    })
 }
 
 /// Chunks every readable text file: code around its symbols, the rest by structure.
@@ -318,7 +332,11 @@ fn make_chunks(
 /// One lexical document per chunk, with the symbol's names in their own fields.
 /// One search document per chunk, chunk `i` as document `i`; `None` if a chunk names a
 /// file or symbol the revision doesn't have.
-fn lexical_docs(manifest: &Manifest, graph: &Graph, chunks: &[Chunk]) -> Option<Vec<LexicalDoc>> {
+pub(crate) fn lexical_docs(
+    manifest: &Manifest,
+    graph: &Graph,
+    chunks: &[Chunk],
+) -> Option<Vec<LexicalDoc>> {
     let entry_of: HashMap<&str, usize> = manifest
         .entries
         .iter()

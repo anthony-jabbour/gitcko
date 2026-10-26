@@ -71,10 +71,27 @@ impl std::fmt::Display for ObjectId {
     }
 }
 
+/// Stored as its hex form, so the index cache can read an entry's blob again.
+impl serde::Serialize for ObjectId {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
+        s.collect_str(&self.0)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for ObjectId {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<ObjectId, D::Error> {
+        let hex = <String as serde::Deserialize>::deserialize(d)?;
+        gix::ObjectId::from_hex(hex.as_bytes())
+            .map(ObjectId)
+            .map_err(|_| serde::de::Error::custom("not an object id"))
+    }
+}
+
 /// What a tree entry is, from its mode, read the way git reads it (`canon_mode` in git):
 /// any regular-file mode is a file, executable when the owner exec bit is set, so the
 /// `100664` some old git versions wrote is a plain file. Folders aren't listed.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum EntryKind {
     /// A regular file: `100644`, or a legacy mode like `100664`.
     File,
