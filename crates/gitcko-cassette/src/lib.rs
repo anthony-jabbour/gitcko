@@ -262,8 +262,8 @@ fn record(inner: EventStream, mut file: File, path: PathBuf, redactor: Redactor)
     .boxed()
 }
 
-/// Every string in the file and in tool-call arguments, decoded, one per line, then
-/// the text deltas joined.
+/// Every string and key in the file and in tool-call arguments, decoded, one per line,
+/// then the text deltas joined.
 fn plain_text(file: &File) -> String {
     fn strings(value: &serde_json::Value, out: &mut String) {
         match value {
@@ -272,7 +272,14 @@ fn plain_text(file: &File) -> String {
                 out.push('\n');
             }
             serde_json::Value::Array(items) => items.iter().for_each(|v| strings(v, out)),
-            serde_json::Value::Object(map) => map.values().for_each(|v| strings(v, out)),
+            // Keys too: a property name can carry a secret as well as a value.
+            serde_json::Value::Object(map) => {
+                for (key, value) in map {
+                    out.push_str(key);
+                    out.push('\n');
+                    strings(value, out);
+                }
+            }
             _ => {}
         }
     }

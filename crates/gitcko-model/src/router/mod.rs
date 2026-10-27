@@ -202,9 +202,11 @@ impl Router {
                     return outcome(Ok(response), records);
                 }
                 Err(Stop::Run(error)) => return outcome(Err(error), records),
-                Err(Stop::Failed { error, .. }) => {
+                // Output then a failure isn't retried on the same binding, but the
+                // caller only gets whole responses, so another binding may answer.
+                Err(Stop::Failed { error, partial }) => {
                     last = Some(error);
-                    "failed"
+                    if partial { "partial_output" } else { "failed" }
                 }
                 Err(Stop::Benched(previous)) => {
                     last = previous.or(last);
@@ -329,6 +331,12 @@ async fn attempt_once(
         }
     };
     let max_output = reservation.max_output();
+    let mut held = Held {
+        budget: &mut run.budget,
+        reservation: Some(reservation),
+        usage: Usage::default(),
+        streamed: 0,
+    };
     let mut request = request.clone();
     request.max_output = u32::try_from(max_output).unwrap_or(u32::MAX);
 
@@ -338,8 +346,8 @@ async fn attempt_once(
     let mut stream = provider.stream(request, call_cancel.clone());
     let mut text = String::new();
     let mut tool_calls = Vec::new();
-    let mut usage = Usage::default();
-    let mut streamed = 0usize;
+    // When output (text or a tool call) first arrived. Usage and empty deltas aren't
+    // output, so they don't stop the first-token clock or rule out a retry.
     let mut first_token = None;
 
     let result = loop {
@@ -377,28 +385,31 @@ async fn attempt_once(
             Ok(Some(Err(error))) => break Err(Stop::Failed { error, partial }),
             Ok(Some(Ok(event))) => event,
         };
-        first_token.get_or_insert_with(Instant::now);
         match item {
             Event::TextDelta { text: delta } => {
-                streamed += delta.len();
+                if !delta.is_empty() {
+                    first_token.get_or_insert_with(Instant::now);
+                }
+                held.streamed += delta.len();
                 text.push_str(&delta);
             }
             Event::ToolCall(call) => {
-                streamed += call.name.len() + call.arguments.len();
+                first_token.get_or_insert_with(Instant::now);
+                held.streamed += call.name.len() + call.arguments.len();
                 tool_calls.push(call);
             }
-            Event::Usage(reported) => usage = reported,
+            Event::Usage(reported) => held.usage = reported,
             Event::Finish { reason } => {
                 break Ok(Response {
                     text: std::mem::take(&mut text),
                     tool_calls: std::mem::take(&mut tool_calls),
-                    usage,
+                    usage: held.usage,
                     finish: reason,
                     binding: binding.name.clone(),
                 });
             }
         }
-        if crate::estimate_tokens(streamed) > max_output {
+        if crate::estimate_tokens(held.streamed) > max_output {
             // Past what the budget reserved: stop paying for output now.
             break Err(Stop::Run(CallError::BudgetExhausted(Limit::OutputTokens)));
         }
@@ -406,8 +417,27 @@ async fn attempt_once(
     // Stop the provider's work and drop its connection before settling.
     call_cancel.cancel();
     drop(stream);
-    run.budget.settle(reservation, &usage, streamed);
+    let usage = held.usage;
+    drop(held);
     (result, first_token, usage)
+}
+
+/// An attempt's reservation, settled when dropped: normally at the end of the
+/// attempt, but also when the caller drops the call mid-attempt, so an abandoned call
+/// still charges what it used and releases what it held.
+struct Held<'a> {
+    budget: &'a mut RunBudget,
+    reservation: Option<crate::Reservation>,
+    usage: Usage,
+    streamed: usize,
+}
+
+impl Drop for Held<'_> {
+    fn drop(&mut self) {
+        if let Some(reservation) = self.reservation.take() {
+            self.budget.settle(reservation, &self.usage, self.streamed);
+        }
+    }
 }
 
 /// Out of bindings: a required role fails the run, an optional one is unavailable.

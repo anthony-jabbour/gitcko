@@ -692,3 +692,58 @@ async fn an_absurd_retry_after_fails_now_instead_of_waiting() {
         assert_eq!(last_error(&outcome), Some(kind));
     }
 }
+
+/// Dropping a call mid-attempt (the caller timed it out) still settles the attempt,
+/// so its reservation doesn't hold the run's budget forever.
+#[tokio::test(start_paused = true)]
+async fn an_abandoned_call_releases_its_reservation() {
+    let slow = Slow::new(vec![
+        vec![(NEVER, Ok(Event::TextDelta { text: "x".into() }))],
+        ok().into_iter().map(|e| (0, e)).collect(),
+    ]);
+    let router = router(DestinationClass::CustomerRemote, slow);
+    // Room for exactly one call's output.
+    let mut run = Run::new(
+        RUN,
+        RunBudget::new(BudgetLimits {
+            output_tokens: 512,
+            ..limits()
+        }),
+    );
+    let abandoned =
+        tokio::time::timeout(Duration::from_secs(1), router.call(&mut run, request())).await;
+    assert!(abandoned.is_err());
+    let next = router.call(&mut run, request()).await;
+    assert!(next.result.is_ok(), "{:?}", next.result);
+    // The abandoned attempt was charged its prompt estimate, not refunded.
+    let prompt = gitcko_model::estimate_tokens(serde_json::to_vec(&request()).unwrap().len());
+    assert_eq!(run.budget.spent().input_tokens, prompt + 7);
+}
+
+/// Usage or an empty delta isn't output: the first-token limit still applies, and a
+/// later failure may still be retried.
+#[tokio::test(start_paused = true)]
+async fn metadata_is_not_a_first_token() {
+    let slow = Slow::new(vec![
+        vec![
+            (1, Ok(Event::Usage(Usage::default()))),
+            (
+                0,
+                Ok(Event::TextDelta {
+                    text: String::new(),
+                }),
+            ),
+            (NEVER, Ok(Event::TextDelta { text: "x".into() })),
+        ],
+        ok().into_iter().map(|e| (0, e)).collect(),
+    ]);
+    let outcome = router(DestinationClass::CustomerRemote, slow)
+        .call(&mut run(), request())
+        .await;
+    assert!(
+        outcome.result.is_ok(),
+        "retried after the first-token timeout"
+    );
+    assert_eq!(outcome.records[0].total_ms, 30_000);
+    assert_eq!(outcome.records[0].first_token_ms, None);
+}

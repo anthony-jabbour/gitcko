@@ -576,3 +576,31 @@ proptest! {
         }
     }
 }
+
+/// Output then a failure isn't retried on that binding (P3_PLAN §5): it is a fallback
+/// decision. The caller only ever sees a whole response, and the record says why.
+#[tokio::test(start_paused = true)]
+async fn output_then_failure_falls_back_and_says_so() {
+    let partial = vec![
+        Ok(Event::TextDelta {
+            text: "half".into(),
+        }),
+        Err(ProviderError::new(ErrorKind::Connect)),
+    ];
+    let setup = Setup::new()
+        .binding("smart", Remote, OPEN, vec![partial])
+        .binding("smart-alt", Remote, OPEN, vec![ok()])
+        .role(ModelRole::Review, "smart")
+        .fallbacks(ModelClass::Smart, &["smart", "smart-alt"]);
+    let outcome = setup
+        .router()
+        .call(&mut run(), request(ModelRole::Review))
+        .await;
+    assert_eq!(setup.calls("smart"), 1);
+    assert_eq!(answered_by(&outcome), "smart-alt");
+    assert_eq!(outcome.result.as_ref().unwrap().text, "ok");
+    assert_eq!(
+        outcome.records[1].fallback.as_ref().unwrap().reason,
+        "partial_output"
+    );
+}

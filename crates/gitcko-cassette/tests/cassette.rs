@@ -309,3 +309,26 @@ async fn a_leak_split_across_deltas_or_hidden_by_escaping_is_not_written() {
         assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
     }
 }
+
+/// A secret hidden in a JSON property name of tool arguments (escaped so the file's
+/// text doesn't show it) is still caught: keys are scanned like values.
+#[tokio::test]
+async fn a_secret_hidden_in_an_argument_property_name_is_not_written() {
+    // A key with no credential shape, so only the registered value can catch it,
+    // and only once the property name is decoded.
+    let key = format!("fixture{}", "q".repeat(24));
+    let escaped = format!(r#"{{"\u0066{}":"x"}}"#, &key[1..]);
+    let mut script = response("");
+    script[1] = Ok(Event::ToolCall(ToolCall {
+        id: "call_1".into(),
+        name: "read_file".into(),
+        arguments: escaped,
+    }));
+    let dir = tempfile::tempdir().unwrap();
+    let inner = Arc::new(FakeProvider::new(vec![script]));
+    let recorder =
+        Cassette::record(dir.path(), &binding(11434, Some(&key)), inner, &no_ci()).unwrap();
+    let events = run(&recorder, request("x")).await;
+    assert!(events.last().unwrap().is_err());
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
+}
