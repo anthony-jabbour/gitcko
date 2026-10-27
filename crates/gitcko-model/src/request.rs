@@ -4,12 +4,18 @@
 //! translate these to and from their wire format. `Serialize` because cassette keys
 //! are a hash of the request's canonical JSON (tests/cassettes/README.md).
 
-use gitcko_protocol::config::ReasoningEffort;
+use gitcko_protocol::config::{ModelRole, ReasoningEffort};
 use serde::{Deserialize, Serialize};
+
+use crate::PromptRef;
 
 /// One model call. The binding (which model, where) is not here: the router picks it.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Request {
+    /// The role the call plays. Adapters ignore it; cassette keys and records use it.
+    pub role: ModelRole,
+    /// The template the messages were rendered from. Adapters ignore it too.
+    pub prompt: PromptRef,
     pub messages: Vec<Message>,
     /// Tools the model may call. Empty means none.
     pub tools: Vec<Tool>,

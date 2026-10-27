@@ -740,6 +740,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-cassette"
+version = "0.0.0"
+dependencies = [
+ "futures-util",
+ "gitcko-config",
+ "gitcko-model",
+ "gitcko-protocol",
+ "gitcko-redact",
+ "proptest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+]
+
+[[package]]
 name = "gitcko-config"
 version = "0.0.0"
 dependencies = [
