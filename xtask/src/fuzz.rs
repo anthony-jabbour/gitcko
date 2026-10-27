@@ -12,6 +12,7 @@ fn seeds(target: &str) -> Option<&'static str> {
         "diff_parse" => Some("crates/gitcko-diff/tests/data"),
         "config_load" => Some("tests/fixtures/config"),
         "syntax_extract" => Some("tests/fixtures/lang/rust"),
+        "provider_stream" => Some("tests/fixtures/providers"),
         _ => None,
     }
 }
