@@ -122,10 +122,21 @@ pub fn author_family(signals: &AuthorSignals, table: &AgentFamilies) -> AuthorFa
     AuthorFamily::Unknown
 }
 
-/// Email domains of `Co-authored-by:` lines; the key is matched case-insensitively,
-/// as git does for trailers.
+/// Email domains of `Co-authored-by:` lines in the message's last paragraph, where
+/// git reads trailers; a trailer quoted in the body doesn't count. The key is matched
+/// case-insensitively, as git does.
 fn co_author_domains(message: &str) -> impl Iterator<Item = &str> {
-    message.lines().filter_map(|line| {
+    // `lines` also strips `\r`, and a blank line may hold spaces.
+    let lines: Vec<&str> = message.lines().collect();
+    let end = lines
+        .iter()
+        .rposition(|l| !l.trim().is_empty())
+        .map_or(0, |i| i + 1);
+    let start = lines[..end]
+        .iter()
+        .rposition(|l| l.trim().is_empty())
+        .map_or(0, |i| i + 1);
+    lines.into_iter().take(end).skip(start).filter_map(|line| {
         let (key, value) = line.split_once(':')?;
         if !key.trim().eq_ignore_ascii_case("co-authored-by") {
             return None;

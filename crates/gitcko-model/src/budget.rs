@@ -44,10 +44,21 @@ pub struct RunBudget {
 #[must_use = "a reservation holds budget until it is settled"]
 #[derive(Debug, PartialEq, Eq)]
 pub struct Reservation {
+    // Private: `settle` releases exactly what was held, so callers can't change it.
+    input_tokens: u64,
+    max_output: u64,
+}
+
+impl Reservation {
     /// The estimated prompt tokens.
-    pub input_tokens: u64,
+    pub fn input_tokens(&self) -> u64 {
+        self.input_tokens
+    }
+
     /// The most the call may write; the router sends it as `max_output`.
-    pub max_output: u64,
+    pub fn max_output(&self) -> u64 {
+        self.max_output
+    }
 }
 
 impl RunBudget {

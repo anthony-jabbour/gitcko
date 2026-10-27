@@ -126,3 +126,21 @@ fn trailer_keys_and_subdomains_match_like_git() {
     let body = "Mentions Co-authored-by: noreply@openai.com in prose".to_string();
     assert_eq!(infer(&[body], "", ""), AuthorFamily::Unknown);
 }
+
+#[test]
+fn only_the_final_trailer_block_counts() {
+    // A trailer quoted in the body, followed by prose, is not a trailer (git reads
+    // trailers from the message's last paragraph only).
+    let quoted =
+        "Fix\n\nCo-authored-by: Bot <bot@anthropic.com>\n\nThat line above is an example.\n"
+            .to_string();
+    assert_eq!(
+        infer(&[quoted], "codex/x", ""),
+        known(Openai, Signal::BranchPrefix)
+    );
+    // CRLF line ends, a blank line holding spaces, and trailing blank lines.
+    let crlf = "Fix\r\n\r\nCo-authored-by: A <a@openai.com>\r\n\r\n".to_string();
+    assert_eq!(infer(&[crlf], "", ""), known(Openai, Signal::Trailer));
+    let spaced = "Co-authored-by: A <a@openai.com>\n  \nprose\n".to_string();
+    assert_eq!(infer(&[spaced], "", ""), AuthorFamily::Unknown);
+}

@@ -44,7 +44,7 @@ impl FakeProvider {
 
 #[cfg(feature = "fake")]
 impl ModelProvider for FakeProvider {
-    fn stream(&self, _request: Request, _cancel: CancellationToken) -> EventStream {
+    fn stream(&self, _request: Request, cancel: CancellationToken) -> EventStream {
         use futures_util::StreamExt;
         self.calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         // An unscripted call is a test bug; fail it loudly but as a stream item.
@@ -53,6 +53,20 @@ impl ModelProvider for FakeProvider {
                 "the fake provider has no response scripted for this call",
             )))]
         });
-        futures_util::stream::iter(events).boxed()
+        // Honour the contract: once canceled, yield `Canceled` and end.
+        let mut events = events.into_iter();
+        let mut done = false;
+        futures_util::stream::poll_fn(move |_| {
+            if done {
+                return std::task::Poll::Ready(None);
+            }
+            if cancel.is_cancelled() {
+                done = true;
+                let canceled = ProviderError::new(crate::ErrorKind::Canceled);
+                return std::task::Poll::Ready(Some(Err(canceled)));
+            }
+            std::task::Poll::Ready(events.next())
+        })
+        .boxed()
     }
 }

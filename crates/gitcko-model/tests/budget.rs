@@ -36,20 +36,24 @@ fn a_prompt_that_does_not_fit_is_refused_before_sending() {
     let mut b = budget(100, 50, None);
     assert_eq!(b.reserve(301, 10), Err(Limit::InputTokens));
     let r = b.reserve(300, 10).unwrap();
-    assert_eq!((r.input_tokens, r.max_output), (100, 10));
+    assert_eq!((r.input_tokens(), r.max_output()), (100, 10));
     // The first reservation holds all the input until it settles.
     assert_eq!(b.reserve(1, 10), Err(Limit::InputTokens));
     b.settle(r, &reported(40, 5, None), 0);
-    assert_eq!(b.reserve(180, 10).map(|r| r.input_tokens), Ok(60));
+    assert_eq!(b.reserve(180, 10).map(|r| r.input_tokens()), Ok(60));
 }
 
 #[test]
 fn output_is_trimmed_to_what_is_left_and_refused_at_zero() {
     let mut b = budget(1000, 50, None);
     let first = b.reserve(3, 40).unwrap();
-    assert_eq!(first.max_output, 40);
+    assert_eq!(first.max_output(), 40);
     let second = b.reserve(3, 40).unwrap();
-    assert_eq!(second.max_output, 10, "trimmed to the 10 not yet reserved");
+    assert_eq!(
+        second.max_output(),
+        10,
+        "trimmed to the 10 not yet reserved"
+    );
     assert_eq!(b.reserve(3, 40), Err(Limit::OutputTokens));
     b.settle(first, &reported(1, 40, None), 0);
     b.settle(second, &reported(1, 10, None), 0);
@@ -163,24 +167,24 @@ proptest! {
             match s {
                 Step::Reserve { bytes, wanted } => {
                     if let Ok(r) = b.reserve(bytes, wanted) {
-                        prop_assert!(r.max_output <= wanted);
+                        prop_assert!(r.max_output() <= wanted);
                         open.push(r);
                     }
                 }
                 Step::Settle { pick, input_pct, output_pct, streamed } if !open.is_empty() => {
                     let r = open.swap_remove(pick % open.len());
                     let usage = Usage {
-                        input_tokens: input_pct.map(|p| r.input_tokens * p / 100),
-                        output_tokens: output_pct.map(|p| r.max_output * p / 100),
+                        input_tokens: input_pct.map(|p| r.input_tokens() * p / 100),
+                        output_tokens: output_pct.map(|p| r.max_output() * p / 100),
                         cost_usd: None,
                     };
-                    let streamed = streamed.min(usize::try_from(r.max_output * 3).unwrap());
+                    let streamed = streamed.min(usize::try_from(r.max_output() * 3).unwrap());
                     b.settle(r, &usage, streamed);
                 }
                 Step::Settle { .. } => {}
             }
-            let held_in: u64 = open.iter().map(|r| r.input_tokens).sum();
-            let held_out: u64 = open.iter().map(|r| r.max_output).sum();
+            let held_in: u64 = open.iter().map(|r| r.input_tokens()).sum();
+            let held_out: u64 = open.iter().map(|r| r.max_output()).sum();
             prop_assert!(b.spent().input_tokens + held_in <= input);
             prop_assert!(b.spent().output_tokens + held_out <= output);
         }

@@ -64,6 +64,37 @@ async fn the_fake_plays_one_scripted_response_per_call() {
     assert_eq!(fake.calls(), 3);
 }
 
+#[tokio::test]
+async fn the_fake_stops_when_canceled() {
+    let script = || {
+        vec![
+            Ok(Event::TextDelta { text: "a".into() }),
+            Ok(Event::TextDelta { text: "b".into() }),
+            Ok(Event::Finish {
+                reason: FinishReason::Stop,
+            }),
+        ]
+    };
+    let fake = FakeProvider::new(vec![script(), script()]);
+    let canceled = CancellationToken::new();
+    canceled.cancel();
+    let events: Vec<_> = fake.stream(request(), canceled).collect().await;
+    assert_eq!(events, [Err(ProviderError::new(ErrorKind::Canceled))]);
+    // Canceled mid-stream: what came before stays, then `Canceled`, then the end.
+    let cancel = CancellationToken::new();
+    let mut stream = fake.stream(request(), cancel.clone());
+    assert!(matches!(
+        stream.next().await,
+        Some(Ok(Event::TextDelta { .. }))
+    ));
+    cancel.cancel();
+    assert_eq!(
+        stream.next().await,
+        Some(Err(ProviderError::new(ErrorKind::Canceled)))
+    );
+    assert_eq!(stream.next().await, None);
+}
+
 #[test]
 fn call_record_shape() {
     let record = CallRecord {
