@@ -94,6 +94,12 @@ jobs:
       - name: Redaction canaries
         if: needs.changes.outputs.canaries == 'true'
         run: cargo xtask canaries
+      # The shared adapter checks against wire fixtures (offline; live runs are manual,
+      # live-conformance.yml). They also run inside `check`; this names a failure.
+      - name: Adapter conformance
+        run: |
+          cargo xtask conformance --provider openrouter
+          cargo xtask conformance --provider ollama
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

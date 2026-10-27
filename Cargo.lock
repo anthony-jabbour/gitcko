@@ -1027,6 +1027,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tokio-util",
+ "toml",
  "wiremock",
 ]
 
@@ -1046,6 +1047,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tokio-util",
+ "toml",
  "wiremock",
 ]
 

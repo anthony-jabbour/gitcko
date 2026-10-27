@@ -1,0 +1,40 @@
+# Live adapter conformance against the real OpenRouter API. Manual only: never on a
+# schedule or a PR, so fork PRs can't reach the key. The `live-models` environment
+# makes every run wait for a maintainer's approval, and its OPENROUTER_API_KEY is a
+# dedicated key with a credit limit set on the key itself. About ten calls with
+# max_tokens ≤ 64 per run. Ollama runs live on a maintainer's machine only.
+name: live-conformance
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Exact OpenRouter model id (cheap; no moving aliases)
+        required: true
+        default: openai/gpt-4o-mini
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  NEXTEST_VERSION: 0.9.149
+
+jobs:
+  openrouter:
+    runs-on: ubuntu-latest
+    environment: live-models
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        with:
+          tool: cargo-nextest@${{ env.NEXTEST_VERSION }}
+      # The model comes in through the environment, never interpolated into the script.
+      - run: cargo xtask conformance --provider openrouter --live
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GITCKO_LIVE_MODEL: ${{ inputs.model }}

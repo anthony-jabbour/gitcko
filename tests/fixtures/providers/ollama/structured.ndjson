@@ -1,0 +1,3 @@
+{"message":{"role":"assistant","content":"{\"ok\":"},"done":false}
+{"message":{"role":"assistant","content":"true}"},"done":false}
+{"message":{"role":"assistant","content":""},"done":true,"done_reason":"stop","prompt_eval_count":20,"eval_count":4}

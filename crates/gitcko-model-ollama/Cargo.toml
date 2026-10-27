@@ -18,11 +18,13 @@ tokio.workspace = true
 tokio-util.workspace = true
 
 [dev-dependencies]
+gitcko-model = { path = "../gitcko-model", features = ["conformance"] }
 gitcko-config = { path = "../gitcko-config" }
 gitcko-protocol = { path = "../gitcko-protocol" }
 gitcko-redact = { path = "../gitcko-redact" }
 http.workspace = true
 tokio = { workspace = true, features = ["test-util"] }
+toml.workspace = true
 wiremock.workspace = true
 
 [lints]

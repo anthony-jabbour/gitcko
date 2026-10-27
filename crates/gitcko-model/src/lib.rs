@@ -9,6 +9,8 @@
 //! replays at the same boundary, so tests never call a live model.
 
 mod budget;
+#[cfg(feature = "conformance")]
+pub mod conformance;
 mod error;
 mod family;
 mod provider;
