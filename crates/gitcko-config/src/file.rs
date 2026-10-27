@@ -489,43 +489,69 @@ pub(crate) fn check_url(key: &str, url: &str, source: &Source) -> Result<(), Con
 }
 
 fn valid_origin(url: &str) -> bool {
-    let (authority, https) = match (url.strip_prefix("https://"), url.strip_prefix("http://")) {
-        (Some(rest), _) => (rest, true),
-        (_, Some(rest)) => (rest, false),
-        _ => return false,
-    };
-    let authority = authority.strip_suffix('/').unwrap_or(authority);
-    // `[v6]:port` or `host:port`, the port optional.
-    let (host, port) = match authority.strip_prefix('[') {
-        Some(v6) => match v6.split_once(']') {
-            Some((inner, tail)) if inner.parse::<std::net::Ipv6Addr>().is_ok() => {
-                match tail.strip_prefix(':') {
-                    Some(port) => (format!("[{inner}]"), Some(port)),
-                    None if tail.is_empty() => (format!("[{inner}]"), None),
-                    None => return false,
+    Origin::parse(url).is_some_and(|o| o.https || o.is_named_loopback())
+}
+
+/// A URL origin with nothing after it but an optional `/`: scheme, host and port.
+/// Parsed by hand so the rules are exactly these: no userinfo (`a@b`), no path, no
+/// query, a DNS name or an IP literal, and a port from 1 to 65535.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Origin {
+    /// `https://` rather than `http://`.
+    pub https: bool,
+    /// A DNS name, an IPv4 literal, or an IPv6 literal in brackets (`[::1]`).
+    pub host: String,
+    /// `None` when the URL has none; the caller picks the default.
+    pub port: Option<u16>,
+}
+
+impl Origin {
+    /// `None` for anything that isn't a plain `http://` or `https://` origin.
+    pub fn parse(url: &str) -> Option<Origin> {
+        let (authority, https) = match (url.strip_prefix("https://"), url.strip_prefix("http://")) {
+            (Some(rest), _) => (rest, true),
+            (_, Some(rest)) => (rest, false),
+            _ => return None,
+        };
+        let authority = authority.strip_suffix('/').unwrap_or(authority);
+        // `[v6]:port` or `host:port`, the port optional.
+        let (host, port) = match authority.strip_prefix('[') {
+            Some(v6) => match v6.split_once(']') {
+                Some((inner, tail)) if inner.parse::<std::net::Ipv6Addr>().is_ok() => {
+                    match tail.strip_prefix(':') {
+                        Some(port) => (format!("[{inner}]"), Some(port)),
+                        None if tail.is_empty() => (format!("[{inner}]"), None),
+                        None => return None,
+                    }
                 }
+                _ => return None,
+            },
+            None => match authority.rsplit_once(':') {
+                Some((host, port)) => (host.to_string(), Some(port)),
+                None => (authority.to_string(), None),
+            },
+        };
+        // A fully qualified name may end in the root's dot (`example.test.`).
+        let name = host.strip_suffix('.').unwrap_or(&host);
+        let host_ok = host.starts_with('[')
+            || (!name.is_empty()
+                && !name.starts_with(['.', '-'])
+                && !name.ends_with(['.', '-'])
+                && name
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-'));
+        let port = match port {
+            None => None,
+            Some(p) if !p.is_empty() && p.chars().all(|c| c.is_ascii_digit()) => {
+                Some(p.parse::<u16>().ok().filter(|&n| n > 0)?)
             }
-            _ => return false,
-        },
-        None => match authority.rsplit_once(':') {
-            Some((host, port)) => (host.to_string(), Some(port)),
-            None => (authority.to_string(), None),
-        },
-    };
-    // A fully qualified name may end in the root's dot (`example.test.`).
-    let name = host.strip_suffix('.').unwrap_or(&host);
-    let host_ok = host.starts_with('[')
-        || (!name.is_empty()
-            && !name.starts_with(['.', '-'])
-            && !name.ends_with(['.', '-'])
-            && name
-                .chars()
-                .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-'));
-    let port_ok = port.is_none_or(|p| {
-        !p.is_empty()
-            && p.chars().all(|c| c.is_ascii_digit())
-            && p.parse::<u16>().is_ok_and(|n| n > 0)
-    });
-    let local = matches!(host.as_str(), "localhost" | "127.0.0.1" | "[::1]");
-    host_ok && port_ok && (https || local)
+            Some(_) => return None,
+        };
+        host_ok.then_some(Origin { https, host, port })
+    }
+
+    /// The three spellings of this machine that config accepts over plain HTTP.
+    pub fn is_named_loopback(&self) -> bool {
+        matches!(self.host.as_str(), "localhost" | "127.0.0.1" | "[::1]")
+    }
 }

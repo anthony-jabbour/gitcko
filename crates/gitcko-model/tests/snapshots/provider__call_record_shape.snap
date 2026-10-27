@@ -1,0 +1,29 @@
+---
+source: crates/gitcko-model/tests/provider.rs
+expression: record
+---
+{
+  "run_id": "rv_example",
+  "role": "judge",
+  "policy": "default@1",
+  "provider": "openrouter",
+  "model": "openai/example-2",
+  "family": "openai",
+  "reasoning_effort": "medium",
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "attempt": 2,
+  "fallback": {
+    "from": "smart",
+    "reason": "primary_failed"
+  },
+  "inversion": "applied",
+  "input_tokens": 1200,
+  "output_tokens": null,
+  "cost_usd": null,
+  "first_token_ms": 850,
+  "total_ms": 4100,
+  "outcome": "fallback_used"
+}

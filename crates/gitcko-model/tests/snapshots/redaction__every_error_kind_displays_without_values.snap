@@ -1,0 +1,21 @@
+---
+source: crates/gitcko-model/tests/redaction.rs
+expression: shown
+---
+[
+    "the provider refused the credentials (HTTP 429)",
+    "the provider account is out of credits (HTTP 429)",
+    "rate limited (HTTP 429)",
+    "the provider is overloaded (HTTP 429)",
+    "the provider failed (HTTP 429)",
+    "the provider rejected the request (HTTP 429)",
+    "the prompt is longer than the model's context (HTTP 429)",
+    "the provider refused the content (HTTP 429)",
+    "timed out (no first token) (HTTP 429)",
+    "couldn't connect to the provider (HTTP 429)",
+    "canceled (HTTP 429)",
+    "invalid response: truncated stream (HTTP 429)",
+    "response too large: line (HTTP 429)",
+    "the call would leave this machine, which the run doesn't allow (HTTP 429)",
+    "budget exhausted: output tokens (HTTP 429)",
+]

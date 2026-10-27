@@ -25,6 +25,7 @@ use gitcko_protocol::config::{RepoConfig, UserConfig};
 use gitcko_protocol::review::Tier;
 use serde_json::Value;
 
+pub use file::Origin;
 pub use ignore::{IgnoreRules, ignore_rules};
 pub use pr::combine_for_pr;
 
