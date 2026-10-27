@@ -23,6 +23,9 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use tokio_util::sync::CancellationToken;
 
+/// More tool calls in one response than any review step makes.
+const MAX_TOOL_CALLS: usize = 128;
+
 /// OpenRouter's API root.
 pub const OPENROUTER: &str = "https://openrouter.ai/api/v1";
 
@@ -322,6 +325,10 @@ impl Decoder {
                 events.push(Event::TextDelta { text });
             }
             for part in choice.delta.tool_calls {
+                // Empty fragments with fresh indices cost no bytes, so count calls too.
+                if !self.tools.contains_key(&part.index) && self.tools.len() == MAX_TOOL_CALLS {
+                    return Err(ProviderError::new(ErrorKind::TooLarge("tool calls")));
+                }
                 let call = self.tools.entry(part.index).or_insert_with(|| ToolCall {
                     id: String::new(),
                     name: String::new(),

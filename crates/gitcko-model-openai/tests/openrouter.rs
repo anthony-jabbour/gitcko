@@ -472,3 +472,17 @@ fn finish_reason_error_without_an_error_object_is_a_server_failure() {
         [Err(ProviderError::new(ErrorKind::Server))]
     );
 }
+
+#[test]
+fn endless_empty_tool_calls_are_too_large() {
+    let mut decoder = Decoder::default();
+    let error = (0..=128)
+        .find_map(|i| {
+            let part = format!(
+                "data: {{\"choices\":[{{\"delta\":{{\"tool_calls\":[{{\"index\":{i}}}]}}}}]}}\n\n"
+            );
+            decoder.push(part.as_bytes()).err()
+        })
+        .expect("a 129th tool call is refused");
+    assert_eq!(error.kind, ErrorKind::TooLarge("tool calls"));
+}
