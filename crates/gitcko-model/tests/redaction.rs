@@ -5,7 +5,9 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use gitcko_model::{ErrorKind, Limit, ProviderError, ResolveError, Secret, TimeoutKind, resolve};
+use gitcko_model::{
+    CallError, ErrorKind, Limit, ProviderError, ResolveError, Secret, TimeoutKind, resolve,
+};
 use gitcko_protocol::config::{ModelRole, UserConfig};
 
 #[test]
@@ -99,4 +101,26 @@ fn every_error_kind_displays_without_values() {
             .to_string()
             .contains("role judge")
     );
+}
+
+#[test]
+fn canary_call_errors_show_no_value() {
+    let provider = Some(ProviderError {
+        kind: ErrorKind::RateLimited { retry_after: None },
+        status: Some(429),
+    });
+    let errors = [
+        CallError::NotConfigured,
+        CallError::ProviderFailed(provider.clone()),
+        CallError::Unavailable(provider),
+        CallError::Unavailable(None),
+        CallError::Canceled,
+        CallError::BudgetExhausted(Limit::Cost),
+    ];
+    for error in errors {
+        let shown = format!("{error} {error:?}");
+        for canary in gitcko_redact::canaries() {
+            assert!(!shown.contains(canary.as_str()), "{shown}");
+        }
+    }
 }

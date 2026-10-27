@@ -1,0 +1,29 @@
+[package]
+name = "gitcko-cassette"
+version = "0.0.0"
+description = "Records and replays model calls at the provider boundary, so tests never call a live model"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+futures-util.workspace = true
+gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+gitcko-redact = { path = "../gitcko-redact", version = "0.0.0" }
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+tokio-util.workspace = true
+
+[dev-dependencies]
+gitcko-config = { path = "../gitcko-config" }
+gitcko-model = { path = "../gitcko-model", features = ["fake"] }
+proptest.workspace = true
+tempfile.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true

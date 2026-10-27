@@ -5,12 +5,12 @@
 //! log and usage records as it is.
 
 use gitcko_protocol::config::{ModelFamily, ModelProvider, ModelRole, ReasoningEffort};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::InversionDecision;
 
 /// The prompt template a call rendered (from `gitcko-prompts`, Phase 4).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PromptRef {
     pub id: String,
     pub version: String,

@@ -13,6 +13,11 @@ use tokio_util::sync::CancellationToken;
 
 fn request() -> Request {
     Request {
+        role: ModelRole::Review,
+        prompt: PromptRef {
+            id: "review".into(),
+            version: "1".into(),
+        },
         messages: vec![Message::User {
             text: "hello".into(),
         }],
