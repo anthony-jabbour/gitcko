@@ -1,0 +1,1 @@
+{"model":"example:cloud","remote_model":"example","remote_host":"https://ollama.com:443","message":{"role":"assistant","content":"hi"},"done":false}

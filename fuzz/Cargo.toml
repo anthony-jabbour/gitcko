@@ -16,6 +16,7 @@ gitcko-config = { path = "../crates/gitcko-config" }
 gitcko-diff = { path = "../crates/gitcko-diff" }
 gitcko-domain = { path = "../crates/gitcko-domain" }
 gitcko-model = { path = "../crates/gitcko-model" }
+gitcko-model-ollama = { path = "../crates/gitcko-model-ollama" }
 gitcko-model-openai = { path = "../crates/gitcko-model-openai" }
 gitcko-syntax = { path = "../crates/gitcko-syntax" }
 

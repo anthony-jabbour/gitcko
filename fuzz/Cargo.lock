@@ -337,6 +337,7 @@ dependencies = [
  "gitcko-diff",
  "gitcko-domain",
  "gitcko-model",
+ "gitcko-model-ollama",
  "gitcko-model-openai",
  "gitcko-syntax",
  "libfuzzer-sys",
@@ -353,6 +354,20 @@ dependencies = [
  "serde_json",
  "sha2",
  "thiserror",
+ "tokio",
+ "tokio-util",
+]
+
+[[package]]
+name = "gitcko-model-ollama"
+version = "0.0.0"
+dependencies = [
+ "futures-util",
+ "gitcko-model",
+ "reqwest",
+ "rustls",
+ "serde",
+ "serde_json",
  "tokio",
  "tokio-util",
 ]

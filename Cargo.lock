@@ -1012,6 +1012,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-model-ollama"
+version = "0.0.0"
+dependencies = [
+ "futures-util",
+ "gitcko-config",
+ "gitcko-model",
+ "gitcko-protocol",
+ "gitcko-redact",
+ "http",
+ "reqwest",
+ "rustls",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "wiremock",
+]
+
+[[package]]
 name = "gitcko-model-openai"
 version = "0.0.0"
 dependencies = [

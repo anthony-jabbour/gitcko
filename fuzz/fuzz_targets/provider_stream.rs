@@ -5,7 +5,7 @@
 
 #![no_main]
 
-use gitcko_model::stream::{Decode, Ndjson};
+use gitcko_model::stream::Decode;
 use libfuzzer_sys::fuzz_target;
 
 /// What `decoder` makes of `bytes` pushed in the given pieces: the events (as text,
@@ -30,6 +30,17 @@ fn run(mut decoder: impl Decode, pieces: &[&[u8]]) -> (Vec<String>, Option<Strin
     (out, None)
 }
 
+fn check<D: Decode>(new: impl Fn() -> D, bytes: &[u8], head: &[u8], tail: &[u8]) {
+    let whole = run(new(), &[bytes]);
+    let split = run(new(), &[head, tail]);
+    assert_eq!(whole.1.is_some(), split.1.is_some(), "chunking changed whether it failed");
+    if whole.1.is_none() {
+        assert_eq!(whole, split, "chunking changed the events");
+    } else {
+        assert!(split.0.starts_with(&whole.0), "chunking reordered events");
+    }
+}
+
 fuzz_target!(|data: &[u8]| {
     let Some((&cut, bytes)) = data.split_first() else {
         return;
@@ -37,18 +48,6 @@ fuzz_target!(|data: &[u8]| {
     let at = usize::from(cut) * bytes.len() / 255;
     let (head, tail) = bytes.split_at(at);
 
-    let whole = run(gitcko_model_openai::Decoder::default(), &[bytes]);
-    let split = run(gitcko_model_openai::Decoder::default(), &[head, tail]);
-    assert_eq!(whole.1.is_some(), split.1.is_some(), "chunking changed whether it failed");
-    if whole.1.is_none() {
-        assert_eq!(whole, split, "chunking changed the OpenRouter events");
-    } else {
-        assert!(split.0.starts_with(&whole.0), "chunking reordered events");
-    }
-
-    let mut ndjson = Ndjson::default();
-    let mut lines = ndjson.push(head).unwrap_or_default();
-    lines.extend(ndjson.push(tail).unwrap_or_default());
-    let _ = ndjson.finish();
-    assert!(lines.iter().all(|l| !l.trim().is_empty()));
+    check(|| gitcko_model_openai::Decoder::default(), bytes, head, tail);
+    check(|| gitcko_model_ollama::Decoder::new(true), bytes, head, tail);
 });
