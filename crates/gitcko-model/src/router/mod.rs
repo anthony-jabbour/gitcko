@@ -9,21 +9,24 @@
 //! the caller yet; P4 adds it if the engine needs partial output.
 
 mod breaker;
+mod fallback;
+mod inversion;
 mod retry;
 
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use futures_util::StreamExt;
-use gitcko_protocol::config::ModelRole;
+use gitcko_protocol::config::{ModelFamily, ModelRole};
 use tokio::time::Instant;
 use tokio_util::sync::CancellationToken;
 
 pub use retry::{Timeouts, backoff, retries, retryable, timeouts};
 
 use crate::{
-    CallRecord, ErrorKind, Event, FinishReason, Limit, ModelProvider, ProviderError, Request,
-    ResolvedBinding, ResolvedModels, RoleState, RunBudget, TimeoutKind, ToolCall, Usage,
+    AuthorFamily, CallRecord, ErrorKind, Event, Fallback, FinishReason, Limit, ModelProvider,
+    ProviderError, Request, ResolvedBinding, ResolvedModels, RoleState, RunBudget, TimeoutKind,
+    ToolCall, Usage,
 };
 
 /// The routing policy calls are recorded under (MODEL_ROUTING §5).
@@ -41,10 +44,18 @@ pub struct Run {
     /// Roles whose failure fails the run (MODEL_ROUTING §2, "Required?"). Which ones
     /// depends on the tier and Verify, so the caller says.
     pub required: Vec<ModelRole>,
+    /// Only on-device bindings may receive a call, fallbacks included.
+    pub local_only: bool,
+    /// Who wrote the PR, for model inversion ([`crate::author_family`]).
+    pub author: AuthorFamily,
+    /// The family that last answered `review` or `review-deep`; `judge` prefers
+    /// another. Set by the router.
+    pub reviewer: Option<ModelFamily>,
 }
 
 impl Run {
-    /// A run with no deadline and no required roles.
+    /// A run with no deadline, no required roles, remote calls allowed and an
+    /// unknown author.
     pub fn new(id: impl Into<String>, budget: RunBudget) -> Run {
         Run {
             id: id.into(),
@@ -52,6 +63,9 @@ impl Run {
             deadline: None,
             cancel: CancellationToken::new(),
             required: Vec::new(),
+            local_only: false,
+            author: AuthorFamily::Unknown,
+            reviewer: None,
         }
     }
 }
@@ -148,27 +162,64 @@ impl Router {
         }
     }
 
-    /// Runs `request` for its role. Never panics on a provider's behaviour; every
-    /// failure is a [`CallError`].
+    /// Runs `request` for its role: the planned bindings in order, each with its
+    /// retries, until one answers or the run stops. Never panics on a provider's
+    /// behaviour; every failure is a [`CallError`].
     pub async fn call(&self, run: &mut Run, request: Request) -> CallOutcome {
         let mut records = Vec::new();
         let role = request.role;
-        let Some(binding) = self.models.binding_for(role) else {
+        let Some(plan) = fallback::plan(&self.models, run, role) else {
             return outcome(Err(CallError::NotConfigured), records);
         };
-        let Some(provider) = self.providers.get(&binding.name) else {
+        // Why the next binding tried stands in for another, and which one.
+        let mut fallback = plan.skipped_primary.map(|from| Fallback {
+            from: from.to_owned(),
+            reason: "locality",
+        });
+        let mut last = plan
+            .candidates
+            .is_empty()
+            .then(|| ProviderError::new(ErrorKind::LocalityViolation));
+        let mut tried_any = false;
+        for binding in plan.candidates.iter().take(plan.tries) {
+            let Some(provider) = self.providers.get(&binding.name) else {
+                continue;
+            };
+            tried_any = true;
+            let first = records.len();
+            let result = self
+                .try_binding(run, binding, provider.as_ref(), &request, &mut records)
+                .await;
+            for record in &mut records[first..] {
+                record.fallback.clone_from(&fallback);
+                record.inversion = plan.inversion;
+            }
+            let reason = match result {
+                Ok(response) => {
+                    if matches!(role, ModelRole::Review | ModelRole::ReviewDeep) {
+                        run.reviewer = Some(binding.family);
+                    }
+                    return outcome(Ok(response), records);
+                }
+                Err(Stop::Run(error)) => return outcome(Err(error), records),
+                Err(Stop::Failed { error, .. }) => {
+                    last = Some(error);
+                    "failed"
+                }
+                Err(Stop::Benched(previous)) => {
+                    last = previous.or(last);
+                    "circuit_open"
+                }
+            };
+            fallback = Some(Fallback {
+                from: binding.name.clone(),
+                reason,
+            });
+        }
+        if !tried_any && last.is_none() {
             return outcome(Err(CallError::NotConfigured), records);
-        };
-        let result = self
-            .try_binding(run, binding, provider.as_ref(), &request, &mut records)
-            .await;
-        let result = match result {
-            Ok(response) => Ok(response),
-            Err(Stop::Run(error)) => Err(error),
-            Err(Stop::Failed { error, .. }) => Err(give_up(run, role, Some(error))),
-            Err(Stop::Benched(last)) => Err(give_up(run, role, last)),
-        };
-        outcome(result, records)
+        }
+        outcome(Err(give_up(run, role, last)), records)
     }
 
     /// The first attempt and its retries on one binding.
