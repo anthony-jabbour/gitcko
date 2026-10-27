@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 //! The model layer's core (MODEL_ROUTING). Code asks for a **role**, never a model: the
-//! router (Phase 3, PRs 4a–4b) turns the role into a binding resolved here, checks
+//! router ([`Router`]) turns the role into a binding resolved here, checks
 //! where the call would go, spends from the run's budget and records what happened.
 //!
 //! Nothing here does I/O. The provider adapters (`gitcko-model-openai`,
@@ -15,6 +15,7 @@ mod provider;
 mod record;
 mod request;
 mod resolve;
+mod router;
 mod secret;
 
 pub use budget::{BudgetLimits, Reservation, RunBudget, Spent, estimate_tokens};
@@ -30,6 +31,10 @@ pub use request::{Event, FinishReason, Message, Request, ResponseFormat, Tool, T
 pub use resolve::{
     Capabilities, Destination, DestinationClass, Disclosed, Disclosure, ResolvedBinding,
     ResolvedModels, class_of, disclose, is_loopback_host, resolve,
+};
+pub use router::{
+    CallError, CallOutcome, POLICY, Response, Router, Run, Timeouts, backoff, retries, retryable,
+    timeouts,
 };
 pub use secret::Secret;
 

@@ -17,7 +17,9 @@ gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
 gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
 serde.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
 thiserror.workspace = true
+tokio.workspace = true
 tokio-util.workspace = true
 
 [dev-dependencies]
@@ -25,7 +27,7 @@ gitcko-model = { path = ".", features = ["fake"] }
 gitcko-redact = { path = "../gitcko-redact" }
 insta.workspace = true
 proptest.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["test-util"] }
 toml.workspace = true
 
 [lints]
