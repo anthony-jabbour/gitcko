@@ -104,10 +104,18 @@ impl Cassette {
             .map(PathBuf::from)
             .chain([std::env::temp_dir()])
             .chain(cwd);
+        // Each path as given and by its canonical name: on Windows `temp_dir()` is
+        // often a short 8.3 name (`RUNNER~1`) and the canonical one is the long name,
+        // so neither contains the other. The verbatim `\\?\` prefix is dropped, so
+        // the plain spelling a model would write is what's registered.
         // ponytail: matched case-sensitively; macOS and Windows paths aren't, so add
-        // case folding if a recording ever spells one differently. A canonical name
-        // (macOS's `/private/var/...`) contains the plain one, so it is caught too.
+        // case folding if a recording ever spells one differently.
         for path in paths {
+            if let Ok(canonical) = std::fs::canonicalize(&path) {
+                let shown = canonical.display().to_string();
+                let plain = shown.strip_prefix(r"\\?\").unwrap_or(&shown);
+                redactor = redactor.path(Path::new(plain), "local");
+            }
             redactor = redactor.path(&path, "local");
         }
         Ok(Cassette {

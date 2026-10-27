@@ -299,14 +299,20 @@ async fn a_leak_split_across_deltas_or_hidden_by_escaping_is_not_written() {
     canonical_temp[0] = Ok(Event::TextDelta {
         text: format!("see {}", canonical.join("scratch.txt").display()),
     });
-    for script in [split, windows_path, in_arguments, canonical_temp] {
+    let cases = [
+        ("split", split),
+        ("windows path", windows_path),
+        ("path in arguments", in_arguments),
+        ("canonical temp", canonical_temp),
+    ];
+    for (case, script) in cases {
         let dir = tempfile::tempdir().unwrap();
         let inner = Arc::new(FakeProvider::new(vec![script]));
         let recorder =
             Cassette::record(dir.path(), &binding(11434, Some(&key)), inner, &env).unwrap();
         let events = run(&recorder, request("x")).await;
-        assert!(events.last().unwrap().is_err());
-        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
+        assert!(events.last().unwrap().is_err(), "{case}");
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0, "{case}");
     }
 }
 
