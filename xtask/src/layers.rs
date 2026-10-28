@@ -28,6 +28,7 @@ const LAYERS: &[(&str, u8)] = &[
     // 3: models
     ("gitcko-model", 3),
     ("gitcko-model-openai", 3),
+    ("gitcko-model-ollama", 3),
     ("gitcko-prompts", 3),
     ("gitcko-cassette", 3),
     // 4: review

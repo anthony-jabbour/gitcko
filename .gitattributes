@@ -3,3 +3,5 @@
 *.png binary
 *.jpg binary
 *.ico binary
+# Provider wire fixtures keep their exact bytes: some test CRLF line endings.
+tests/fixtures/providers/** -text

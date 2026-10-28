@@ -71,6 +71,7 @@ The RFC covers the problem, the proposal, alternatives, migration and how it wil
 | Crate layering | `cargo xtask layers` | `Cargo.toml` changes |
 | Snapshots | `cargo insta test --check --unreferenced=reject` (review changes with `cargo insta review`) | all PRs |
 | Redaction canaries | `cargo xtask canaries` | changes to `crates/` or `xtask/` |
+| Adapter conformance | `cargo xtask conformance --provider <openrouter\|ollama>` (a maintainer runs `--live` by hand) | changes to `crates/gitcko-model*/` |
 | Fuzz targets build | `cargo xtask fuzz --build` (run with `cargo xtask fuzz --run <secs>`) | changes to the diff or config parsers or `fuzz/` |
 | Schema compatibility | `cargo xtask schema-check` (regenerate with `cargo xtask schema-gen`) | changes to `crates/gitcko-protocol/` or `integrations/schemas/` |
 | CLA | CLA Assistant | all PRs |

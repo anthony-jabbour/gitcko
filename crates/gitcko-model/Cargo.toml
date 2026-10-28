@@ -10,6 +10,8 @@ repository.workspace = true
 [features]
 # A scripted provider for tests in this and downstream crates.
 fake = []
+# The checks every adapter's tests/conformance.rs runs (`cargo xtask conformance`).
+conformance = []
 
 [dependencies]
 futures-util.workspace = true

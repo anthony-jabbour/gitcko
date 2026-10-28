@@ -1,0 +1,3 @@
+data: {"choices":[{"index":0,"delta":{"content":"cut"},"finish_reason":null}]}
+
+data: {"choices":[{"index":0,"delta":{"content":" off"}

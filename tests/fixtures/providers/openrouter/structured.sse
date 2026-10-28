@@ -1,0 +1,8 @@
+data: {"choices":[{"index":0,"delta":{"content":"{\"ok\":"},"finish_reason":null}]}
+
+data: {"choices":[{"index":0,"delta":{"content":"true}"},"finish_reason":"stop"}]}
+
+data: {"choices":[],"usage":{"prompt_tokens":20,"completion_tokens":4}}
+
+data: [DONE]
+

@@ -4,6 +4,7 @@
 //! (the pattern from https://github.com/matklad/cargo-xtask).
 
 mod canaries;
+mod conformance;
 mod fuzz;
 mod layers;
 mod leak_guard;
@@ -27,6 +28,9 @@ usage: cargo xtask <task>
   leak-guard --self-test       prove the leak guard blocks what it should
   spdx                         check every .rs file's licence header
   canaries                     run the redaction canary tests in every crate
+  conformance --provider <p>   run the shared adapter checks offline (openrouter, ollama)
+  conformance --provider <p> --live
+                               run them against the real provider (needs its key/model env)
   fuzz --build                 build the fuzz targets (nightly from fuzz/rust-toolchain.toml)
   fuzz --run <secs>            run each fuzz target for <secs> seconds
   schema-gen                   write integrations/schemas/ from gitcko-protocol
@@ -54,6 +58,8 @@ fn main() -> ExitCode {
         ["leak-guard", "--pre-push", _remote, url] => leak_guard::pre_push(url),
         ["spdx"] => spdx::check(),
         ["canaries"] => canaries::check(),
+        ["conformance", "--provider", provider] => conformance::run(provider, false),
+        ["conformance", "--provider", provider, "--live"] => conformance::run(provider, true),
         ["fuzz", "--build"] => fuzz::build(),
         ["fuzz", "--run", seconds] => fuzz::run_for(seconds),
         ["schema-gen"] => schema::generate(),

@@ -19,6 +19,7 @@ criterion = "0.8"
 futures-util = "0.3"
 gix = { version = "0.90", default-features = false }
 gix-validate = "0.13"
+http = "1"
 ignore = "0.4"
 insta = { version = "1.49", features = ["json"] }
 proptest = "1.12"

@@ -9,6 +9,8 @@
 //! replays at the same boundary, so tests never call a live model.
 
 mod budget;
+#[cfg(feature = "conformance")]
+pub mod conformance;
 mod error;
 mod family;
 mod provider;
@@ -17,6 +19,7 @@ mod request;
 mod resolve;
 mod router;
 mod secret;
+pub mod stream;
 
 pub use budget::{BudgetLimits, Reservation, RunBudget, Spent, estimate_tokens};
 pub use error::{ErrorKind, Limit, ProviderError, ResolveError, TimeoutKind};
