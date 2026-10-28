@@ -20,6 +20,7 @@ tokio-util.workspace = true
 [dev-dependencies]
 gitcko-model = { path = "../gitcko-model", features = ["conformance"] }
 gitcko-config = { path = "../gitcko-config" }
+gitcko-model-openai = { path = "../gitcko-model-openai" }
 gitcko-protocol = { path = "../gitcko-protocol" }
 gitcko-redact = { path = "../gitcko-redact" }
 http.workspace = true
