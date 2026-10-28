@@ -9,6 +9,7 @@ use gitcko_graph::{
 };
 use gitcko_syntax::{Extraction, Language, ParseLimits, adapter};
 use proptest::prelude::*;
+use std::time::Duration;
 
 /// A two-crate workspace: `my-core` (lib, with a module tree, re-exports, traits and
 /// tests) and `app` (a binary using it). Every file is synthetic.
@@ -56,15 +57,16 @@ struct Built {
 
 fn build_from(files: &[(&str, &str)]) -> Built {
     let rust = adapter(Language::Rust).unwrap();
+    // These tests are about the graph, not the parse deadline: on a loaded machine the
+    // default 2 s can run out on a big file, which would drop it and fail the test.
+    let limits = ParseLimits {
+        timeout: Duration::from_secs(3600),
+        ..ParseLimits::default()
+    };
     let extracted: Vec<(RepoPath, Extraction)> = files
         .iter()
         .filter(|(p, _)| p.ends_with(".rs"))
-        .map(|(p, src)| {
-            (
-                RepoPath::parse(p).unwrap(),
-                rust.extract(src, &ParseLimits::default()),
-            )
-        })
+        .map(|(p, src)| (RepoPath::parse(p).unwrap(), rust.extract(src, &limits)))
         .collect();
     let input = GraphInput {
         files: extracted
