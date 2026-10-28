@@ -49,6 +49,8 @@ impl OpenRouter {
         // is installed as the process default; an already-installed one is kept.
         let _ = rustls::crypto::ring::default_provider().install_default();
         let client = reqwest::Client::builder()
+            // A redirect would resend the prompt to wherever the server points.
+            .redirect(reqwest::redirect::Policy::none())
             .build()
             .map_err(|_| ProviderError::new(ErrorKind::Connect))?;
         Ok(OpenRouter {
@@ -384,25 +386,26 @@ impl Decoder {
 }
 
 impl Decode for Decoder {
-    fn push(&mut self, bytes: &[u8]) -> Result<Vec<Event>, ProviderError> {
-        let mut events = Vec::new();
-        for data in self.sse.push(bytes)? {
+    fn push(&mut self, bytes: &[u8], events: &mut Vec<Event>) -> Result<(), ProviderError> {
+        let mut frames = Vec::new();
+        let framed = self.sse.push(bytes, &mut frames);
+        for data in frames {
             if data == "[DONE]" {
-                self.flush_tools(&mut events)?;
+                self.flush_tools(events)?;
                 let reason = self
                     .finish
                     .ok_or_else(|| invalid("no finish reason before [DONE]"))?;
                 events.extend(self.usage.take().map(Event::Usage));
                 events.push(Event::Finish { reason });
-                // `decode` stops reading at `Finish`.
-                break;
+                // Whatever follows `[DONE]`, framing errors included, is never read.
+                return Ok(());
             }
-            self.chunk(&data, &mut events)?;
+            self.chunk(&data, events)?;
         }
-        Ok(events)
+        framed
     }
 
-    fn finish(&mut self) -> Result<Vec<Event>, ProviderError> {
+    fn finish(&mut self, _: &mut Vec<Event>) -> Result<(), ProviderError> {
         Err(invalid("the stream ended before [DONE]"))
     }
 }

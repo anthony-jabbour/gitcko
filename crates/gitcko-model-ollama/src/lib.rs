@@ -43,6 +43,8 @@ impl Ollama {
         let _ = rustls::crypto::ring::default_provider().install_default();
         let client = reqwest::Client::builder()
             .no_proxy()
+            // A redirect would resend the prompt to wherever the server points.
+            .redirect(reqwest::redirect::Policy::none())
             .resolve_to_addrs(
                 "localhost",
                 &[
@@ -163,9 +165,12 @@ pub fn body(binding: &ResolvedBinding, request: &Request) -> Value {
     if let Some(t) = request.temperature {
         options["temperature"] = json!(t);
     }
+    let messages: Vec<Value> = (request.messages.iter().enumerate())
+        .map(|(i, m)| message(m, &request.messages[..i]))
+        .collect();
     let mut body = json!({
         "model": binding.model,
-        "messages": request.messages.iter().map(|m| message(m, &request.messages)).collect::<Vec<_>>(),
+        "messages": messages,
         "stream": true,
         "options": options,
     });
@@ -189,7 +194,8 @@ pub fn body(binding: &ResolvedBinding, request: &Request) -> Value {
     body
 }
 
-fn message(message: &Message, all: &[Message]) -> Value {
+/// `before`: the turns ahead of `message`, where a tool result finds its call.
+fn message(message: &Message, before: &[Message]) -> Value {
     match message {
         Message::System { text } => json!({"role": "system", "content": text}),
         Message::User { text } => json!({"role": "user", "content": text}),
@@ -209,9 +215,11 @@ fn message(message: &Message, all: &[Message]) -> Value {
             }
             wire
         }
-        // Ollama matches a tool result by the tool's name, not a call id.
+        // Ollama matches a tool result by the tool's name, not a call id. Ids generated
+        // for older servers (`call_1`, …) repeat across responses, so the nearest
+        // earlier call with that id is the one this answers.
         Message::Tool { call_id, text } => {
-            let name = all.iter().find_map(|m| match m {
+            let name = before.iter().rev().find_map(|m| match m {
                 Message::Assistant { tool_calls, .. } => tool_calls
                     .iter()
                     .find(|c| c.id == *call_id)
@@ -321,22 +329,23 @@ impl Decoder {
 }
 
 impl Decode for Decoder {
-    fn push(&mut self, bytes: &[u8]) -> Result<Vec<Event>, ProviderError> {
-        let mut events = Vec::new();
-        for line in self.lines.push(bytes)? {
-            if self.line(&line, &mut events)? {
-                break;
+    fn push(&mut self, bytes: &[u8], events: &mut Vec<Event>) -> Result<(), ProviderError> {
+        let mut lines = Vec::new();
+        let framed = self.lines.push(bytes, &mut lines);
+        for line in lines {
+            if self.line(&line, events)? {
+                // Whatever follows `done`, framing errors included, is never read.
+                return Ok(());
             }
         }
-        Ok(events)
+        framed
     }
 
-    fn finish(&mut self) -> Result<Vec<Event>, ProviderError> {
-        let mut events = Vec::new();
+    fn finish(&mut self, events: &mut Vec<Event>) -> Result<(), ProviderError> {
         if let Some(line) = self.lines.finish()?
-            && self.line(&line, &mut events)?
+            && self.line(&line, events)?
         {
-            return Ok(events);
+            return Ok(());
         }
         Err(invalid("the stream ended before done"))
     }

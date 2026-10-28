@@ -88,8 +88,25 @@ async fn tool_call() {
 #[tokio::test]
 async fn stall_then_cancel() {
     let stall = ResponseTemplate::new(200).set_delay(std::time::Duration::from_secs(3600));
-    let (_server, adapter) = serve(stall).await;
-    conformance::stall_then_cancel(&adapter).await;
+    let (server, adapter) = serve(stall).await;
+    conformance::stall_then_cancel(&adapter, arrived(&server)).await;
+}
+
+#[tokio::test]
+async fn canceled_before_start() {
+    let (_server, adapter) = serve(ResponseTemplate::new(200)).await;
+    conformance::canceled_before_start(&adapter).await;
+}
+
+/// Resolves once the server holds the chat request.
+async fn arrived(server: &MockServer) {
+    loop {
+        let requests = server.received_requests().await.unwrap();
+        if requests.iter().any(|r| r.url.path().ends_with("/api/chat")) {
+            return;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
 }
 
 #[tokio::test]
@@ -130,6 +147,6 @@ async fn live_structured() {
 
 #[tokio::test]
 #[ignore = "live: cargo xtask conformance --provider ollama --live"]
-async fn live_stall_then_cancel() {
-    conformance::stall_then_cancel(&live()).await;
+async fn live_cancel_mid_stream() {
+    conformance::live_cancel_mid_stream(&live()).await;
 }

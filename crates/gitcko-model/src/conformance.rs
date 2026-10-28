@@ -157,8 +157,9 @@ pub async fn tool_call(provider: &dyn ModelProvider) {
     );
 }
 
-/// Served: nothing, ever. Canceling ends the call with `Canceled` and nothing after.
-pub async fn stall_then_cancel(provider: &dyn ModelProvider) {
+/// A token canceled before the call starts: `Canceled` and nothing after, with no
+/// request needed.
+pub async fn canceled_before_start(provider: &dyn ModelProvider) {
     let cancel = CancellationToken::new();
     let mut events = provider.stream(request(), cancel.clone());
     cancel.cancel();
@@ -168,6 +169,28 @@ pub async fn stall_then_cancel(provider: &dyn ModelProvider) {
     );
     assert_eq!(events.next().await, None);
 }
+
+/// Served: nothing, ever. Once `arrived` says the stalled server holds the request,
+/// canceling ends the call with `Canceled` promptly and nothing after, so an adapter
+/// that can't stop an in-flight request fails here.
+pub async fn stall_then_cancel(provider: &dyn ModelProvider, arrived: impl Future<Output = ()>) {
+    let cancel = CancellationToken::new();
+    let mut events = provider.stream(request(), cancel.clone());
+    tokio::select! {
+        event = events.next() => panic!("a stalled call produced {event:?}"),
+        () = arrived => {}
+    }
+    cancel.cancel();
+    let next = tokio::time::timeout(PROMPT, events.next()).await;
+    assert_eq!(
+        next.expect("canceled promptly"),
+        Some(Err(ProviderError::new(ErrorKind::Canceled)))
+    );
+    assert_eq!(events.next().await, None);
+}
+
+/// How long a canceled call may take to say so.
+const PROMPT: std::time::Duration = std::time::Duration::from_secs(10);
 
 /// Served: HTTP `status` with an error body. The status is kept, and the kind is
 /// retried exactly when the status is 429 or 5xx.
@@ -205,10 +228,35 @@ pub async fn live_text(provider: &dyn ModelProvider) {
     );
 }
 
-/// Live: a real model's structured output parses as the requested JSON.
+/// Live: a real model's structured output finishes cleanly and is exactly the
+/// requested object.
 pub async fn live_structured(provider: &dyn ModelProvider) {
     let events = collect(provider, structured_request()).await;
+    assert_eq!(
+        events.last(),
+        Some(&Ok(Event::Finish {
+            reason: FinishReason::Stop
+        })),
+        "{events:?}"
+    );
     let value: serde_json::Value =
         serde_json::from_str(&text_of(&events)).expect("structured output is JSON");
-    assert!(value["ok"].is_boolean(), "{value}");
+    let object = value.as_object().expect("an object");
+    assert!(object.len() == 1 && object["ok"].is_boolean(), "{value}");
+}
+
+/// Live: canceling after the first event ends a real call with `Canceled`, even when
+/// the rest of the answer has already arrived.
+pub async fn live_cancel_mid_stream(provider: &dyn ModelProvider) {
+    let cancel = CancellationToken::new();
+    let mut events = provider.stream(request(), cancel.clone());
+    let first = events.next().await;
+    assert!(matches!(first, Some(Ok(_))), "{first:?}");
+    cancel.cancel();
+    let next = tokio::time::timeout(PROMPT, events.next()).await;
+    assert_eq!(
+        next.expect("canceled promptly"),
+        Some(Err(ProviderError::new(ErrorKind::Canceled)))
+    );
+    assert_eq!(events.next().await, None);
 }

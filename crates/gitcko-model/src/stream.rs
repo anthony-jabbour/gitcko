@@ -28,16 +28,16 @@ pub struct Lines {
 }
 
 impl Lines {
-    /// The complete lines in `bytes`, after whatever earlier pushes left unfinished.
-    pub fn push(&mut self, mut bytes: &[u8]) -> Result<Vec<String>, ProviderError> {
-        let mut lines = Vec::new();
+    /// Appends the complete lines in `bytes` to `out`, after whatever earlier pushes
+    /// left unfinished. On an error, the lines before it are already in `out`, so the
+    /// caller sees frames and the error in stream order whatever the chunking.
+    pub fn push(&mut self, mut bytes: &[u8], out: &mut Vec<String>) -> Result<(), ProviderError> {
         while let Some(end) = bytes.iter().position(|b| *b == b'\n') {
             self.extend(&bytes[..end])?;
-            lines.push(self.take()?);
+            out.push(self.take()?);
             bytes = &bytes[end + 1..];
         }
-        self.extend(bytes)?;
-        Ok(lines)
+        self.extend(bytes)
     }
 
     /// The last line, if the stream ended without a terminator.
@@ -81,12 +81,14 @@ pub struct Sse {
 }
 
 impl Sse {
-    /// The data of each event completed by `bytes`.
-    pub fn push(&mut self, bytes: &[u8]) -> Result<Vec<String>, ProviderError> {
-        let mut events = Vec::new();
-        for line in self.lines.push(bytes)? {
+    /// Appends the data of each event completed by `bytes` to `out`; on an error,
+    /// the events before it are already there.
+    pub fn push(&mut self, bytes: &[u8], out: &mut Vec<String>) -> Result<(), ProviderError> {
+        let mut lines = Vec::new();
+        let framed = self.lines.push(bytes, &mut lines);
+        for line in lines {
             if line.is_empty() {
-                events.extend(self.data.take());
+                out.extend(self.data.take());
                 continue;
             }
             let (field, value) = line.split_once(':').unwrap_or((&line, ""));
@@ -108,7 +110,7 @@ impl Sse {
             }
             data.push_str(value);
         }
-        Ok(events)
+        framed
     }
 }
 
@@ -119,11 +121,13 @@ pub struct Ndjson {
 }
 
 impl Ndjson {
-    /// The lines completed by `bytes`, blank ones skipped.
-    pub fn push(&mut self, bytes: &[u8]) -> Result<Vec<String>, ProviderError> {
-        let mut lines = self.lines.push(bytes)?;
-        lines.retain(|l| !l.trim().is_empty());
-        Ok(lines)
+    /// Appends the lines completed by `bytes` to `out`, blank ones skipped; on an
+    /// error, the lines before it are already there.
+    pub fn push(&mut self, bytes: &[u8], out: &mut Vec<String>) -> Result<(), ProviderError> {
+        let mut lines = Vec::new();
+        let framed = self.lines.push(bytes, &mut lines);
+        out.extend(lines.into_iter().filter(|l| !l.trim().is_empty()));
+        framed
     }
 
     /// The last value, when the stream didn't end with a newline.
@@ -135,10 +139,11 @@ impl Ndjson {
 /// An adapter's wire decoder: bytes in, provider-neutral events out. Each adapter
 /// owns the state (tool-call fragments, `[DONE]`, usage) between pushes.
 pub trait Decode: Send + 'static {
-    /// The events completed by `bytes`. An error ends the call.
-    fn push(&mut self, bytes: &[u8]) -> Result<Vec<Event>, ProviderError>;
+    /// Appends the events completed by `bytes`, in stream order. An error ends the
+    /// call, and the events before it stay in `events`. Nothing is read past `Finish`.
+    fn push(&mut self, bytes: &[u8], events: &mut Vec<Event>) -> Result<(), ProviderError>;
     /// The stream ended: the last events, or why the stream was incomplete.
-    fn finish(&mut self) -> Result<Vec<Event>, ProviderError>;
+    fn finish(&mut self, events: &mut Vec<Event>) -> Result<(), ProviderError>;
 }
 
 /// Runs `decoder` over a response body. Ends after `Finish` or the first error;
@@ -163,6 +168,12 @@ where
     };
     futures_util::stream::unfold(state, |mut s| async move {
         loop {
+            // Canceled with events still queued: stop here rather than finish the call.
+            if s.cancel.is_cancelled() && (s.body.is_some() || !s.pending.is_empty()) {
+                s.pending.clear();
+                s.body = None;
+                return Some((Err(ProviderError::new(ErrorKind::Canceled)), s));
+            }
             if let Some(item) = s.pending.pop_front() {
                 if matches!(item, Ok(Event::Finish { .. }) | Err(_)) {
                     s.pending.clear();
@@ -179,17 +190,18 @@ where
                 }
                 next = body.next() => next,
             };
+            let mut events = Vec::new();
             let decoded = match next {
-                Some(Ok(bytes)) => s.decoder.push(bytes.as_ref()),
+                Some(Ok(bytes)) => s.decoder.push(bytes.as_ref(), &mut events),
                 Some(Err(error)) => Err(error),
                 None => {
                     s.body = None;
-                    s.decoder.finish()
+                    s.decoder.finish(&mut events)
                 }
             };
-            match decoded {
-                Ok(events) => s.pending.extend(events.into_iter().map(Ok)),
-                Err(error) => s.pending.push_back(Err(error)),
+            s.pending.extend(events.into_iter().map(Ok));
+            if let Err(error) = decoded {
+                s.pending.push_back(Err(error));
             }
             if s.body.is_none() && s.pending.is_empty() {
                 return None;

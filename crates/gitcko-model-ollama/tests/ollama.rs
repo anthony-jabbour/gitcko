@@ -66,17 +66,13 @@ fn request() -> Request {
 
 fn decode_all(bytes: &[u8], on_device: bool) -> Vec<Result<Event, ProviderError>> {
     let mut decoder = Decoder::new(on_device);
-    let mut out = Vec::new();
-    match decoder.push(bytes) {
-        Ok(events) => out.extend(events.into_iter().map(Ok)),
-        Err(e) => return vec![Err(e)],
+    let mut events = Vec::new();
+    let mut result = decoder.push(bytes, &mut events);
+    if result.is_ok() && !matches!(events.last(), Some(Event::Finish { .. })) {
+        result = decoder.finish(&mut events);
     }
-    if !matches!(out.last(), Some(Ok(Event::Finish { .. }))) {
-        match decoder.finish() {
-            Ok(events) => out.extend(events.into_iter().map(Ok)),
-            Err(e) => out.push(Err(e)),
-        }
-    }
+    let mut out: Vec<_> = events.into_iter().map(Ok).collect();
+    out.extend(result.err().map(Err));
     out
 }
 
@@ -366,4 +362,71 @@ fn tool_arguments_that_are_not_json_go_as_a_string() {
         shaped["messages"][0]["tool_calls"][0]["function"]["arguments"],
         "not json"
     );
+}
+
+#[test]
+fn a_tool_result_takes_the_name_of_the_nearest_earlier_call() {
+    let call = |name: &str| Message::Assistant {
+        text: String::new(),
+        tool_calls: vec![ToolCall {
+            id: "call_1".into(),
+            name: name.into(),
+            arguments: "{}".into(),
+        }],
+    };
+    let result = || Message::Tool {
+        call_id: "call_1".into(),
+        text: "r".into(),
+    };
+    let mut request = request();
+    request.messages = vec![call("lookup"), result(), call("search"), result()];
+    let shaped = body(
+        &binding("127.0.0.1", 11434, DestinationClass::OnDevice),
+        &request,
+    );
+    assert_eq!(shaped["messages"][1]["tool_name"], "lookup");
+    assert_eq!(shaped["messages"][3]["tool_name"], "search");
+}
+
+#[test]
+fn nothing_after_done_is_read_and_earlier_lines_come_before_an_error() {
+    let mut bytes = fixture("text.ndjson");
+    bytes.extend_from_slice(b"\xff\n");
+    assert_eq!(
+        decode_all(&bytes, true).last(),
+        Some(&Ok(Event::Finish {
+            reason: FinishReason::Stop
+        }))
+    );
+    let events = decode_all(
+        b"{\"message\":{\"content\":\"a\"},\"done\":false}\n\xff\n",
+        true,
+    );
+    assert_eq!(events[0], Ok(Event::TextDelta { text: "a".into() }));
+    assert!(matches!(
+        events[1],
+        Err(ProviderError {
+            kind: ErrorKind::InvalidResponse(_),
+            ..
+        })
+    ));
+}
+
+#[tokio::test]
+async fn a_redirect_off_the_machine_is_never_followed() {
+    let elsewhere = MockServer::start().await;
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(200).set_body_bytes(fixture("text.ndjson")))
+        .mount(&elsewhere)
+        .await;
+    let target = format!("{}/api/chat", elsewhere.uri());
+    let server = server(
+        ResponseTemplate::new(200).set_body_json(json!({})),
+        ResponseTemplate::new(307).insert_header("location", target.as_str()),
+    )
+    .await;
+    let port = server.address().port();
+    let adapter = Ollama::new(binding("127.0.0.1", port, DestinationClass::OnDevice)).unwrap();
+    assert_eq!(call(&adapter).await, [Err(status_error(307))]);
+    assert!(elsewhere.received_requests().await.unwrap().is_empty());
 }

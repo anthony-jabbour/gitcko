@@ -76,17 +76,13 @@ fn request() -> Request {
 
 fn decode_all(bytes: &[u8]) -> Vec<Result<Event, ProviderError>> {
     let mut decoder = Decoder::default();
-    let mut out = Vec::new();
-    match decoder.push(bytes) {
-        Ok(events) => out.extend(events.into_iter().map(Ok)),
-        Err(e) => return vec![Err(e)],
+    let mut events = Vec::new();
+    let mut result = decoder.push(bytes, &mut events);
+    if result.is_ok() && !matches!(events.last(), Some(Event::Finish { .. })) {
+        result = decoder.finish(&mut events);
     }
-    if !matches!(out.last(), Some(Ok(Event::Finish { .. }))) {
-        match decoder.finish() {
-            Ok(events) => out.extend(events.into_iter().map(Ok)),
-            Err(e) => out.push(Err(e)),
-        }
-    }
+    let mut out: Vec<_> = events.into_iter().map(Ok).collect();
+    out.extend(result.err().map(Err));
     out
 }
 
@@ -192,7 +188,7 @@ fn endless_tool_arguments_are_too_large() {
     );
     let mut decoder = Decoder::default();
     let error = (0..32)
-        .find_map(|_| decoder.push(part.as_bytes()).err())
+        .find_map(|_| decoder.push(part.as_bytes(), &mut Vec::new()).err())
         .expect("over 8 MiB of tool arguments is refused");
     assert_eq!(error.kind, ErrorKind::TooLarge("tool calls"));
 }
@@ -481,8 +477,73 @@ fn endless_empty_tool_calls_are_too_large() {
             let part = format!(
                 "data: {{\"choices\":[{{\"delta\":{{\"tool_calls\":[{{\"index\":{i}}}]}}}}]}}\n\n"
             );
-            decoder.push(part.as_bytes()).err()
+            decoder.push(part.as_bytes(), &mut Vec::new()).err()
         })
         .expect("a 129th tool call is refused");
     assert_eq!(error.kind, ErrorKind::TooLarge("tool calls"));
+}
+
+#[test]
+fn events_before_a_framing_error_in_the_same_chunk_come_first() {
+    let bytes = [
+        &b"data: {\"choices\":[{\"delta\":{\"content\":\"Hi\"}}]}\n\n"[..],
+        &vec![b'a'; (1 << 20) + 2],
+    ]
+    .concat();
+    assert_eq!(
+        decode_all(&bytes),
+        [
+            Ok(Event::TextDelta { text: "Hi".into() }),
+            Err(ProviderError::new(ErrorKind::TooLarge("line"))),
+        ]
+    );
+}
+
+#[test]
+fn nothing_after_done_is_read() {
+    let mut bytes = fixture("text.sse");
+    bytes.extend_from_slice(b"\xff\xfe not even utf-8\n");
+    assert_eq!(
+        decode_all(&bytes).last(),
+        Some(&Ok(Event::Finish {
+            reason: FinishReason::Stop
+        }))
+    );
+}
+
+#[tokio::test]
+async fn cancel_wins_over_events_already_queued() {
+    let body = futures_util::stream::iter([Ok::<_, ProviderError>(fixture("text.sse"))]);
+    let cancel = CancellationToken::new();
+    let mut events = gitcko_model::stream::decode(body, Decoder::default(), cancel.clone());
+    assert_eq!(
+        events.next().await,
+        Some(Ok(Event::TextDelta { text: "Hel".into() }))
+    );
+    cancel.cancel();
+    assert_eq!(
+        events.next().await,
+        Some(Err(ProviderError::new(ErrorKind::Canceled)))
+    );
+    assert_eq!(events.next().await, None);
+}
+
+#[tokio::test]
+async fn a_redirect_is_never_followed() {
+    let elsewhere = MockServer::start().await;
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .mount(&elsewhere)
+        .await;
+    let (_server, adapter) =
+        server(ResponseTemplate::new(307).insert_header("location", elsewhere.uri().as_str()))
+            .await;
+    assert_eq!(
+        call(&adapter).await,
+        [Err(ProviderError {
+            kind: ErrorKind::BadRequest,
+            status: Some(307)
+        })]
+    );
+    assert!(elsewhere.received_requests().await.unwrap().is_empty());
 }

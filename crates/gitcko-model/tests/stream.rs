@@ -9,8 +9,25 @@ use gitcko_model::{ErrorKind, Event, FinishReason, ProviderError};
 use proptest::prelude::*;
 use tokio_util::sync::CancellationToken;
 
+/// The framers append to a caller's buffer; tests want the frames back.
+trait PushAll {
+    fn push_all(&mut self, bytes: &[u8]) -> Result<Vec<String>, ProviderError>;
+}
+
+macro_rules! push_all {
+    ($($t:ty),*) => {$(
+        impl PushAll for $t {
+            fn push_all(&mut self, bytes: &[u8]) -> Result<Vec<String>, ProviderError> {
+                let mut out = Vec::new();
+                self.push(bytes, &mut out).map(|()| out)
+            }
+        }
+    )*};
+}
+push_all!(Lines, Sse, Ndjson);
+
 fn sse(bytes: &[u8]) -> Vec<String> {
-    Sse::default().push(bytes).unwrap()
+    Sse::default().push_all(bytes).unwrap()
 }
 
 #[test]
@@ -27,16 +44,16 @@ fn sse_joins_multi_line_data_and_accepts_crlf() {
 #[test]
 fn sse_keeps_an_empty_data_line_and_drops_an_unfinished_event() {
     let mut decoder = Sse::default();
-    assert_eq!(decoder.push(b"data\n\ndata: cut off").unwrap(), [""]);
-    assert!(decoder.push(b"").unwrap().is_empty());
+    assert_eq!(decoder.push_all(b"data\n\ndata: cut off").unwrap(), [""]);
+    assert!(decoder.push_all(b"").unwrap().is_empty());
 }
 
 #[test]
 fn a_line_split_across_pushes_joins() {
     let mut lines = Lines::default();
-    assert!(lines.push(b"da").unwrap().is_empty());
-    assert!(lines.push(b"ta: x\r").unwrap().is_empty());
-    assert_eq!(lines.push(b"\nnext").unwrap(), ["data: x"]);
+    assert!(lines.push_all(b"da").unwrap().is_empty());
+    assert!(lines.push_all(b"ta: x\r").unwrap().is_empty());
+    assert_eq!(lines.push_all(b"\nnext").unwrap(), ["data: x"]);
     assert_eq!(lines.finish().unwrap().as_deref(), Some("next"));
 }
 
@@ -44,10 +61,10 @@ fn a_line_split_across_pushes_joins() {
 fn a_line_of_exactly_the_limit_passes_and_one_more_byte_fails() {
     let mut line = vec![b'a'; MAX_LINE];
     line.extend_from_slice(b"\r\n");
-    assert_eq!(Lines::default().push(&line).unwrap()[0].len(), MAX_LINE);
+    assert_eq!(Lines::default().push_all(&line).unwrap()[0].len(), MAX_LINE);
     let long = vec![b'a'; MAX_LINE + 1];
     let error = Lines::default()
-        .push(&[&long[..], b"\n"].concat())
+        .push_all(&[&long[..], b"\n"].concat())
         .unwrap_err();
     assert_eq!(error.kind, ErrorKind::TooLarge("line"));
 }
@@ -57,7 +74,7 @@ fn an_endless_line_fails_once_past_the_limit_however_it_is_pushed() {
     let mut lines = Lines::default();
     let chunk = vec![b'a'; 64 * 1024];
     let error = (0..64)
-        .find_map(|_| lines.push(&chunk).err())
+        .find_map(|_| lines.push_all(&chunk).err())
         .expect("a 4 MiB line without a newline is refused");
     assert_eq!(error.kind, ErrorKind::TooLarge("line"));
 }
@@ -67,14 +84,14 @@ fn an_event_past_the_limit_fails() {
     let line = format!("data: {}\n", "a".repeat(MAX_LINE - 6));
     let mut decoder = Sse::default();
     let error = (0..=MAX_EVENT / MAX_LINE)
-        .find_map(|_| decoder.push(line.as_bytes()).err())
+        .find_map(|_| decoder.push_all(line.as_bytes()).err())
         .expect("an event over 4 MiB is refused");
     assert_eq!(error.kind, ErrorKind::TooLarge("event"));
 }
 
 #[test]
 fn a_line_that_is_not_utf8_is_invalid() {
-    let error = Lines::default().push(b"\xff\n").unwrap_err();
+    let error = Lines::default().push_all(b"\xff\n").unwrap_err();
     assert!(matches!(error.kind, ErrorKind::InvalidResponse(_)));
 }
 
@@ -82,10 +99,10 @@ fn a_line_that_is_not_utf8_is_invalid() {
 fn ndjson_skips_blank_lines_and_keeps_an_unterminated_last_value() {
     let mut decoder = Ndjson::default();
     assert_eq!(
-        decoder.push(b"{\"a\":1}\n\n  \r\n{\"b\"").unwrap(),
+        decoder.push_all(b"{\"a\":1}\n\n  \r\n{\"b\"").unwrap(),
         ["{\"a\":1}"]
     );
-    assert_eq!(decoder.push(b":2}").unwrap(), Vec::<String>::new());
+    assert_eq!(decoder.push_all(b":2}").unwrap(), Vec::<String>::new());
     assert_eq!(decoder.finish().unwrap().as_deref(), Some("{\"b\":2}"));
 }
 
@@ -104,7 +121,7 @@ proptest! {
         let mut seen = Vec::new();
         let mut from = 0;
         for to in at.into_iter().chain([bytes.len()]) {
-            seen.extend(decoder.push(&bytes[from..to]).unwrap());
+            seen.extend(decoder.push_all(&bytes[from..to]).unwrap());
             from = to;
         }
         prop_assert_eq!(seen, events);
@@ -115,17 +132,19 @@ proptest! {
 struct Echo;
 
 impl Decode for Echo {
-    fn push(&mut self, bytes: &[u8]) -> Result<Vec<Event>, ProviderError> {
+    fn push(&mut self, bytes: &[u8], events: &mut Vec<Event>) -> Result<(), ProviderError> {
         let text = String::from_utf8_lossy(bytes).into_owned();
         if text == "fail" {
             return Err(ProviderError::new(ErrorKind::Server));
         }
-        Ok(vec![Event::TextDelta { text }])
+        events.push(Event::TextDelta { text });
+        Ok(())
     }
-    fn finish(&mut self) -> Result<Vec<Event>, ProviderError> {
-        Ok(vec![Event::Finish {
+    fn finish(&mut self, events: &mut Vec<Event>) -> Result<(), ProviderError> {
+        events.push(Event::Finish {
             reason: FinishReason::Stop,
-        }])
+        });
+        Ok(())
     }
 }
 
@@ -187,9 +206,9 @@ async fn cancel_while_waiting_for_bytes_yields_canceled_and_drops_the_body() {
 #[test]
 fn an_unterminated_line_never_holds_more_than_the_limit_and_a_cr() {
     let mut lines = Lines::default();
-    lines.push(&vec![b'a'; MAX_LINE + 1]).unwrap();
+    lines.push_all(&vec![b'a'; MAX_LINE + 1]).unwrap();
     assert_eq!(
-        lines.push(b"a").unwrap_err().kind,
+        lines.push_all(b"a").unwrap_err().kind,
         ErrorKind::TooLarge("line")
     );
 }
