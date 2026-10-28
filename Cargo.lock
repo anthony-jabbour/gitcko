@@ -1018,6 +1018,7 @@ dependencies = [
  "futures-util",
  "gitcko-config",
  "gitcko-model",
+ "gitcko-model-openai",
  "gitcko-protocol",
  "gitcko-redact",
  "http",
