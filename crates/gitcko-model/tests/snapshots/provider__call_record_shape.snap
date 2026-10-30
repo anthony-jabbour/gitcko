@@ -6,6 +6,7 @@ expression: record
   "run_id": "rv_example",
   "role": "judge",
   "policy": "default@1",
+  "binding": "smart",
   "provider": "openrouter",
   "model": "openai/example-2",
   "family": "openai",
