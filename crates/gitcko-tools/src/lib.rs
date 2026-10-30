@@ -51,6 +51,8 @@ pub struct Limits {
     pub scan_bytes: u64,
     /// Commits `git_log` may look at.
     pub log_scan: usize,
+    /// Largest file a read loads; a bigger one is `unavailable` without being read.
+    pub file_bytes: u64,
 }
 
 impl Default for Limits {
@@ -61,6 +63,7 @@ impl Default for Limits {
             results: 20,
             scan_bytes: 8 * 1024 * 1024,
             log_scan: 500,
+            file_bytes: 1024 * 1024,
         }
     }
 }
@@ -183,6 +186,14 @@ impl<'a> Tools<'a> {
 
     /// Runs one parsed call.
     pub fn run(&mut self, call: &ToolCall) -> ToolOutput {
+        let mut out = self.dispatch(call);
+        // File content is held back whole before this point; this catches the rest of
+        // the repository-derived strings: commit subjects, symbol, crate and file names.
+        scrub(&mut out.body);
+        out
+    }
+
+    fn dispatch(&mut self, call: &ToolCall) -> ToolOutput {
         match call {
             ToolCall::ReadFile(a) => self.read_file(a),
             ToolCall::ReadDiff(a) => self.read_diff(a),
@@ -209,6 +220,14 @@ impl<'a> Tools<'a> {
             Side::Old => self.base,
             Side::New => self.head,
         };
+        // Checked from the object header, so a huge file is never loaded.
+        match self.repo.file_size(commit, path) {
+            Ok(Some(size)) if size > self.limits.file_bytes => {
+                return Err(ToolOutput::fail(Status::Unavailable, "too_large"));
+            }
+            Ok(_) => {}
+            Err(_) => return Err(ToolOutput::fail(Status::Unavailable, "read_failed")),
+        }
         let blob = match self.repo.read_blob(commit, path) {
             Ok(Some(blob)) => blob,
             Ok(None) => return Err(ToolOutput::fail(Status::NotFound, "no_such_file")),
@@ -313,19 +332,21 @@ impl<'a> Tools<'a> {
         if file.binary {
             return ToolOutput::fail(Status::Unavailable, "binary");
         }
-        let all: String = file
-            .hunks
-            .iter()
-            .flat_map(|h| h.lines.iter().map(|l| l.text.as_str()))
-            .collect::<Vec<_>>()
-            .join("\n");
-        if has_secret(&all) {
-            return ToolOutput::fail(Status::HeldBack, "secret_in_content");
+        // Whole files, both sides, not just the hunks: a secret's marker line can sit
+        // outside every hunk while its body is inside one.
+        for (side, p) in [(Side::Old, &file.old_path), (Side::New, &file.new_path)] {
+            if let Some(p) = p
+                && let Err(out) = self.text(p, side)
+            {
+                return out;
+            }
         }
         let mut hunks = Vec::new();
         let mut cut = false;
+        // One budget for every hunk's lines, as for a read: a generated file is one hunk.
+        let mut budget = self.limits.read_lines;
         for (i, h) in file.hunks.iter().enumerate() {
-            if i == self.limits.results {
+            if i == self.limits.results || budget == 0 {
                 cut = true;
                 break;
             }
@@ -336,6 +357,11 @@ impl<'a> Tools<'a> {
             );
             let (mut old_lines, mut new_lines) = (Vec::new(), Vec::new());
             for line in &h.lines {
+                if budget == 0 {
+                    cut = true;
+                    break;
+                }
+                budget -= 1;
                 let kept: String = line.text.chars().take(self.limits.line_chars).collect();
                 cut |= kept.len() < line.text.len();
                 let (marker, o, n) = match line.kind {
@@ -415,7 +441,7 @@ impl<'a> Tools<'a> {
             Err(_) => return ToolOutput::fail(Status::Unavailable, "search_failed"),
         };
         let mut files: HashMap<RepoPath, Option<Vec<String>>> = HashMap::new();
-        let (mut hits, mut held_back) = (Vec::new(), 0);
+        let (mut hits, mut held_back, mut cut) = (Vec::new(), 0, false);
         for hit in &results.hits {
             let lines = files
                 .entry(hit.path.clone())
@@ -435,12 +461,13 @@ impl<'a> Tools<'a> {
                 continue;
             }
             let refs: Vec<&str> = lines.iter().map(String::as_str).collect();
-            let (id, numbered, _) = self.observe(&hit.path, Side::New, &refs, start, end);
+            let (id, numbered, line_cut) = self.observe(&hit.path, Side::New, &refs, start, end);
+            cut |= line_cut;
             hits.push(json!({ "path": hit.path.as_str(), "line": start, "evidence": id, "lines": numbered }));
         }
         ToolOutput::ok(
             json!({ "hits": hits, "held_back": held_back, "total": results.total }),
-            results.truncated,
+            results.truncated || cut,
             Some(results.coverage),
         )
     }
@@ -644,29 +671,32 @@ impl<'a> Tools<'a> {
             Ok(r) => r,
             Err(_) => return ToolOutput::fail(Status::Unavailable, "search_failed"),
         };
-        let (mut chunks, mut held_back) = (Vec::new(), 0);
+        let (mut chunks, mut held_back, mut cut) = (Vec::new(), 0, false);
         for chunk in results.hits.iter().filter_map(|h| h.chunk) {
             let c = &self.index.chunks[chunk];
-            if is_sensitive_name(&c.path) || has_secret(&c.text) {
-                held_back += 1;
+            // The whole file, as for a read: secrets are judged on it, and evidence is
+            // whole source lines even when a chunk starts mid-line.
+            let text = match self.text(&c.path, Side::New) {
+                Ok(text) => text,
+                Err(out) => {
+                    held_back += usize::from(out.status == Status::HeldBack);
+                    continue;
+                }
+            };
+            let lines = split_lines(&text);
+            let (start, last) = c.span.lines();
+            let (start, last) = (start as u32, (last as u32).min(lines.len() as u32));
+            if start == 0 || last < start {
                 continue;
             }
-            let lines = split_lines(&c.text);
-            if lines.is_empty() {
-                continue;
-            }
-            let start = c.span.lines().0 as u32;
-            let end = (start + lines.len() as u32 - 1).min(start + self.limits.read_lines - 1);
-            // The chunk's lines, numbered from where it sits in the file.
-            let padded: Vec<&str> = std::iter::repeat_n("", start as usize - 1)
-                .chain(lines.iter().copied())
-                .collect();
-            let (id, numbered, _) = self.observe(&c.path, Side::New, &padded, start, end);
+            let end = last.min(start + self.limits.read_lines - 1);
+            let (id, numbered, line_cut) = self.observe(&c.path, Side::New, &lines, start, end);
+            cut |= line_cut || end < last;
             chunks.push(json!({ "path": c.path.as_str(), "kind": c.kind.as_str(), "evidence": id, "lines": numbered }));
         }
         ToolOutput::ok(
             json!({ "chunks": chunks, "held_back": held_back }),
-            results.truncated,
+            results.truncated || cut,
             Some(results.coverage),
         )
     }
@@ -683,10 +713,29 @@ impl<'a> Tools<'a> {
                 "languages": o.languages,
                 // Base has no model-written summaries; only these counted facts.
                 "summaries": "none",
+                // The counts are of what the index saw: partial when a limit stopped it.
+                "coverage": {
+                    "discovery": self.index.coverage.discovery,
+                    "parsing": self.index.coverage.parsing,
+                },
             }),
             false,
             None,
         )
+    }
+}
+
+/// Replaces credential-shaped text in every string of `value` (gitcko-redact's patterns).
+fn scrub(value: &mut Value) {
+    match value {
+        Value::String(text) => {
+            if has_secret(text) {
+                *text = gitcko_redact::Redactor::new().redact(text).into_owned();
+            }
+        }
+        Value::Array(items) => items.iter_mut().for_each(scrub),
+        Value::Object(map) => map.values_mut().for_each(scrub),
+        _ => {}
     }
 }
 
@@ -723,11 +772,13 @@ fn first(start: u32, lines: u32) -> u32 {
 
 /// Lines without their `\n`; a final newline doesn't make an extra empty line.
 fn split_lines(text: &str) -> Vec<&str> {
-    let text = text.strip_suffix('\n').unwrap_or(text);
     if text.is_empty() {
         return Vec::new();
     }
-    text.split('\n').collect()
+    text.strip_suffix('\n')
+        .unwrap_or(text)
+        .split('\n')
+        .collect()
 }
 
 /// A non-empty query of bounded length, trimmed.

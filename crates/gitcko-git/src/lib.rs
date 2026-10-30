@@ -236,6 +236,17 @@ impl Repo {
         }))
     }
 
+    /// The size of the file at `path` in `commit` from its object header, without
+    /// reading it, or `None` if there's no file there.
+    pub fn file_size(&self, commit: CommitId, path: &RepoPath) -> Result<Option<u64>> {
+        match self.entry(commit, path)? {
+            Some((mode, id)) if mode.is_blob() || mode.is_link() => {
+                self.blob_size(ObjectId(id)).map(Some)
+            }
+            _ => Ok(None),
+        }
+    }
+
     /// The tree entry at `path` in `commit`, whatever its kind.
     fn entry(
         &self,
@@ -303,9 +314,10 @@ impl Repo {
             let touched = match path {
                 None => true,
                 Some(path) => {
-                    let here = self.entry(CommitId(id), path)?.map(|e| e.1);
+                    // Mode and object id both: a chmod keeps the blob but is a change.
+                    let here = self.entry(CommitId(id), path)?;
                     let before = match parent.filter(|_| !log.shallow) {
-                        Some(p) => self.entry(CommitId(p), path)?.map(|e| e.1),
+                        Some(p) => self.entry(CommitId(p), path)?,
                         None => None,
                     };
                     here != before

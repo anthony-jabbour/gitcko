@@ -30,12 +30,23 @@ fn fixture() -> Fixture {
     // A credential-shaped canary, built at run time so no literal secret is committed.
     let secret = format!("const KEY: &str = \"{}\";\n", gitcko_redact::canaries()[1]);
     let cargo: &[u8] = b"[package]\nname = \"demo\"\n";
+    // A private key in an ordinary file, its BEGIN line far from the line that changes.
+    let key = |body: &str| {
+        let filler = "AAAA\n".repeat(8);
+        format!(
+            "-----BEGIN {}PRIVATE KEY-----\n{filler}{body}\n-----END {}PRIVATE KEY-----\n",
+            "", ""
+        )
+    };
+    let (key_base, key_head) = (key("MIIOld"), key("MIINew"));
+    let big: String = (1..=50).map(|i| format!("line {i}\n")).collect();
     let base = literal_commit(
         dir.path(),
         &[
             (b"Cargo.toml", "100644", cargo),
             (b"src/lib.rs", "100644", LIB_BASE),
             (b"src/util.rs", "100644", UTIL),
+            (b"conf/app.txt", "100644", key_base.as_bytes()),
         ],
     );
     let head = literal_commit(
@@ -50,6 +61,9 @@ fn fixture() -> Fixture {
             (b"data.bin", "100644", b"helper\0\x01"),
             (b"link", "120000", b"../../outside"),
             (b"notes.md", "100644", b"helper notes\n"),
+            (b"conf/app.txt", "100644", key_head.as_bytes()),
+            (b"blank.txt", "100644", b"\n"),
+            (b"big.txt", "100644", big.as_bytes()),
         ],
     );
     let repo = Repo::open(dir.path()).unwrap();
@@ -407,4 +421,178 @@ fn retrieved_chunks_hold_back_secret_content() {
         !out.to_message()
             .contains(gitcko_redact::canaries()[1].as_str())
     );
+}
+
+#[test]
+fn a_secret_is_held_back_even_when_the_fragment_shown_lacks_its_marker() {
+    let f = fixture();
+    let mut tools = f.tools(Limits::default());
+    // The hunk holds only the changed key body, not the BEGIN line nine lines above.
+    let out = call(&mut tools, "read_diff", json!({"path": "conf/app.txt"}));
+    assert_eq!(
+        (out.status, out.body["reason"].as_str()),
+        (Status::HeldBack, Some("secret_in_content"))
+    );
+    // Control: a plain file's diff is shown.
+    assert_eq!(
+        call(&mut tools, "read_diff", json!({"path": "src/lib.rs"})).status,
+        Status::Ok
+    );
+}
+
+#[test]
+fn one_huge_hunk_is_cut_to_the_read_budget() {
+    let f = fixture();
+    let mut tools = f.tools(Limits {
+        read_lines: 5,
+        ..Limits::default()
+    });
+    let out = call(&mut tools, "read_diff", json!({"path": "big.txt"}));
+    assert_eq!(out.status, Status::Ok);
+    assert!(out.truncated);
+    let shown = out.body["hunks"][0]["lines"]
+        .as_str()
+        .unwrap()
+        .lines()
+        .count();
+    assert_eq!(shown, 5);
+    let e = tools
+        .ledger()
+        .get(out.body["hunks"][0]["new_evidence"].as_str().unwrap())
+        .unwrap();
+    assert_eq!((e.range.start(), e.range.end()), (1, 5));
+}
+
+#[test]
+fn a_file_over_the_byte_budget_is_not_loaded() {
+    let f = fixture();
+    let mut tools = f.tools(Limits {
+        file_bytes: 100,
+        ..Limits::default()
+    });
+    let out = call(&mut tools, "read_file", json!({"path": "big.txt"}));
+    assert_eq!(
+        (out.status, out.body["reason"].as_str()),
+        (Status::Unavailable, Some("too_large"))
+    );
+    // Control: a small file still reads.
+    assert_eq!(
+        call(&mut tools, "read_file", json!({"path": "notes.md"})).status,
+        Status::Ok
+    );
+}
+
+#[test]
+fn lines_cut_for_display_mark_search_results_truncated() {
+    let f = fixture();
+    let mut tools = f.tools(Limits {
+        line_chars: 4,
+        ..Limits::default()
+    });
+    let out = call(&mut tools, "search_code", json!({"query": "helper"}));
+    assert!(out.truncated, "every hit line is longer than 4 characters");
+    let out = call(
+        &mut tools,
+        "retrieve_chunks",
+        json!({"query": "helper sum"}),
+    );
+    assert!(out.truncated);
+}
+
+#[test]
+fn chunk_evidence_is_whole_source_lines() {
+    let f = fixture();
+    let mut tools = f.tools(Limits::default());
+    let out = call(
+        &mut tools,
+        "retrieve_chunks",
+        json!({"query": "helper sum"}),
+    );
+    for c in out.body["chunks"].as_array().unwrap() {
+        let e = tools
+            .ledger()
+            .get(c["evidence"].as_str().unwrap())
+            .unwrap()
+            .clone();
+        let read = call(
+            &mut tools,
+            "read_file",
+            json!({"path": e.path.as_str(), "start_line": e.range.start(), "end_line": e.range.end()}),
+        );
+        assert_eq!(
+            read.body["evidence"].as_str(),
+            Some(e.id.as_str()),
+            "same lines, same text, same id"
+        );
+    }
+}
+
+#[test]
+fn a_file_of_one_blank_line_has_one_line() {
+    let f = fixture();
+    let mut tools = f.tools(Limits::default());
+    let out = call(&mut tools, "read_file", json!({"path": "blank.txt"}));
+    assert_eq!(out.body["total_lines"], 1);
+    assert_eq!(out.body["lines"], "    1| \n");
+}
+
+#[test]
+fn repo_counts_carry_their_coverage() {
+    let f = fixture();
+    let mut tools = f.tools(Limits::default());
+    let out = call(&mut tools, "retrieve_repo_summary", json!({}));
+    assert_eq!(out.body["coverage"]["discovery"]["state"], "complete");
+    assert!(out.body["coverage"]["parsing"].is_object());
+}
+
+#[test]
+fn canary_secret_shaped_names_and_subjects_never_reach_the_model() {
+    let canary = gitcko_redact::canaries()[1].clone();
+    let dir = empty_repo("tools-names");
+    std::fs::write(
+        dir.path().join("Cargo.toml"),
+        "[package]\nname = \"demo\"\n",
+    )
+    .unwrap();
+    std::fs::create_dir(dir.path().join("src")).unwrap();
+    std::fs::write(dir.path().join("src/lib.rs"), "pub fn token() {}\n").unwrap();
+    let git = |args: &[&str]| {
+        let status = gitcko_test_support::git(dir.path())
+            .args([
+                "-c",
+                "user.name=Fixture",
+                "-c",
+                "user.email=fixture@fixture.invalid",
+            ])
+            .args(args)
+            .status()
+            .unwrap();
+        assert!(status.success(), "git {args:?}");
+    };
+    git(&["add", "-A"]);
+    git(&["commit", "-q", "-m", &format!("add {canary}")]);
+    // A secret-shaped identifier in a file whose content check alone would let a fragment by.
+    std::fs::write(
+        dir.path().join("src/lib.rs"),
+        format!("pub fn token() {{}}\npub fn {canary}() {{}}\n"),
+    )
+    .unwrap();
+    git(&["commit", "-q", "-am", "second"]);
+    let repo = Repo::open(dir.path()).unwrap();
+    let head = repo.resolve("HEAD").unwrap();
+    let index = build(&repo, head, &IndexLimits::default()).unwrap();
+    let change = gitcko_diff::ChangeSet::default();
+    let mut tools = Tools::new(&repo, &index, &change, head, head, Limits::default());
+    let outs = [
+        call(&mut tools, "git_log", json!({})),
+        call(&mut tools, "find_symbol", json!({"name": "token"})),
+        call(&mut tools, "find_symbol", json!({"name": canary})),
+        call(&mut tools, "retrieve_repo_summary", json!({})),
+    ];
+    for out in &outs {
+        assert!(!out.to_message().contains(&canary), "{}", out.to_message());
+    }
+    // Control: the log did return both commits, with the clean subject intact.
+    assert_eq!(outs[0].body["commits"][0]["summary"], "second");
+    assert_eq!(outs[0].body["commits"].as_array().unwrap().len(), 2);
 }

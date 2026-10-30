@@ -9,8 +9,22 @@ use gitcko_git::Repo;
 use gitcko_test_support::{TempDir, empty_repo, git};
 
 fn run(dir: &Path, args: &[&str]) -> String {
-    let out = git(dir).args(args).output().unwrap();
-    assert!(out.status.success(), "git {args:?}");
+    // The helper ignores the user's git config, so commits need a fixture identity.
+    let out = git(dir)
+        .args([
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@fixture.invalid",
+        ])
+        .args(args)
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "git {args:?}: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
     String::from_utf8(out.stdout).unwrap()
 }
 
@@ -117,4 +131,21 @@ fn a_long_subject_is_cut_to_200_characters() {
     let repo = Repo::open(dir.path()).unwrap();
     let log = repo.log(repo.resolve("HEAD").unwrap(), None, 1, 1).unwrap();
     assert_eq!(log.entries[0].summary, "é".repeat(200));
+}
+
+#[test]
+fn a_mode_only_change_is_in_the_path_history() {
+    let dir = empty_repo("log-mode");
+    std::fs::write(dir.path().join("run.sh"), "echo hi\n").unwrap();
+    run(dir.path(), &["add", "run.sh"]);
+    run(dir.path(), &["commit", "-q", "-m", "add"]);
+    run(dir.path(), &["update-index", "--chmod=+x", "run.sh"]);
+    run(dir.path(), &["commit", "-q", "-m", "make it executable"]);
+    let repo = Repo::open(dir.path()).unwrap();
+    let path = RepoPath::parse("run.sh").unwrap();
+    let log = repo
+        .log(repo.resolve("HEAD").unwrap(), Some(&path), 10, 10)
+        .unwrap();
+    let subjects: Vec<&str> = log.entries.iter().map(|e| e.summary.as_str()).collect();
+    assert_eq!(subjects, ["make it executable", "add"]);
 }
