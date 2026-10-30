@@ -47,6 +47,7 @@ jobs:
         with:
           filters: |
             schema:
+              - 'crates/gitcko-prompts/**'
               - 'crates/gitcko-protocol/**'
               - 'integrations/schemas/**'
               - 'xtask/**'
@@ -72,6 +73,7 @@ jobs:
               - 'crates/gitcko-search/**'
               - 'tests/fixtures/lang/**'
               - 'tests/fixtures/tool_args/**'
+              - 'tests/fixtures/outputs/**'
               - 'tests/fixtures/providers/**'
               - 'fuzz/**'
               - 'xtask/src/fuzz.rs'
