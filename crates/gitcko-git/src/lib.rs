@@ -117,6 +117,26 @@ pub struct TreeEntry {
     pub id: ObjectId,
 }
 
+/// One commit in a [`Repo::log`] listing.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LogEntry {
+    pub id: CommitId,
+    /// Committer time, seconds since the Unix epoch.
+    pub time: i64,
+    /// The subject line, at most 200 characters. Repository text: untrusted.
+    pub summary: String,
+}
+
+/// A bounded history listing.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Log {
+    pub entries: Vec<LogEntry>,
+    /// The limit or the scan budget stopped the walk; older matches may exist.
+    pub truncated: bool,
+    /// The clone is shallow here: history before the last entry isn't available.
+    pub shallow: bool,
+}
+
 /// A file's content at a commit.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Blob {
@@ -203,6 +223,44 @@ impl Repo {
     /// The file at `path` in `commit`, or `None` if there's no file there (missing, or
     /// a folder or submodule).
     pub fn read_blob(&self, commit: CommitId, path: &RepoPath) -> Result<Option<Blob>> {
+        let Some((mode, id)) = self.entry(commit, path)? else {
+            return Ok(None);
+        };
+        if !(mode.is_blob() || mode.is_link()) {
+            return Ok(None);
+        }
+        let blob = self.repo.find_blob(id).map_err(|e| object_error(id, e))?;
+        Ok(Some(Blob {
+            bytes: blob.data.clone(),
+            symlink: mode.is_link(),
+        }))
+    }
+
+    /// The size of the file at `path` in `commit` from its object header, without
+    /// reading it, or `None` if there's no file there.
+    pub fn file_size(&self, commit: CommitId, path: &RepoPath) -> Result<Option<u64>> {
+        match self.entry(commit, path)? {
+            Some((mode, id)) if mode.is_blob() || mode.is_link() => {
+                self.blob_size(ObjectId(id)).map(Some)
+            }
+            _ => Ok(None),
+        }
+    }
+
+    /// Whether `path` in `commit` is a submodule: mode `160000`, a commit in another
+    /// repository. Other entries that aren't files don't count, however a read treats them.
+    pub fn is_submodule(&self, commit: CommitId, path: &RepoPath) -> Result<bool> {
+        Ok(self
+            .entry(commit, path)?
+            .is_some_and(|(mode, _)| mode.is_commit()))
+    }
+
+    /// The tree entry at `path` in `commit`, whatever its kind.
+    fn entry(
+        &self,
+        commit: CommitId,
+        path: &RepoPath,
+    ) -> Result<Option<(gix::object::tree::EntryMode, gix::ObjectId)>> {
         // Walk by name rather than as an OS path, so a `\` in a name is never taken for
         // a separator on Windows.
         let mut tree = self.tree(commit)?;
@@ -220,22 +278,77 @@ impl Repo {
             let Some((mode, id)) = entry else {
                 return Ok(None);
             };
-            if parts.peek().is_some() {
-                if !mode.is_tree() {
-                    return Ok(None);
-                }
-                tree = self.repo.find_tree(id).map_err(|e| object_error(id, e))?;
-            } else if mode.is_blob() || mode.is_link() {
-                let blob = self.repo.find_blob(id).map_err(|e| object_error(id, e))?;
-                return Ok(Some(Blob {
-                    bytes: blob.data.clone(),
-                    symlink: mode.is_link(),
-                }));
-            } else {
+            if parts.peek().is_none() {
+                return Ok(Some((mode, id)));
+            }
+            if !mode.is_tree() {
                 return Ok(None);
             }
+            tree = self.repo.find_tree(id).map_err(|e| object_error(id, e))?;
         }
         Ok(None)
+    }
+
+    /// Up to `limit` commits on the first-parent line from `from`, newest first, that
+    /// changed `path` (or all, without one), looking at no more than `max_scan` commits.
+    /// Only ids, times and subject lines: authors are personal data a review doesn't
+    /// need (PRIVACY §3). A commit whose parent isn't in the object database ends the
+    /// walk as `shallow`, so a short history is never presented as the whole one.
+    pub fn log(
+        &self,
+        from: CommitId,
+        path: Option<&RepoPath>,
+        limit: usize,
+        max_scan: usize,
+    ) -> Result<Log> {
+        let mut log = Log::default();
+        let mut next = Some(from.0);
+        let mut scanned = 0;
+        while let Some(id) = next {
+            if log.entries.len() == limit || scanned == max_scan {
+                log.truncated = true;
+                break;
+            }
+            scanned += 1;
+            let commit = self.repo.find_commit(id).map_err(|e| object_error(id, e))?;
+            let parent = commit.parent_ids().next().map(|p| p.detach());
+            next = match parent {
+                Some(p) if self.repo.find_commit(p).is_err() => {
+                    log.shallow = true;
+                    None
+                }
+                p => p,
+            };
+            let touched = match path {
+                None => true,
+                Some(path) => {
+                    // Mode and object id both: a chmod keeps the blob but is a change.
+                    let here = self.entry(CommitId(id), path)?;
+                    let before = match parent.filter(|_| !log.shallow) {
+                        Some(p) => self.entry(CommitId(p), path)?,
+                        None => None,
+                    };
+                    here != before
+                }
+            };
+            if touched {
+                let time = commit.time().map_err(|e| object_error(id, e))?.seconds;
+                let message = String::from_utf8_lossy(commit.message_raw_sloppy());
+                let summary: String = message
+                    .lines()
+                    .next()
+                    .unwrap_or("")
+                    .chars()
+                    .take(200)
+                    .collect();
+                log.entries.push(LogEntry {
+                    id: CommitId(id),
+                    time,
+                    summary,
+                });
+            }
+        }
+        Ok(log)
     }
 
     /// Every entry of `commit`'s tree except folders, sorted by path bytes, so index

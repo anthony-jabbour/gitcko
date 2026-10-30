@@ -19,6 +19,7 @@ gitcko-model = { path = "../crates/gitcko-model" }
 gitcko-model-ollama = { path = "../crates/gitcko-model-ollama" }
 gitcko-model-openai = { path = "../crates/gitcko-model-openai" }
 gitcko-syntax = { path = "../crates/gitcko-syntax" }
+gitcko-tools = { path = "../crates/gitcko-tools" }
 
 # Its own workspace, so the main one doesn't try to build it on stable.
 [workspace]
@@ -47,6 +48,13 @@ bench = false
 [[bin]]
 name = "provider_stream"
 path = "fuzz_targets/provider_stream.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "tool_args"
+path = "fuzz_targets/tool_args.rs"
 test = false
 doc = false
 bench = false
