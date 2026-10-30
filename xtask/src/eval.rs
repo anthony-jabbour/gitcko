@@ -429,6 +429,7 @@ pub fn score(case: &Case, outcome: &Outcome) -> CaseRun {
 /// what it says, and the cause it was matched to.
 fn audit_lines(case: &Case, outcome: &Outcome, labels: &[Label]) -> Vec<String> {
     let flat = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    let redactor = gitcko_redact::Redactor::new();
     outcome
         .review
         .findings
@@ -441,14 +442,15 @@ fn audit_lines(case: &Case, outcome: &Outcome, labels: &[Label]) -> Vec<String> 
                 }
                 Label::WrongLoc | Label::Fp => String::new(),
             };
-            format!(
+            let line = format!(
                 "{label:?} {}:{}-{}: {}. {}{matched}",
                 f.path,
                 f.start_line,
                 f.end_line,
                 flat(&f.title),
                 flat(&f.body)
-            )
+            );
+            redactor.redact(&line).into_owned()
         })
         .collect()
 }
@@ -635,18 +637,6 @@ fn suite_section(suite: Suite, runs: &[CaseRun]) -> (String, Vec<String>) {
             r.problems.join("; ")
         ));
     }
-    let audit: Vec<String> = runs
-        .iter()
-        .flat_map(|r| {
-            r.audit
-                .iter()
-                .map(move |line| format!("- {}: {line}\n", r.case))
-        })
-        .collect();
-    if !audit.is_empty() {
-        text.push_str("\nFindings, for checking each match by hand:\n\n");
-        text.push_str(&audit.concat());
-    }
     (text, failures)
 }
 
@@ -668,6 +658,15 @@ pub fn selected(root: &Path, suite: Suite, only: Option<&str>) -> Result<Vec<Cas
     Ok(cases)
 }
 
+/// What a run measured. `report` holds numbers, case names and our own problem text, so
+/// it's fit to publish. `audit` holds what the model wrote, which may be anything the
+/// attack cases asked for, so it goes in a file of its own.
+pub struct Measured {
+    pub report: String,
+    pub audit: String,
+    pub failures: Vec<String>,
+}
+
 /// Runs and reports the suites; `Err` lists each gate that failed.
 fn measure(
     engine: &dyn Engine,
@@ -677,8 +676,9 @@ fn measure(
     runs_per_case: usize,
     spend_cap: Option<f64>,
     only: Option<&str>,
-) -> Result<(String, Vec<String>)> {
+) -> Result<Measured> {
     let mut report = String::new();
+    let mut audit = String::new();
     let mut failures = Vec::new();
     let mut spent = 0.0;
     // A stop keeps what was already measured: that spend shouldn't go unreported.
@@ -711,6 +711,11 @@ fn measure(
             let (section, failed) = suite_section(suite, &runs);
             report.push_str(&section);
             failures.extend(failed);
+            for r in &runs {
+                for line in &r.audit {
+                    audit.push_str(&format!("- {}: {line}\n", r.case));
+                }
+            }
         }
         if stopped.is_some() {
             break;
@@ -721,7 +726,11 @@ fn measure(
         failures.push(reason);
     }
     report.push_str(&format!("\nProvider-reported spend: ${spent:.2}\n"));
-    Ok((report, failures))
+    Ok(Measured {
+        report,
+        audit,
+        failures,
+    })
 }
 
 fn finish(failures: Vec<String>) -> Result {
@@ -738,7 +747,7 @@ fn finish(failures: Vec<String>) -> Result {
 pub fn smoke(engine: &dyn Engine) -> Result {
     crate::golden::run(engine, false)?;
     let root = Path::new(ROOT);
-    let (report, failures) = measure(
+    let measured = measure(
         engine,
         root,
         &[Suite::P, Suite::F],
@@ -747,8 +756,8 @@ pub fn smoke(engine: &dyn Engine) -> Result {
         None,
         None,
     )?;
-    println!("{report}");
-    finish(failures)
+    println!("{}", measured.report);
+    finish(measured.failures)
 }
 
 /// What `eval --suite` was asked for.
@@ -802,7 +811,7 @@ pub fn parse_live(args: &[&str]) -> Result<LiveArgs> {
 pub fn live(engine: &dyn Engine, args: &[&str]) -> Result {
     let args = parse_live(args)?;
     let models = Models::Live(args.binding.clone());
-    let (body, failures) = measure(
+    let measured = measure(
         engine,
         Path::new(ROOT),
         &args.suites,
@@ -819,14 +828,19 @@ pub fn live(engine: &dyn Engine, args: &[&str]) -> Result {
         .collect();
     let path = PathBuf::from(format!("evals/reports/{}-{config}.md", date.trim()));
     let header = format!(
-        "# Eval report\n\nBinding: `{}`. Runs per case: {}. Matching is deterministic (EVALS §4); audit each Suite A match by hand before accepting this report.\n",
+        "# Eval report\n\nBinding: `{}`. Runs per case: {}. Matching is deterministic (EVALS §4); audit each Suite A match by hand, from the `.findings.txt` file beside this report, before accepting it.\n",
         args.binding, args.runs
     );
     std::fs::create_dir_all("evals/reports").map_err(|e| format!("evals/reports: {e}"))?;
-    std::fs::write(&path, format!("{header}{body}"))
-        .map_err(|e| format!("{}: {e}", path.display()))?;
-    println!("wrote {}", path.display());
-    finish(failures)
+    let write = |path: &Path, text: String| {
+        std::fs::write(path, text).map_err(|e| format!("{}: {e}", path.display()))
+    };
+    write(&path, format!("{header}{}", measured.report))?;
+    // Not `.md`: the live workflow publishes the reports, and this stays out of that.
+    let findings = path.with_extension("findings.txt");
+    write(&findings, measured.audit)?;
+    println!("wrote {} and {}", path.display(), findings.display());
+    finish(measured.failures)
 }
 
 #[cfg(test)]
@@ -1311,7 +1325,9 @@ pub(crate) mod tests {
     fn the_spend_cap_stops_the_run_and_keeps_what_it_measured() {
         let dir = suite_dir(4);
         let engine = Fake(Default::default(), 1.0);
-        let (report, failures) = measure(
+        let Measured {
+            report, failures, ..
+        } = measure(
             &engine,
             dir.path(),
             &[Suite::P],
@@ -1333,7 +1349,9 @@ pub(crate) mod tests {
         assert!(report.contains("$2.00"), "{report}");
         // Control: a higher cap finishes every case, and every run of each.
         let engine = Fake(Default::default(), 1.0);
-        let (report, failures) = measure(
+        let Measured {
+            report, failures, ..
+        } = measure(
             &engine,
             dir.path(),
             &[Suite::P],
@@ -1369,7 +1387,9 @@ pub(crate) mod tests {
     fn an_engine_error_stops_the_run_and_keeps_what_it_measured() {
         let dir = suite_dir(3);
         let engine = Breaks(1, Default::default());
-        let (report, failures) = measure(
+        let Measured {
+            report, failures, ..
+        } = measure(
             &engine,
             dir.path(),
             &[Suite::P, Suite::P],
@@ -1391,7 +1411,9 @@ pub(crate) mod tests {
     #[test]
     fn a_not_built_engine_fails_instead_of_passing_empty() {
         let dir = suite_dir(1);
-        let (report, failures) = measure(
+        let Measured {
+            report, failures, ..
+        } = measure(
             &NotBuilt,
             dir.path(),
             &[Suite::P],
@@ -1455,11 +1477,75 @@ pub(crate) mod tests {
             run.audit[1]
         );
         assert!(!run.audit[1].contains("expected cause"), "{}", run.audit[1]);
-        let (report, _) = suite_section(Suite::A, &[run]);
+    }
+
+    /// Answers every case with one finding whose body holds `body`.
+    struct Finds(String);
+
+    impl Engine for Finds {
+        fn review(&self, _case: &Case, _repo: &Path, _models: &Models) -> Result<Outcome> {
+            let mut f = finding("a", "src/lib.rs", 1, 1);
+            f.title = "A title".into();
+            f.body = self.0.clone();
+            Ok(Outcome {
+                review: Review {
+                    findings: vec![f],
+                    ..review()
+                },
+                cost_usd: None,
+            })
+        }
+    }
+
+    #[test]
+    fn what_the_model_wrote_stays_out_of_the_published_report() {
+        let dir = suite_dir(1);
+        let m = measure(
+            &Finds("The model's words".into()),
+            dir.path(),
+            &[Suite::P],
+            &Models::Replay,
+            1,
+            None,
+            None,
+        )
+        .unwrap();
         assert!(
-            report.contains("A title") && report.contains("Another title"),
-            "{report}"
+            m.audit.contains("p/case0")
+                && m.audit.contains("A title")
+                && m.audit.contains("The model's words"),
+            "{}",
+            m.audit
         );
+        assert!(
+            !m.report.contains("A title") && !m.report.contains("The model's words"),
+            "{}",
+            m.report
+        );
+        assert!(m.report.contains("p/case0"), "{}", m.report);
+    }
+
+    #[test]
+    fn canary_a_secret_the_model_repeats_is_redacted_from_the_audit() {
+        let dir = suite_dir(1);
+        for canary in gitcko_redact::canaries() {
+            let m = measure(
+                &Finds(format!("The key is {canary} here")),
+                dir.path(),
+                &[Suite::P],
+                &Models::Replay,
+                1,
+                None,
+                None,
+            )
+            .unwrap();
+            assert!(!m.audit.contains(&canary), "{}", m.audit);
+            assert!(
+                m.audit.contains("The key is"),
+                "the rest survives: {}",
+                m.audit
+            );
+        }
     }
 
     #[test]

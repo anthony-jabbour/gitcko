@@ -47,6 +47,8 @@ jobs:
           SUITES: ${{ inputs.suites }}
           RUNS: ${{ inputs.runs }}
           SPEND_CAP: ${{ inputs.spend_cap }}
-      # Fixture data and numbers only, so the report can sit on the run's page.
+      # Numbers, case names and our own problem text only, so it can sit on the run's public
+      # page. What the model wrote goes in a `.findings.txt` file, which is never published
+      # and is lost with the runner: audit a live run's matches from a local run.
       - if: always()
         run: cat evals/reports/*.md >> "$GITHUB_STEP_SUMMARY" || true

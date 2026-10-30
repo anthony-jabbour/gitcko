@@ -4265,6 +4265,7 @@ name = "xtask"
 version = "0.0.0"
 dependencies = [
  "gitcko-protocol",
+ "gitcko-redact",
  "gitcko-test-support",
  "serde",
  "serde_json",
