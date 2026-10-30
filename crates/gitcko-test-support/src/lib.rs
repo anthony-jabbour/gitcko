@@ -65,6 +65,17 @@ pub fn fixture_repo(name: &str) -> TempDir {
 #[doc(hidden)]
 pub fn fixture_repo_with_inherited_env(name: &str, inherited: &[(&str, &str)]) -> TempDir {
     let script = workspace_root().join(format!("tests/fixtures/repos/make_{name}.sh"));
+    run_fixture_script(&script, name, inherited)
+}
+
+/// A repository built by any fixture script, with the same fixed identity, dates and
+/// empty git config as [`fixture_repo`]. For the review eval cases, which live beside
+/// their expected results rather than in `tests/fixtures/repos/`.
+pub fn script_repo(script: &Path, label: &str) -> TempDir {
+    run_fixture_script(script, label, &[])
+}
+
+fn run_fixture_script(script: &Path, name: &str, inherited: &[(&str, &str)]) -> TempDir {
     assert!(
         script.is_file(),
         "fixture script {} not found",
@@ -84,7 +95,7 @@ pub fn fixture_repo_with_inherited_env(name: &str, inherited: &[(&str, &str)]) -
     command.envs(inherited.iter().copied());
     without_inherited_git_env(&mut command, inherited.iter().map(|(k, _)| (*k).into()));
     let out = command
-        .arg(&script)
+        .arg(script)
         // No hooks or other files copied in by `git init` from a template folder.
         .env("GIT_TEMPLATE_DIR", &templates)
         .current_dir(&repo)

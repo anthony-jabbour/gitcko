@@ -1,0 +1,12 @@
+kind = "clean"
+status = "canceled"
+reason_codes = ["canceled"]
+
+[[silence]]
+path = "src/lib.rs"
+why = "the fault leaves the bug unconfirmed, so nothing may be published"
+
+[fault]
+kind = "cancel"
+role = "judge"
+at_call = 1

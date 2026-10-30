@@ -16,3 +16,6 @@ CLAUDE.local.md
 /fuzz/corpus/
 /fuzz/artifacts/
 /fuzz/coverage/
+
+# What a model wrote during a live eval: for local audit, never committed.
+evals/reports/*.findings.txt

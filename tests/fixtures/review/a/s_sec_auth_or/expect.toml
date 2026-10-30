@@ -1,0 +1,12 @@
+kind = "seeded"
+status = "complete"
+
+[[finding]]
+path = "src/lib.rs"
+start_line = 7
+end_line = 7
+function = [6, 8]
+severity = "P0"
+comment_type = "logic"
+security = true
+root_cause = "Any active non-admin user can now delete, because the check became an or"
