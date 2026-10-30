@@ -13,6 +13,7 @@ fn seeds(target: &str) -> Option<&'static str> {
         "config_load" => Some("tests/fixtures/config"),
         "syntax_extract" => Some("tests/fixtures/lang/rust"),
         "provider_stream" => Some("tests/fixtures/providers"),
+        "tool_args" => Some("tests/fixtures/tool_args"),
         _ => None,
     }
 }
