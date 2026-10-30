@@ -28,6 +28,9 @@ struct Fixture {
 /// One function longer than the lines a search hit shows.
 const LONG: &[u8] = b"pub fn lengthy(x: u32) -> u32 {\n    let a = x + 1;\n    let b = a + 1;\n    let c = b + 1;\n    let d = c + 1;\n    d + 1\n}\n";
 
+const SUB_OLD: &str = "1111111111111111111111111111111111111111";
+const SUB_NEW: &str = "2222222222222222222222222222222222222222";
+
 fn fixture() -> Fixture {
     let dir = empty_repo("tools");
     // A credential-shaped canary, built at run time so no literal secret is committed.
@@ -63,6 +66,8 @@ fn fixture() -> Fixture {
             (b"src/long.rs", "100644", LONG),
             (b"conf/app.txt", "100644", key_base.as_bytes()),
             (b"two.txt", "100644", two_base.as_bytes()),
+            (b"vendor/kept", "160000", SUB_OLD.as_bytes()),
+            (b"vendor/gone", "160000", SUB_OLD.as_bytes()),
         ],
     );
     let head = literal_commit(
@@ -80,6 +85,8 @@ fn fixture() -> Fixture {
             (b"notes.md", "100644", b"helper notes\n"),
             (b"conf/app.txt", "100644", key_head.as_bytes()),
             (b"two.txt", "100644", two_head.as_bytes()),
+            (b"vendor/kept", "160000", SUB_NEW.as_bytes()),
+            (b"vendor/added", "160000", SUB_NEW.as_bytes()),
             (b"blank.txt", "100644", b"\n"),
             (b"big.txt", "100644", big.as_bytes()),
         ],
@@ -661,6 +668,41 @@ fn a_match_in_an_unreadable_file_is_skipped_openly_not_called_a_secret() {
             out.body
         );
         assert!(out.truncated, "{tool}: matches were left out");
+    }
+}
+
+#[test]
+fn a_submodule_change_shows_its_commits() {
+    let f = fixture();
+    let mut tools = f.tools(Limits::default());
+    for (path, expected) in [
+        ("vendor/kept", vec![SUB_OLD, SUB_NEW]),
+        ("vendor/gone", vec![SUB_OLD]),
+        ("vendor/added", vec![SUB_NEW]),
+    ] {
+        let out = call(&mut tools, "read_diff", json!({ "path": path }));
+        assert_eq!(out.status, Status::Ok, "{path}: {}", out.body);
+        let text = out.body["hunks"][0]["lines"].as_str().unwrap();
+        for commit in expected {
+            assert!(
+                text.contains(&format!("Subproject commit {commit}")),
+                "{path}: {text}"
+            );
+        }
+    }
+}
+
+#[test]
+fn a_diff_of_an_unreadable_file_is_refused_with_its_reason() {
+    let f = fixture();
+    let mut tools = f.tools(Limits {
+        file_bytes: 100,
+        ..Limits::default()
+    });
+    for (path, reason) in [("big.txt", "too_large"), ("link", "symlink")] {
+        let out = call(&mut tools, "read_diff", json!({ "path": path }));
+        assert_eq!(out.status, Status::Unavailable, "{path}: {}", out.body);
+        assert_eq!(out.body["reason"], reason, "{path}");
     }
 }
 

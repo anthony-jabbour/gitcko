@@ -333,10 +333,12 @@ impl<'a> Tools<'a> {
             return ToolOutput::fail(Status::Unavailable, "binary");
         }
         // Whole files, both sides, not just the hunks: a secret's marker line can sit
-        // outside every hunk while its body is inside one.
+        // outside every hunk while its body is inside one. A path the change names but no
+        // file holds is a submodule: its hunk is only the commit ids.
         for (side, p) in [(Side::Old, &file.old_path), (Side::New, &file.new_path)] {
             if let Some(p) = p
                 && let Err(out) = self.text(p, side)
+                && out.status != Status::NotFound
             {
                 return out;
             }
