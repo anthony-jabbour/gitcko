@@ -3,7 +3,7 @@
 //! What the engine draws on besides the model (REVIEW_ENGINE §7, §21.1), each with a
 //! typed status, so "no signals" and "the signals failed" stay different answers.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use gitcko_diff::LineKind;
 
@@ -66,26 +66,32 @@ pub struct RepoKnowledge<'a> {
 
 impl KnowledgeProvider for RepoKnowledge<'_> {
     fn knowledge(&self) -> (ProviderStatus, Knowledge) {
-        let rules = self
-            .snapshot
-            .config
-            .rules_md
-            .iter()
-            .map(|(text, _)| text.clone());
-        let mut scoped = BTreeSet::new();
-        for path in self.snapshot.investigated() {
-            for rule in self.snapshot.config.rules_for(path) {
-                if rule.enabled != Some(false) {
-                    scoped.insert(rule.rule);
-                }
+        // Each rule with the paths it reaches, so one folder's rule isn't read as everyone's.
+        let mut reach: BTreeMap<String, BTreeSet<&str>> = BTreeMap::new();
+        for (path, config) in &self.snapshot.configs {
+            let scoped = config
+                .rules_for(path)
+                .into_iter()
+                .filter(|rule| rule.enabled != Some(false))
+                .map(|rule| rule.rule);
+            let written = config.rules_md.iter().map(|(text, _)| text.clone());
+            for text in written.chain(scoped) {
+                reach.entry(text).or_default().insert(path.as_str());
             }
         }
-        (
-            ProviderStatus::Ok,
-            Knowledge {
-                rules: rules.chain(scoped).collect(),
-            },
-        )
+        let all = self.snapshot.configs.len();
+        let rules = reach
+            .into_iter()
+            .map(|(text, paths)| {
+                if paths.len() == all {
+                    text
+                } else {
+                    let listed: Vec<&str> = paths.into_iter().collect();
+                    format!("{text}\n(Applies only to: {})", listed.join(", "))
+                }
+            })
+            .collect();
+        (ProviderStatus::Ok, Knowledge { rules })
     }
 }
 

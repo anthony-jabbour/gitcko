@@ -180,6 +180,7 @@ pub async fn run_all(
         snapshot.head,
         snapshot.tool_limits(),
     );
+    tools.hold_back(snapshot.held_back_names());
     let mut found = Findings::default();
     let mut actions_left = ACTIONS_PER_RUN;
     let mut queue = tasks.into_iter();
@@ -209,13 +210,18 @@ pub async fn run_all(
             &task,
             &mut tools,
             &mut actions_left,
+            until,
             &mut found,
             ledger,
         )
         .await
         {
-            Ended::Reported(output) => record(output, task, &tools, snapshot, &mut found),
-            Ended::Inconclusive => found.inconclusive += 1,
+            Ended::Reported(output) => record(output, task, &tools, snapshot, &mut found, ledger),
+            // A bound stopped it, not the model's judgment: the review saw less.
+            Ended::Inconclusive => {
+                found.inconclusive += 1;
+                ledger.reduced(reason::TRUNCATED);
+            }
             Ended::Blocked => found.blocked += 1,
             Ended::Stopped => {
                 found.deferred += queue.len() as u64;
@@ -233,6 +239,7 @@ fn record(
     tools: &Tools<'_>,
     snapshot: &Snapshot<'_>,
     found: &mut Findings,
+    ledger: &mut Completeness,
 ) {
     let allowed = snapshot.investigated();
     match output.outcome {
@@ -255,8 +262,13 @@ fn record(
             }
         }
         Outcome::Refuted => found.refuted.push((task, output.reason)),
+        // Terminal (REVIEW_ENGINE §11, §18): the evidence just doesn't settle it. The
+        // summary says how many, and a status of partial would say less, not more.
         Outcome::Inconclusive => found.inconclusive += 1,
-        Outcome::Blocked => found.blocked += 1,
+        Outcome::Blocked => {
+            found.blocked += 1;
+            ledger.reduced(reason::TRUNCATED);
+        }
     }
 }
 
@@ -266,6 +278,7 @@ async fn investigate_one(
     task: &Task,
     tools: &mut Tools<'_>,
     actions_left: &mut u32,
+    until: Option<Instant>,
     found: &mut Findings,
     ledger: &mut Completeness,
 ) -> Ended {
@@ -346,11 +359,20 @@ async fn investigate_one(
         if no_progress >= NO_PROGRESS_TURNS {
             return Ended::Inconclusive;
         }
-        // Out of actions or into the reserve: the model must answer from what it has.
-        if actions >= ACTIONS_PER_HYPOTHESIS
-            || *actions_left == 0
-            || calls.reserve_reached().is_some()
-        {
+        // Into the reserve: the model answers from what it has, and the result says it
+        // was cut short, since that time and those tokens belong to later stages.
+        let reserve = if until.is_some_and(|u| Instant::now() >= u) {
+            Some(reason::DEADLINE)
+        } else {
+            calls.reserve_reached()
+        };
+        if let Some(limit) = reserve {
+            ledger.add(reason::BUDGET_EXHAUSTED);
+            ledger.add(limit);
+            request.tools = Vec::new();
+        }
+        // Out of actions: the same, without the budget being at fault.
+        if actions >= ACTIONS_PER_HYPOTHESIS || *actions_left == 0 {
             request.tools = Vec::new();
         }
     }

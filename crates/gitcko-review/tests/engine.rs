@@ -446,6 +446,141 @@ async fn broken_config_on_the_base_is_reported_and_the_review_goes_on() {
     assert_eq!(outcome.review.coverage.investigated_files, 2);
 }
 
+fn repo_from(label: &str, body: &str) -> TempDir {
+    let scripts = TempDir::new(label);
+    let script = scripts.path().join("make.sh");
+    std::fs::write(&script, body).unwrap();
+    script_repo(&script, label)
+}
+
+const TWO_FOLDERS: &str = r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p a/.gitcko b/.gitcko
+echo 'pub fn a() -> u32 { 1 }' > a/x.rs
+echo 'pub fn b() -> u32 { 1 }' > b/y.rs
+echo 'Rule of folder alpha.' > a/.gitcko/rules.md
+echo 'Rule of folder beta.' > b/.gitcko/rules.md
+BROKEN
+git add -A
+git commit -q -m Base
+git branch base
+echo 'pub fn a() -> u32 { 2 }' > a/x.rs
+echo 'pub fn b() -> u32 { 2 }' > b/y.rs
+git add -A
+git commit -q -m Head
+"#;
+
+#[tokio::test]
+async fn each_folder_s_rules_reach_the_model_with_their_scope() {
+    let dir = repo_from("two-folders", &TWO_FOLDERS.replace("BROKEN", ""));
+    let provider = scripted(|r, _| default_reply(r));
+    let outcome = review_repo(dir.path(), provider.clone(), run_with_budget(base_budget())).await;
+    assert_eq!(outcome.review.status, ReviewStatus::Complete);
+    let sent = all_prompt_text(&provider.requests.lock().unwrap());
+    assert!(sent.contains("Rule of folder alpha."), "{sent}");
+    assert!(sent.contains("Rule of folder beta."), "{sent}");
+    assert!(sent.contains("Applies only to: a/x.rs"), "{sent}");
+    assert!(sent.contains("Applies only to: b/y.rs"), "{sent}");
+}
+
+#[tokio::test]
+async fn a_broken_nested_config_is_reported_though_its_parent_stands_in() {
+    let broken = "echo 'not = [valid' > b/.gitcko/config.toml";
+    let dir = repo_from("broken-nested", &TWO_FOLDERS.replace("BROKEN", broken));
+    let provider = scripted(|r, _| default_reply(r));
+    let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
+    assert_eq!(outcome.review.status, ReviewStatus::Partial);
+    assert_eq!(codes(&outcome), ["config_invalid"]);
+}
+
+#[tokio::test]
+async fn a_secret_renamed_to_an_innocent_name_stays_out_of_every_tool() {
+    let dir = repo_from(
+        "renamed-secret",
+        r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p src
+echo 'pub fn one() -> u32 { 1 }' > src/lib.rs
+echo '{"password": "opensesame-marker"}' > credentials.json
+git add -A
+git commit -q -m Base
+git branch base
+echo 'pub fn one() -> u32 { 2 }' > src/lib.rs
+git mv credentials.json config.json
+git add -A
+git commit -q -m Head
+"#,
+    );
+    let provider = scripted(|r, _| {
+        if step(r) != "investigate" {
+            return default_reply(r);
+        }
+        if !was_answered(r) {
+            return tools(&[
+                ("c1", "read_file", json!({"path": "config.json"})),
+                (
+                    "c2",
+                    "read_file",
+                    json!({"path": "credentials.json", "side": "old"}),
+                ),
+                ("c3", "read_diff", json!({"path": "config.json"})),
+                ("c4", "search_code", json!({"query": "opensesame"})),
+                ("c5", "read_file", read_lib()),
+            ]);
+        }
+        text(&refuted())
+    });
+    let outcome = review_repo(dir.path(), provider.clone(), run_with_budget(base_budget())).await;
+    assert_eq!(codes(&outcome), ["sensitive_files_held_back"]);
+    let requests = provider.requests.lock().unwrap();
+    let last = requests.last().unwrap();
+    let results: Vec<Value> = last
+        .messages
+        .iter()
+        .filter_map(|m| match m {
+            Message::Tool { text, .. } => tool_json(text),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(results.len(), 5);
+    assert_eq!(results[0]["status"], "held_back", "{}", results[0]);
+    assert_eq!(results[1]["status"], "held_back", "{}", results[1]);
+    assert_eq!(results[2]["status"], "held_back", "{}", results[2]);
+    // Positive control: the other changed file reads fine.
+    assert_eq!(results[4]["status"], "ok", "{}", results[4]);
+    assert!(!all_prompt_text(&requests).contains("opensesame-marker"));
+}
+
+#[tokio::test]
+async fn a_key_pasted_into_a_commit_subject_is_scrubbed_before_any_prompt() {
+    let key = format!("{}{}", "AKIA", "ABCDEFGHIJKLMNOP");
+    let dir = repo_from(
+        "subject-key",
+        &format!(
+            r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p src
+echo 'pub fn one() -> u32 {{ 1 }}' > src/lib.rs
+git add -A
+git commit -q -m Base
+git branch base
+echo 'pub fn one() -> u32 {{ 2 }}' > src/lib.rs
+git add -A
+git commit -q -m "Bump with subject-marker {key}"
+"#
+        ),
+    );
+    let provider = scripted(|r, _| default_reply(r));
+    review_repo(dir.path(), provider.clone(), run_with_budget(base_budget())).await;
+    let sent = all_prompt_text(&provider.requests.lock().unwrap());
+    // Positive control: the subject itself did go out.
+    assert!(sent.contains("subject-marker"), "{sent}");
+    assert!(!sent.contains(&key));
+}
+
 // ---- Suite F: every failure is on the result ----
 
 #[tokio::test]
@@ -869,6 +1004,8 @@ async fn repeating_the_same_tool_call_ends_as_inconclusive() {
     let outcome = review_fault_crate(provider.clone(), run_with_budget(base_budget())).await;
     assert_eq!(step_count(&outcome, "inconclusive"), 1);
     assert_eq!(step_count(&outcome, "tool_actions"), 1);
+    assert_eq!(outcome.review.status, ReviewStatus::Partial);
+    assert_eq!(codes(&outcome), ["reduced_context", "truncated"]);
     let investigate_calls = provider
         .requests
         .lock()
@@ -921,6 +1058,7 @@ async fn a_model_that_keeps_calling_without_tools_is_stopped() {
         .count();
     // Twelve that ran a tool, and the one that had none left and called anyway.
     assert_eq!(calls, 13);
+    assert_eq!(codes(&outcome), ["reduced_context", "truncated"]);
 }
 
 #[tokio::test]
@@ -1004,6 +1142,85 @@ async fn only_the_three_roles_are_called() {
     let requests = provider.requests.lock().unwrap();
     let ids: Vec<&str> = requests.iter().map(step).collect();
     assert_eq!(ids, ["risk", "plan", "investigate"]);
+}
+
+#[tokio::test]
+async fn a_blocked_hypothesis_is_a_gap_and_an_inconclusive_one_is_disclosed() {
+    let reply = |outcome: &'static str| {
+        scripted(move |r, _| match step(r) {
+            "investigate" => text(
+                &json!({"outcome": outcome, "reason": "Unknown.", "candidates": []}).to_string(),
+            ),
+            _ => default_reply(r),
+        })
+    };
+    let blocked = review_fault_crate(reply("blocked"), run_with_budget(base_budget())).await;
+    assert_eq!(blocked.review.status, ReviewStatus::Partial);
+    assert_eq!(codes(&blocked), ["reduced_context", "truncated"]);
+
+    let unsure = review_fault_crate(reply("inconclusive"), run_with_budget(base_budget())).await;
+    assert_eq!(unsure.review.status, ReviewStatus::Complete);
+    assert!(
+        unsure
+            .review
+            .summary
+            .as_ref()
+            .unwrap()
+            .contains("1 hypothesis"),
+        "{:?}",
+        unsure.review.summary
+    );
+    // Positive control: a settled review says nothing of the kind.
+    let settled = review_fault_crate(reply("refuted"), run_with_budget(base_budget())).await;
+    assert!(!settled.review.summary.as_ref().unwrap().contains("settled"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn the_reserved_time_holds_inside_a_running_investigation() {
+    // Ten virtual seconds an event: risk and plan take 60 s, a tool turn 20 s, and with a
+    // 200 s deadline the cutoff is 150 s, so the fifth turn is the last with tools.
+    let provider = Arc::new(Scripted {
+        reply: Box::new(|r, _| match step(r) {
+            "investigate" if r.tools.is_empty() => text(&refuted()),
+            "investigate" => always_new_call(r),
+            _ => default_reply(r),
+        }),
+        requests: Mutex::new(Vec::new()),
+        delay: Duration::from_secs(10),
+        at_finish: Arc::new(|_| {}),
+    });
+    let mut run = run_with_budget(base_budget());
+    run.deadline = Some(tokio::time::Instant::now() + Duration::from_secs(200));
+    let outcome = review_fault_crate(provider, run).await;
+    assert_eq!(step_count(&outcome, "tool_actions"), 5);
+    assert_eq!(codes(&outcome), ["budget_exhausted", "deadline"]);
+    assert_eq!(
+        outcome.review.cleared_risks.len(),
+        1,
+        "it still got its answer"
+    );
+}
+
+#[tokio::test]
+async fn the_reserved_tokens_hold_inside_a_running_investigation() {
+    let provider = scripted(|r, _| match step(r) {
+        "investigate" if r.tools.is_empty() => text(&refuted()),
+        "investigate" => always_new_call(r),
+        _ => default_reply(r),
+    });
+    let limits = BudgetLimits {
+        input_tokens: 24_000,
+        output_tokens: 40_000,
+        cost_usd: None,
+    };
+    let outcome = review_fault_crate(provider, run_with_budget(limits)).await;
+    assert_eq!(codes(&outcome), ["budget_exhausted", "tokens"]);
+    assert!(step_count(&outcome, "tool_actions") < 12);
+    assert_eq!(
+        outcome.review.cleared_risks.len(),
+        1,
+        "it still got its answer"
+    );
 }
 
 // ---- The record of the run ----

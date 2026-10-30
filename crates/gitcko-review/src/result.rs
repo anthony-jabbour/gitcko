@@ -127,7 +127,7 @@ fn finding(task: &Task, candidate: Candidate, ledger: &Ledger) -> Finding {
     }
 }
 
-fn summary(status: ReviewStatus, findings: usize, files: u32) -> String {
+fn summary(status: ReviewStatus, findings: usize, files: u32, unresolved: u64) -> String {
     let state = match status {
         ReviewStatus::Complete => "complete",
         ReviewStatus::Partial => "incomplete",
@@ -135,7 +135,12 @@ fn summary(status: ReviewStatus, findings: usize, files: u32) -> String {
         ReviewStatus::Canceled => "canceled",
         ReviewStatus::Superseded => "superseded",
     };
-    format!("Review {state}: {findings} finding(s) across {files} investigated file(s).")
+    let text =
+        format!("Review {state}: {findings} finding(s) across {files} investigated file(s).");
+    match unresolved {
+        0 => text,
+        n => format!("{text} {n} hypothesis(es) could not be settled either way."),
+    }
 }
 
 /// The result of a run that couldn't read the repository.
@@ -153,7 +158,7 @@ pub fn failed(
         reason_codes: ledger.reason_codes(),
         tier: Tier::Base,
         target: target(input.base, input.head, None),
-        summary: Some(summary(status, 0, 0)),
+        summary: Some(summary(status, 0, 0, 0)),
         instructions: None,
         score: None,
         score_reasoning: None,
@@ -227,7 +232,12 @@ pub fn assemble(
         reason_codes: ledger.reason_codes(),
         tier: Tier::Base,
         target: target(input.base, input.head, snapshot.merge_base),
-        summary: Some(summary(status, findings.len(), investigated)),
+        summary: Some(summary(
+            status,
+            findings.len(),
+            investigated,
+            found.inconclusive,
+        )),
         instructions: None,
         score: None,
         score_reasoning: None,
@@ -252,10 +262,7 @@ pub fn assemble(
             held_back: paths(Disposition::HeldBack),
             skipped_binary: paths(Disposition::Binary),
         },
-        versions: versions(
-            snapshot.config.policy_digest(),
-            snapshot.index.versions.label(),
-        ),
+        versions: versions(snapshot.policy_digest(), snapshot.index.versions.label()),
         usage: usage(&records),
         events: None,
     };

@@ -4,14 +4,15 @@
 //! Config and rules come from the **base** commit (ADR-35): a change can't loosen its
 //! own review (THREAT_MODEL TM-02, TM-03).
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use gitcko_config::{Ceilings, FolderConfig, RepoFiles, Resolved, RunFlags, resolve_repo};
 use gitcko_diff::{ChangeSet, FileDiff, LineKind};
-use gitcko_domain::RepoPath;
+use gitcko_domain::{ContentHash, RepoPath};
 use gitcko_git::{CommitId, Repo};
 use gitcko_index::{Disposition as IndexDisposition, IndexLimits, ManifestEntry, Revision, build};
 use gitcko_prompts::ChangeContext;
+use gitcko_redact::Redactor;
 use gitcko_syntax::Language;
 use gitcko_tools::{Limits, has_secret, is_sensitive_name};
 
@@ -54,7 +55,9 @@ pub struct Snapshot<'a> {
     pub change: ChangeSet,
     pub index: Revision,
     pub dispositions: Vec<FileDisposition>,
-    pub config: Resolved,
+    /// The base's config as it applies to each investigated path: nested `.gitcko/`
+    /// folders only reach the paths under them.
+    pub configs: BTreeMap<RepoPath, Resolved>,
     pub config_invalid: bool,
     pub commit_messages: Vec<String>,
     /// An unchanged file the review may lean on is over an index limit.
@@ -122,15 +125,6 @@ pub fn take<'a>(input: &ReviewInput<'a>) -> Result<Snapshot<'a>, &'static str> {
         build(repo, input.head, &IndexLimits::default()).map_err(|_| reason::SNAPSHOT_FAILED)?;
 
     let files = base_config_files(repo, input.base).map_err(fail)?;
-    let ceilings = Ceilings::local();
-    let flags = RunFlags::default();
-    let root = RepoPath::parse("gitcko-root").expect("a valid path");
-    let reviewed = change.files.iter().find_map(file_path).unwrap_or(&root);
-    let (config, config_invalid) = match resolve_repo(&files, reviewed, &flags, &ceilings) {
-        Ok(config) => (config, false),
-        // Broken config on the base doesn't stop a review; defaults apply, and it says so.
-        Err(_) => (Resolved::default(), true),
-    };
     let ignore = gitcko_config::ignore_rules(&files).ok();
 
     let entries: BTreeMap<&str, &ManifestEntry> = index
@@ -163,12 +157,32 @@ pub fn take<'a>(input: &ReviewInput<'a>) -> Result<Snapshot<'a>, &'static str> {
         })
         .collect();
 
+    let dispositions: Vec<FileDisposition> = dispositions;
+    let mut configs = BTreeMap::new();
+    // Broken config applying nowhere reviewed still means the ignore list is in doubt.
+    let mut config_invalid = ignore.is_none();
+    for d in dispositions.iter().filter(|d| reviewed(d.disposition)) {
+        let resolved = resolve_repo(&files, &d.path, &RunFlags::default(), &Ceilings::local());
+        // Broken config on the base doesn't stop a review; defaults apply, and it says so.
+        // A broken nested file falls back to its parent inside `Ok`, and says so there.
+        let resolved = resolved.unwrap_or_else(|_| {
+            config_invalid = true;
+            Resolved::default()
+        });
+        config_invalid |= resolved
+            .reason_codes
+            .iter()
+            .any(|c| c == reason::CONFIG_INVALID);
+        configs.insert(d.path.clone(), resolved);
+    }
+
     let log = repo.log(input.head, None, 50, 500).map_err(fail)?;
     let commit_messages = log
         .entries
         .iter()
-        .take_while(|e| e.id != input.base)
-        .map(|e| e.summary.clone())
+        // A diverged base is never reached on the way back; the merge base always is.
+        .take_while(|e| e.id != input.base && Some(e.id) != merge_base)
+        .map(|e| scrubbed(&e.summary))
         .collect();
     let repo_index_gap = !index.manifest.coverage.is_complete()
         || index.manifest.entries.iter().any(over_index_limit);
@@ -180,11 +194,28 @@ pub fn take<'a>(input: &ReviewInput<'a>) -> Result<Snapshot<'a>, &'static str> {
         change,
         index,
         dispositions,
-        config,
+        configs,
         config_invalid,
         commit_messages,
         repo_index_gap,
     })
+}
+
+/// Text with credential-shaped strings replaced. Commit subjects and rules go straight
+/// into prompts, with no tool between them and the model.
+fn scrubbed(text: &str) -> String {
+    Redactor::new().redact(text).into_owned()
+}
+
+/// Whether the model may see this path's diff.
+fn reviewed(disposition: Disposition) -> bool {
+    matches!(
+        disposition,
+        Disposition::Investigated
+            | Disposition::Unsupported
+            | Disposition::ParseFailed
+            | Disposition::IndexGap
+    )
 }
 
 fn over_index_limit(entry: &ManifestEntry) -> bool {
@@ -284,21 +315,46 @@ impl Snapshot<'_> {
     pub fn investigated(&self) -> Vec<&RepoPath> {
         self.dispositions
             .iter()
-            .filter(|d| {
-                matches!(
-                    d.disposition,
-                    Disposition::Investigated
-                        | Disposition::Unsupported
-                        | Disposition::ParseFailed
-                        | Disposition::IndexGap
-                )
-            })
+            .filter(|d| reviewed(d.disposition))
             .map(|d| &d.path)
             .collect()
     }
 
     pub fn tool_limits(&self) -> Limits {
         Limits::default()
+    }
+
+    /// Both names of every held-back file, for the tools: a secret renamed to an innocent
+    /// name is only known to be one from here.
+    pub fn held_back_names(&self) -> Vec<RepoPath> {
+        let held = |file: &&FileDiff| {
+            file_path(file).is_some_and(|path| {
+                self.dispositions
+                    .iter()
+                    .any(|d| d.path == *path && d.disposition == Disposition::HeldBack)
+            })
+        };
+        self.change
+            .files
+            .iter()
+            .filter(held)
+            .flat_map(|f| [f.old_path.clone(), f.new_path.clone()])
+            .flatten()
+            .collect()
+    }
+
+    /// One digest for the policy this review ran under, however many folders it spans.
+    pub fn policy_digest(&self) -> String {
+        let digests: BTreeSet<String> =
+            self.configs.values().map(Resolved::policy_digest).collect();
+        match digests.len() {
+            0 => Resolved::default().policy_digest(),
+            1 => digests.into_iter().next().unwrap_or_default(),
+            _ => {
+                let joined = digests.into_iter().collect::<Vec<_>>().join("\n");
+                format!("sha256:{}", ContentHash::of(joined.as_bytes()))
+            }
+        }
     }
 
     /// Every gap in what the review could see.
@@ -370,7 +426,9 @@ impl Snapshot<'_> {
         signals: &[Signal],
     ) -> ChangeContext {
         let rules = match knowledge.knowledge() {
-            (ProviderStatus::Ok, Knowledge { rules }) => rules,
+            (ProviderStatus::Ok, Knowledge { rules }) => {
+                rules.iter().map(|rule| scrubbed(rule)).collect()
+            }
             _ => Vec::new(),
         };
         ChangeContext {

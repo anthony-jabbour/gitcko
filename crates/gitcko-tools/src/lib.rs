@@ -19,7 +19,7 @@ mod call;
 mod evidence;
 mod sensitive;
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 
 use serde_json::{Value, json};
 
@@ -145,6 +145,7 @@ pub struct Tools<'a> {
     head: CommitId,
     limits: Limits,
     ledger: Ledger,
+    held_back: BTreeSet<RepoPath>,
 }
 
 impl<'a> Tools<'a> {
@@ -165,7 +166,15 @@ impl<'a> Tools<'a> {
             head,
             limits,
             ledger: Ledger::default(),
+            held_back: BTreeSet::new(),
         }
+    }
+
+    /// Adds paths the caller decided to hold back, which a name or content check here
+    /// can't see: a secret renamed to an innocent name. Every read goes through the same
+    /// check, so reads, diffs, searches and retrieval all refuse them.
+    pub fn hold_back(&mut self, paths: impl IntoIterator<Item = RepoPath>) {
+        self.held_back.extend(paths);
     }
 
     /// Everything tools have returned so far, for validating cited evidence.
@@ -220,7 +229,7 @@ impl<'a> Tools<'a> {
     /// The text of `path` at `side`, or why not. Held back by name before any read, and
     /// by content after.
     fn text(&self, path: &RepoPath, side: Side) -> Result<String, ToolOutput> {
-        if is_sensitive_name(path) {
+        if is_sensitive_name(path) || self.held_back.contains(path) {
             return Err(ToolOutput::fail(Status::HeldBack, "sensitive_file"));
         }
         let commit = self.commit(side);

@@ -17,6 +17,7 @@ gitcko-index = { path = "../gitcko-index", version = "0.0.0" }
 gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
 gitcko-prompts = { path = "../gitcko-prompts", version = "0.0.0" }
 gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+gitcko-redact = { path = "../gitcko-redact", version = "0.0.0" }
 gitcko-syntax = { path = "../gitcko-syntax", version = "0.0.0" }
 gitcko-tools = { path = "../gitcko-tools", version = "0.0.0" }
 serde.workspace = true

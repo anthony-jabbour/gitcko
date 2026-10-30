@@ -1101,6 +1101,7 @@ dependencies = [
  "gitcko-model",
  "gitcko-prompts",
  "gitcko-protocol",
+ "gitcko-redact",
  "gitcko-syntax",
  "gitcko-test-support",
  "gitcko-tools",
