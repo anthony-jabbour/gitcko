@@ -425,11 +425,25 @@ pub fn score(case: &Case, outcome: &Outcome) -> CaseRun {
     }
 }
 
+/// Removes credential shapes, plus this machine's own key and home folder, which the
+/// shapes alone wouldn't catch.
+fn redactor_from(env: &dyn Fn(&str) -> Option<String>) -> gitcko_redact::Redactor {
+    let mut redactor = gitcko_redact::Redactor::new();
+    // Empty values are safe: the redactor ignores them.
+    if let Some(key) = env("OPENROUTER_API_KEY") {
+        redactor = redactor.secret(key);
+    }
+    if let Some(home) = env("HOME").or_else(|| env("USERPROFILE")) {
+        redactor = redactor.path(Path::new(&home), "home");
+    }
+    redactor
+}
+
 /// Each finding as a reader must see it to judge the match: its label, where it sits,
 /// what it says, and the cause it was matched to.
 fn audit_lines(case: &Case, outcome: &Outcome, labels: &[Label]) -> Vec<String> {
     let flat = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
-    let redactor = gitcko_redact::Redactor::new();
+    let redactor = redactor_from(&|name| std::env::var(name).ok());
     outcome
         .review
         .findings
@@ -1523,6 +1537,35 @@ pub(crate) mod tests {
             m.report
         );
         assert!(m.report.contains("p/case0"), "{}", m.report);
+    }
+
+    #[test]
+    fn canary_the_run_s_own_key_and_home_are_redacted() {
+        let key = format!("{}{}", "plain-looking", "-value-7731");
+        let env = |name: &str| match name {
+            "OPENROUTER_API_KEY" => Some(key.clone()),
+            "HOME" => Some("/home/somebody".to_string()),
+            _ => None,
+        };
+        let text = format!("key {key} at /home/somebody/work");
+        let shown = redactor_from(&env).redact(&text).into_owned();
+        assert!(
+            !shown.contains(&key) && !shown.contains("/home/somebody"),
+            "{shown}"
+        );
+        // Windows has no HOME.
+        let windows = |name: &str| (name == "USERPROFILE").then(|| "C:/Users/somebody".to_string());
+        let shown = redactor_from(&windows)
+            .redact("at C:/Users/somebody/work")
+            .into_owned();
+        assert!(!shown.contains("somebody"), "{shown}");
+        // Unset or empty values add nothing, and ordinary text survives.
+        let empty = |_: &str| Some(String::new());
+        assert_eq!(redactor_from(&empty).redact("plain text"), "plain text");
+        assert_eq!(
+            redactor_from(&|_: &str| None).redact("plain text"),
+            "plain text"
+        );
     }
 
     #[test]
