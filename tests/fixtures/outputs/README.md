@@ -1,0 +1,1 @@
+Model replies the output parser must accept (`valid.txt`, `fenced.txt`, `injected_reason.txt`) or refuse with a typed problem (everything else). `tests/outputs.rs` in `gitcko-prompts` lists the expected result for each file. Synthetic: no real repository text.

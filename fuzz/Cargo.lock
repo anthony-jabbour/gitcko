@@ -680,6 +680,7 @@ dependencies = [
  "gitcko-model",
  "gitcko-model-ollama",
  "gitcko-model-openai",
+ "gitcko-prompts",
  "gitcko-syntax",
  "gitcko-tools",
  "libfuzzer-sys",
@@ -766,6 +767,19 @@ dependencies = [
  "serde_json",
  "tokio",
  "tokio-util",
+]
+
+[[package]]
+name = "gitcko-prompts"
+version = "0.0.0"
+dependencies = [
+ "gitcko-domain",
+ "gitcko-model",
+ "gitcko-protocol",
+ "schemars",
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
