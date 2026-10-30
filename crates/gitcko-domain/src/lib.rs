@@ -8,13 +8,15 @@
 //! indexing crate and later by the review engine, so they live here rather than in any
 //! one of them. They derive serde because the local index cache stores them as JSON.
 //!
-//! The serialized forms live in `gitcko-protocol`; conversions to and from it are added
-//! with the first code that needs them (the review engine, Phase 4).
+//! The serialized forms live in `gitcko-protocol`. The review engine, which holds both,
+//! converts its validated values into them when it assembles a result; nothing reads a
+//! review back into these types yet (that arrives with `gitcko review show`, Phase 5).
 
 mod confidence;
 mod coverage;
 mod hash;
 mod id;
+mod lines;
 mod path;
 mod span;
 
@@ -22,5 +24,6 @@ pub use confidence::{Band, Confidence, ConfidenceError};
 pub use coverage::{Coverage, Reason, ReasonError};
 pub use hash::{ContentHash, HashError};
 pub use id::{FindingId, IdError, QuestionId, ReviewId};
+pub use lines::{LineRange, LineRangeError, Side};
 pub use path::{PathError, PathProblem, RepoPath};
 pub use span::{Position, SourceSpan, SpanError};
