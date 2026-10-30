@@ -1088,6 +1088,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-review"
+version = "0.0.0"
+dependencies = [
+ "futures-util",
+ "gitcko-config",
+ "gitcko-diff",
+ "gitcko-domain",
+ "gitcko-git",
+ "gitcko-graph",
+ "gitcko-index",
+ "gitcko-model",
+ "gitcko-prompts",
+ "gitcko-protocol",
+ "gitcko-syntax",
+ "gitcko-test-support",
+ "gitcko-tools",
+ "proptest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "toml",
+]
+
+[[package]]
 name = "gitcko-search"
 version = "0.0.0"
 dependencies = [
@@ -4279,11 +4304,17 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 name = "xtask"
 version = "0.0.0"
 dependencies = [
+ "gitcko-cassette",
+ "gitcko-git",
+ "gitcko-model",
+ "gitcko-model-openai",
  "gitcko-protocol",
  "gitcko-redact",
+ "gitcko-review",
  "gitcko-test-support",
  "serde",
  "serde_json",
+ "tokio",
  "toml",
 ]
 

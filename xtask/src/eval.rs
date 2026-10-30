@@ -267,16 +267,18 @@ pub trait Engine {
     fn review(&self, case: &Case, repo: &Path, models: &Models) -> Result<Outcome>;
 }
 
-/// The engine until `gitcko-review` lands (Phase 4, batch B4a).
+/// An engine that can't run, for the harness's own failure paths.
+#[cfg(test)]
 pub struct NotBuilt;
 
+#[cfg(test)]
 impl Engine for NotBuilt {
     fn review(&self, case: &Case, _repo: &Path, _models: &Models) -> Result<Outcome> {
         Err(format!("{}: the review engine isn't built yet", case.id()))
     }
 }
 
-pub const ENGINE: &dyn Engine = &NotBuilt;
+pub const ENGINE: &dyn Engine = &crate::engine::ReviewEngine;
 
 /// Builds the case's repository and runs the engine on it once.
 pub fn run_case(engine: &dyn Engine, case: &Case, models: &Models) -> Result<Outcome> {
