@@ -74,10 +74,10 @@
     }
   ],
   "coverage": { "changed_files": 3, "investigated_files": 3, "held_back": [], "skipped_binary": [] },
-  "versions": { "engine": "0.1.0", "policy": "p1", "routing_policy": "gitcko-std@1", "index": "i1" },
+  "versions": { "engine": "0.1.0", "policy": "p1", "routing_policy": "gitcko-std@1", "index": "i1", "prompts": "1", "policy_digest": "sha256:0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f" },
   "usage": { "model_calls": 14, "input_tokens": 182340, "output_tokens": 9120, "cost_usd": null },
   "events": [
     { "run_id": "rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X", "seq": 1, "at": "2026-10-17T18:02:00.000Z", "type": "lifecycle.changed", "from": "queued", "to": "indexing" },
-    { "run_id": "rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X", "seq": 7, "at": "2026-10-17T18:02:11.204Z", "type": "model_call.completed", "step": "review", "role": "review", "binding": "openrouter/example-model", "class": "smart", "duration_ms": 8120, "input_tokens": 41230, "output_tokens": 1820, "cost_usd": 0.061, "attempt": 1, "outcome": "ok", "fallback_from": null }
+    { "run_id": "rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X", "seq": 7, "at": "2026-10-17T18:02:11.204Z", "type": "model_call.completed", "step": "investigate", "role": "review", "binding": "smart", "class": "smart", "provider": "openrouter", "family": "example", "reasoning_effort": "medium", "policy": "gitcko-std@1", "prompt": { "id": "investigate", "version": "1" }, "attempt": 2, "fallback_from": "smart-primary", "fallback_reason": "primary_failed", "inversion": "applied", "input_tokens": 41230, "output_tokens": null, "cost_usd": 0.061, "first_token_ms": 820, "duration_ms": 8120, "outcome": "fallback_used" }
   ]
 }

@@ -520,6 +520,22 @@
         "linked_line"
       ]
     },
+    "PromptRef": {
+      "description": "A versioned prompt: changing its text changes its version, and with it every\nrecorded replay keyed on it (DEVELOPMENT §6).",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "version"
+      ]
+    },
     "PublishTarget": {
       "description": "Where a result was posted on the code host: the summary, inline comments or the\ncheck run.",
       "type": "string",
@@ -720,9 +736,11 @@
           ]
         },
         {
+          "description": "One model call attempt, from the router's call record (MODEL_ROUTING §12). Values\nare names, codes and numbers only: never prompt or response text, keys or hosts.",
           "type": "object",
           "properties": {
             "attempt": {
+              "description": "1 for the first try.",
               "type": "integer",
               "format": "uint32",
               "minimum": 0
@@ -753,18 +771,68 @@
                 "null"
               ]
             },
-            "input_tokens": {
-              "type": "integer",
+            "fallback_reason": {
+              "description": "A fixed code such as `primary_failed` or `circuit_open`, set with `fallback_from`.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "family": {
+              "description": "The model family, which judge independence and inversion compare.",
+              "type": "string"
+            },
+            "first_token_ms": {
+              "description": "`null` when no token arrived.",
+              "type": [
+                "integer",
+                "null"
+              ],
               "format": "uint64",
               "minimum": 0
+            },
+            "input_tokens": {
+              "description": "`null` when the provider didn't report it; never 0 for unknown.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0
+            },
+            "inversion": {
+              "description": "The author-family inversion decision, for roles that apply it.",
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "outcome": {
               "type": "string"
             },
             "output_tokens": {
-              "type": "integer",
+              "type": [
+                "integer",
+                "null"
+              ],
               "format": "uint64",
               "minimum": 0
+            },
+            "policy": {
+              "description": "The routing policy as `id@version`.",
+              "type": "string"
+            },
+            "prompt": {
+              "$ref": "#/$defs/PromptRef"
+            },
+            "provider": {
+              "type": "string"
+            },
+            "reasoning_effort": {
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "role": {
               "type": "string"
@@ -785,10 +853,12 @@
             "role",
             "binding",
             "class",
-            "duration_ms",
-            "input_tokens",
-            "output_tokens",
+            "provider",
+            "family",
+            "policy",
+            "prompt",
             "attempt",
+            "duration_ms",
             "outcome"
           ]
         },
@@ -1159,6 +1229,14 @@
         "policy": {
           "type": "string"
         },
+        "policy_digest": {
+          "description": "`sha256:<hex>` of the resolved config (CONFIGURATION §11), so two runs can be\ncompared.",
+          "type": "string"
+        },
+        "prompts": {
+          "description": "The prompt bundle version: the highest version among the prompts the run used.",
+          "type": "string"
+        },
         "routing_policy": {
           "type": "string"
         }
@@ -1167,7 +1245,9 @@
         "engine",
         "policy",
         "routing_policy",
-        "index"
+        "index",
+        "prompts",
+        "policy_digest"
       ]
     }
   }

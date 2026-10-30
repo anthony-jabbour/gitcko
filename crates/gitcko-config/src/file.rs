@@ -422,6 +422,30 @@ pub(crate) fn load_repo(
             "paths are relative to this folder and can't start with `/` or use `..` or `\\`",
         ));
     }
+    // Each `scope` list is compiled as the matcher will compile it. Names the key, never
+    // the pattern, which comes from the repository.
+    let rule_scopes = config
+        .rules
+        .iter()
+        .flatten()
+        .enumerate()
+        .filter_map(|(i, r)| r.scope.as_ref().map(|s| (format!("rules[{i}].scope"), s)));
+    let file_scopes = config
+        .context
+        .iter()
+        .flat_map(|c| c.files.iter().flatten())
+        .enumerate()
+        .filter_map(|(i, f)| {
+            f.scope
+                .as_ref()
+                .map(|s| (format!("context.files[{i}].scope"), s))
+        });
+    let scopes = rule_scopes.chain(file_scopes);
+    for (key, scope) in scopes {
+        if crate::scope::scope_set(scope).is_err() {
+            return Err(parsed.error(Some(&key), "not a valid glob"));
+        }
+    }
 
     let mut items = Vec::new();
     for (key, value) in flatten(&parsed.json) {
