@@ -1054,6 +1054,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-prompts"
+version = "0.0.0"
+dependencies = [
+ "gitcko-domain",
+ "gitcko-model",
+ "gitcko-protocol",
+ "gitcko-redact",
+ "proptest",
+ "schemars",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "gitcko-protocol"
 version = "0.0.0"
 dependencies = [

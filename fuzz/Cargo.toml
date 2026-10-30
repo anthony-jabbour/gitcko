@@ -18,6 +18,7 @@ gitcko-domain = { path = "../crates/gitcko-domain" }
 gitcko-model = { path = "../crates/gitcko-model" }
 gitcko-model-ollama = { path = "../crates/gitcko-model-ollama" }
 gitcko-model-openai = { path = "../crates/gitcko-model-openai" }
+gitcko-prompts = { path = "../crates/gitcko-prompts" }
 gitcko-syntax = { path = "../crates/gitcko-syntax" }
 gitcko-tools = { path = "../crates/gitcko-tools" }
 
@@ -55,6 +56,13 @@ bench = false
 [[bin]]
 name = "tool_args"
 path = "fuzz_targets/tool_args.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "model_output"
+path = "fuzz_targets/model_output.rs"
 test = false
 doc = false
 bench = false

@@ -1,0 +1,1 @@
+{"verdict": "needs_follow_up", "confidence": 0.5, "severity": null, "reason": "Depends on config.", "missing_fact": null}
