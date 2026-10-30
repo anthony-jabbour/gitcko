@@ -303,6 +303,7 @@ dependencies = [
  "gitcko-domain",
  "gitcko-protocol",
  "gitcko-redact",
+ "globset",
  "ignore",
  "serde",
  "serde_json",
