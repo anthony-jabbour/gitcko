@@ -1108,6 +1108,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-tools"
+version = "0.0.0"
+dependencies = [
+ "gitcko-diff",
+ "gitcko-domain",
+ "gitcko-git",
+ "gitcko-graph",
+ "gitcko-index",
+ "gitcko-model",
+ "gitcko-redact",
+ "gitcko-search",
+ "gitcko-test-support",
+ "proptest",
+ "schemars",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "gix"
 version = "0.90.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

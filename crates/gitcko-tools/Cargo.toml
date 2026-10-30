@@ -1,0 +1,29 @@
+[package]
+name = "gitcko-tools"
+version = "0.0.0"
+description = "The read-only tools a review investigator may call: files, diff, code search, symbols, history and repository facts, bounded and bound to one snapshot"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-diff = { path = "../gitcko-diff", version = "0.0.0" }
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
+gitcko-graph = { path = "../gitcko-graph", version = "0.0.0" }
+gitcko-index = { path = "../gitcko-index", version = "0.0.0" }
+gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
+gitcko-redact = { path = "../gitcko-redact", version = "0.0.0" }
+gitcko-search = { path = "../gitcko-search", version = "0.0.0" }
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+gitcko-test-support = { path = "../gitcko-test-support" }
+proptest.workspace = true
+
+[lints]
+workspace = true
