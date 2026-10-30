@@ -210,16 +210,20 @@ impl<'a> Tools<'a> {
         }
     }
 
+    fn commit(&self, side: Side) -> CommitId {
+        match side {
+            Side::Old => self.base,
+            Side::New => self.head,
+        }
+    }
+
     /// The text of `path` at `side`, or why not. Held back by name before any read, and
     /// by content after.
     fn text(&self, path: &RepoPath, side: Side) -> Result<String, ToolOutput> {
         if is_sensitive_name(path) {
             return Err(ToolOutput::fail(Status::HeldBack, "sensitive_file"));
         }
-        let commit = match side {
-            Side::Old => self.base,
-            Side::New => self.head,
-        };
+        let commit = self.commit(side);
         // Checked from the object header, so a huge file is never loaded.
         match self.repo.file_size(commit, path) {
             Ok(Some(size)) if size > self.limits.file_bytes => {
@@ -333,12 +337,16 @@ impl<'a> Tools<'a> {
             return ToolOutput::fail(Status::Unavailable, "binary");
         }
         // Whole files, both sides, not just the hunks: a secret's marker line can sit
-        // outside every hunk while its body is inside one. A path the change names but no
-        // file holds is a submodule: its hunk is only the commit ids.
+        // outside every hunk while its body is inside one. A submodule has no file, and
+        // its hunk is only the commit ids. Anything else that can't be read stays refused:
+        // a crafted entry mode is unreadable here yet still has a diff.
         for (side, p) in [(Side::Old, &file.old_path), (Side::New, &file.new_path)] {
             if let Some(p) = p
                 && let Err(out) = self.text(p, side)
-                && out.status != Status::NotFound
+                && !self
+                    .repo
+                    .is_submodule(self.commit(side), p)
+                    .unwrap_or(false)
             {
                 return out;
             }

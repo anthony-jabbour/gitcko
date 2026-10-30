@@ -87,6 +87,8 @@ fn fixture() -> Fixture {
             (b"two.txt", "100644", two_head.as_bytes()),
             (b"vendor/kept", "160000", SUB_NEW.as_bytes()),
             (b"vendor/added", "160000", SUB_NEW.as_bytes()),
+            // A mode git never writes: a diff still reads it, a file read doesn't.
+            (b"crafted", "10000", secret.as_bytes()),
             (b"blank.txt", "100644", b"\n"),
             (b"big.txt", "100644", big.as_bytes()),
         ],
@@ -704,6 +706,18 @@ fn a_diff_of_an_unreadable_file_is_refused_with_its_reason() {
         assert_eq!(out.status, Status::Unavailable, "{path}: {}", out.body);
         assert_eq!(out.body["reason"], reason, "{path}");
     }
+}
+
+#[test]
+fn a_crafted_entry_mode_cannot_slip_a_secret_past_the_diff_check() {
+    let f = fixture();
+    let mut tools = f.tools(Limits::default());
+    let out = call(&mut tools, "read_diff", json!({"path": "crafted"}));
+    assert_ne!(out.status, Status::Ok, "{}", out.body);
+    assert!(!out.body.to_string().contains(&gitcko_redact::canaries()[1]));
+    // Control: the same check lets a real submodule's commit ids through.
+    let sub = call(&mut tools, "read_diff", json!({"path": "vendor/added"}));
+    assert_eq!(sub.status, Status::Ok);
 }
 
 #[test]

@@ -247,6 +247,14 @@ impl Repo {
         }
     }
 
+    /// Whether `path` in `commit` is a submodule: mode `160000`, a commit in another
+    /// repository. Other entries that aren't files don't count, however a read treats them.
+    pub fn is_submodule(&self, commit: CommitId, path: &RepoPath) -> Result<bool> {
+        Ok(self
+            .entry(commit, path)?
+            .is_some_and(|(mode, _)| mode.is_commit()))
+    }
+
     /// The tree entry at `path` in `commit`, whatever its kind.
     fn entry(
         &self,
