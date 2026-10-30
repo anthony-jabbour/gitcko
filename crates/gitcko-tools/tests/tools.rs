@@ -25,6 +25,9 @@ struct Fixture {
     _dir: TempDir,
 }
 
+/// One function longer than the lines a search hit shows.
+const LONG: &[u8] = b"pub fn lengthy(x: u32) -> u32 {\n    let a = x + 1;\n    let b = a + 1;\n    let c = b + 1;\n    let d = c + 1;\n    d + 1\n}\n";
+
 fn fixture() -> Fixture {
     let dir = empty_repo("tools");
     // A credential-shaped canary, built at run time so no literal secret is committed.
@@ -40,13 +43,26 @@ fn fixture() -> Fixture {
     };
     let (key_base, key_head) = (key("MIIOld"), key("MIINew"));
     let big: String = (1..=50).map(|i| format!("line {i}\n")).collect();
+    // Two changes far apart, so the diff has two hunks.
+    let spread = |top: &str, low: &str| -> String {
+        (1..=40)
+            .map(|i| match i {
+                2 => format!("{top}\n"),
+                30 => format!("{low}\n"),
+                _ => format!("same {i}\n"),
+            })
+            .collect()
+    };
+    let (two_base, two_head) = (spread("a", "b"), spread("c", "d"));
     let base = literal_commit(
         dir.path(),
         &[
             (b"Cargo.toml", "100644", cargo),
             (b"src/lib.rs", "100644", LIB_BASE),
             (b"src/util.rs", "100644", UTIL),
+            (b"src/long.rs", "100644", LONG),
             (b"conf/app.txt", "100644", key_base.as_bytes()),
+            (b"two.txt", "100644", two_base.as_bytes()),
         ],
     );
     let head = literal_commit(
@@ -55,6 +71,7 @@ fn fixture() -> Fixture {
             (b"Cargo.toml", "100644", cargo),
             (b"src/lib.rs", "100644", LIB_HEAD),
             (b"src/util.rs", "100644", UTIL),
+            (b"src/long.rs", "100644", LONG),
             (b"src/keys.rs", "100644", secret.as_bytes()),
             (b".env", "100644", b"HELPER=1\n"),
             (b"deploy/id_rsa", "100644", b"helper\n"),
@@ -62,6 +79,7 @@ fn fixture() -> Fixture {
             (b"link", "120000", b"../../outside"),
             (b"notes.md", "100644", b"helper notes\n"),
             (b"conf/app.txt", "100644", key_head.as_bytes()),
+            (b"two.txt", "100644", two_head.as_bytes()),
             (b"blank.txt", "100644", b"\n"),
             (b"big.txt", "100644", big.as_bytes()),
         ],
@@ -595,4 +613,72 @@ fn canary_secret_shaped_names_and_subjects_never_reach_the_model() {
     // Control: the log did return both commits, with the clean subject intact.
     assert_eq!(outs[0].body["commits"][0]["summary"], "second");
     assert_eq!(outs[0].body["commits"].as_array().unwrap().len(), 2);
+}
+
+#[test]
+fn the_line_budget_stops_at_the_hunk_that_spends_it() {
+    let f = fixture();
+    let mut tools = f.tools(Limits {
+        read_lines: 3,
+        ..Limits::default()
+    });
+    let out = call(&mut tools, "read_diff", json!({"path": "two.txt"}));
+    assert!(out.truncated);
+    assert_eq!(
+        out.body["hunks"].as_array().unwrap().len(),
+        1,
+        "no empty hunk after the budget"
+    );
+    // Control: with room, both hunks come back.
+    let mut tools = f.tools(Limits::default());
+    let out = call(&mut tools, "read_diff", json!({"path": "two.txt"}));
+    assert!(!out.truncated);
+    assert_eq!(out.body["hunks"].as_array().unwrap().len(), 2);
+}
+
+#[test]
+fn a_match_in_an_unreadable_file_is_skipped_openly_not_called_a_secret() {
+    let f = fixture();
+    let mut tools = f.tools(Limits {
+        file_bytes: 100,
+        ..Limits::default()
+    });
+    // big.txt is over the byte budget and holds the only match, so nothing but the
+    // skipped file can make the result incomplete.
+    for (tool, args) in [
+        ("search_code", json!({"query": "line 37"})),
+        ("retrieve_chunks", json!({"query": "line 37"})),
+    ] {
+        let out = call(&mut tools, tool, args);
+        assert_eq!(out.status, Status::Ok, "{tool}");
+        assert_eq!(
+            out.body["held_back"], 0,
+            "{tool}: too large is not a secret"
+        );
+        assert!(
+            out.body["skipped"].as_u64().unwrap() >= 1,
+            "{tool}: {}",
+            out.body
+        );
+        assert!(out.truncated, "{tool}: matches were left out");
+    }
+}
+
+#[test]
+fn a_long_hit_says_where_it_really_ends() {
+    let f = fixture();
+    let mut tools = f.tools(Limits::default());
+    let out = call(
+        &mut tools,
+        "search_code",
+        json!({"query": "lengthy", "mode": "tokens"}),
+    );
+    let hit = &out.body["hits"].as_array().unwrap()[0];
+    assert_eq!(hit["path"], "src/long.rs");
+    assert_eq!(
+        (hit["line"].as_u64(), hit["end_line"].as_u64()),
+        (Some(1), Some(7)),
+        "{hit}"
+    );
+    assert_eq!(hit["lines"].as_str().unwrap().lines().count(), 3);
 }

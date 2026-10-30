@@ -440,34 +440,46 @@ impl<'a> Tools<'a> {
             Ok(r) => r,
             Err(_) => return ToolOutput::fail(Status::Unavailable, "search_failed"),
         };
-        let mut files: HashMap<RepoPath, Option<Vec<String>>> = HashMap::new();
-        let (mut hits, mut held_back, mut cut) = (Vec::new(), 0, false);
+        let mut files: HashMap<RepoPath, Result<Vec<String>, Status>> = HashMap::new();
+        let (mut hits, mut held_back, mut skipped, mut cut) = (Vec::new(), 0, 0, false);
         for hit in &results.hits {
             let lines = files
                 .entry(hit.path.clone())
                 .or_insert_with(|| {
                     self.text(&hit.path, Side::New)
-                        .ok()
                         .map(|t| split_lines(&t).into_iter().map(str::to_string).collect())
+                        .map_err(|out| out.status)
                 })
                 .clone();
-            let Some(lines) = lines else {
-                held_back += 1;
-                continue;
+            let lines = match lines {
+                Ok(lines) => lines,
+                Err(Status::HeldBack) => {
+                    held_back += 1;
+                    continue;
+                }
+                Err(_) => {
+                    skipped += 1;
+                    continue;
+                }
             };
-            let (start, end) = hit.span.lines();
-            let (start, end) = (start as u32, (end as u32).min(start as u32 + 2));
-            if start == 0 || end as usize > lines.len() || end < start {
+            // A hit may span a whole chunk: show its first lines and say where it ends, so
+            // the model knows to read on.
+            let (start, span_end) = hit.span.lines();
+            let span_end = (span_end as u32).min(lines.len() as u32);
+            let start = start as u32;
+            let end = span_end.min(start + 2);
+            if start == 0 || end < start {
+                skipped += 1;
                 continue;
             }
             let refs: Vec<&str> = lines.iter().map(String::as_str).collect();
             let (id, numbered, line_cut) = self.observe(&hit.path, Side::New, &refs, start, end);
             cut |= line_cut;
-            hits.push(json!({ "path": hit.path.as_str(), "line": start, "evidence": id, "lines": numbered }));
+            hits.push(json!({ "path": hit.path.as_str(), "line": start, "end_line": span_end, "evidence": id, "lines": numbered }));
         }
         ToolOutput::ok(
-            json!({ "hits": hits, "held_back": held_back, "total": results.total }),
-            results.truncated || cut,
+            json!({ "hits": hits, "held_back": held_back, "skipped": skipped, "total": results.total }),
+            results.truncated || cut || skipped > 0,
             Some(results.coverage),
         )
     }
@@ -671,7 +683,7 @@ impl<'a> Tools<'a> {
             Ok(r) => r,
             Err(_) => return ToolOutput::fail(Status::Unavailable, "search_failed"),
         };
-        let (mut chunks, mut held_back, mut cut) = (Vec::new(), 0, false);
+        let (mut chunks, mut held_back, mut skipped, mut cut) = (Vec::new(), 0, 0, false);
         for chunk in results.hits.iter().filter_map(|h| h.chunk) {
             let c = &self.index.chunks[chunk];
             // The whole file, as for a read: secrets are judged on it, and evidence is
@@ -679,7 +691,11 @@ impl<'a> Tools<'a> {
             let text = match self.text(&c.path, Side::New) {
                 Ok(text) => text,
                 Err(out) => {
-                    held_back += usize::from(out.status == Status::HeldBack);
+                    if out.status == Status::HeldBack {
+                        held_back += 1;
+                    } else {
+                        skipped += 1;
+                    }
                     continue;
                 }
             };
@@ -695,8 +711,8 @@ impl<'a> Tools<'a> {
             chunks.push(json!({ "path": c.path.as_str(), "kind": c.kind.as_str(), "evidence": id, "lines": numbered }));
         }
         ToolOutput::ok(
-            json!({ "chunks": chunks, "held_back": held_back }),
-            results.truncated || cut,
+            json!({ "chunks": chunks, "held_back": held_back, "skipped": skipped }),
+            results.truncated || cut || skipped > 0,
             Some(results.coverage),
         )
     }
