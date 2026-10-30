@@ -1,0 +1,11 @@
+kind = "seeded"
+status = "complete"
+
+[[finding]]
+path = "src/lib.rs"
+start_line = 7
+end_line = 7
+function = [1, 10]
+severity = "P1"
+comment_type = "logic"
+root_cause = "The counter never moves, so a persistent failure retries forever instead of stopping at max"

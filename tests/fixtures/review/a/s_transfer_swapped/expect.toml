@@ -1,0 +1,11 @@
+kind = "seeded"
+status = "complete"
+
+[[finding]]
+path = "src/lib.rs"
+start_line = 6
+end_line = 7
+function = [5, 8]
+severity = "P0"
+comment_type = "logic"
+root_cause = "Debit and credit are swapped, so money moves from the recipient to the sender"

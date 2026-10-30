@@ -1,0 +1,11 @@
+kind = "seeded"
+status = "complete"
+
+[[finding]]
+path = "src/lib.rs"
+start_line = 8
+end_line = 8
+function = [8, 10]
+severity = "P1"
+comment_type = "logic"
+root_cause = "The parameters swapped but have the same type, so the unchanged banner in use_it.rs silently gets a 100 by 800 size"

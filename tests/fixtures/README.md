@@ -8,6 +8,7 @@ Each folder below is created by the first fixture that needs it.
 |---|---|
 | `repos/` | Small Git repositories for end-to-end tests, each built by a `make_<name>.sh` script that commits exactly what the test needs. The script is the source of truth. Tests build each repository fresh with fixed author, dates and config, so commit ids are the same on every OS; caching the output as archives (gitoxide's pattern) can come later if the suite gets slow. Scripts use plumbing (`git update-index`) for entries a Windows disk can't hold, such as symlinks and case-only twins. (Pattern from [gitoxide](https://github.com/GitoxideLabs/gitoxide).) |
 | `lang/<language>/` | Source files per supported language, with the expected symbols and call graphs as golden files. |
+| `review/` | The review eval suites P, F, Adv-A and A: each case a `make.sh` that builds its repository and an `expect.toml` with what the review must find, stay silent on and report. See [`review/README.md`](review/README.md). |
 | `diffs/` | Annotated review fixtures: a diff plus the findings Gitcko is expected to report (format below). |
 | `webhooks/github/`, `webhooks/origin/` | Recorded webhook deliveries from code hosts, signed with throwaway development secrets. |
 | `outputs/` | Malformed model outputs (truncated JSON, extra prose, wrong values, valid-looking nonsense) that the output parser must repair or reject. |

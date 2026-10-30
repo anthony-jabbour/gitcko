@@ -1,0 +1,12 @@
+kind = "clean"
+status = "partial"
+reason_codes = ["provider_failure", "judge_failed"]
+
+[[silence]]
+path = "src/lib.rs"
+why = "the fault leaves the bug unconfirmed, so nothing may be published"
+
+[fault]
+kind = "unavailable"
+role = "judge"
+at_call = 1

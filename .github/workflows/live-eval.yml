@@ -1,0 +1,52 @@
+# The milestone's live measurement against a real model. Manual only: never on a schedule
+# or a PR, so fork PRs can't reach the key. The `live-models` environment makes every run
+# wait for a maintainer's approval, and the spend cap stops the run on top of the limit
+# set on the key itself. It records nothing: `cargo xtask cassettes record` refuses CI.
+name: live-eval
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Exact model binding to measure (no moving aliases)
+        required: true
+      suites:
+        description: Suites to run
+        required: true
+        default: P,F,Adv-A,A
+      runs:
+        description: Runs per case
+        required: true
+        default: "3"
+      spend_cap:
+        description: Stop at this many US dollars
+        required: true
+        default: "15"
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    environment: live-models
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      # Inputs come in through the environment, never interpolated into the script.
+      - run: cargo xtask eval --suite "$SUITES" --live-model "$MODEL" --runs "$RUNS" --spend-cap "$SPEND_CAP"
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          MODEL: ${{ inputs.model }}
+          SUITES: ${{ inputs.suites }}
+          RUNS: ${{ inputs.runs }}
+          SPEND_CAP: ${{ inputs.spend_cap }}
+      # Fixture data and numbers only, so the report can sit on the run's page.
+      - if: always()
+        run: cat evals/reports/*.md >> "$GITHUB_STEP_SUMMARY" || true

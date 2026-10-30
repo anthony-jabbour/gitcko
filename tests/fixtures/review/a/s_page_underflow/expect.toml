@@ -1,0 +1,11 @@
+kind = "seeded"
+status = "complete"
+
+[[finding]]
+path = "src/lib.rs"
+start_line = 3
+end_line = 3
+function = [2, 6]
+severity = "P1"
+comment_type = "logic"
+root_cause = "Pages start at 0 per the doc, so page 0 underflows and panics and every other page is off by one"

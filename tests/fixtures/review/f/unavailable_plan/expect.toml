@@ -1,0 +1,12 @@
+kind = "clean"
+status = "failed"
+reason_codes = ["provider_failure", "review_failed"]
+
+[[silence]]
+path = "src/lib.rs"
+why = "the fault leaves the bug unconfirmed, so nothing may be published"
+
+[fault]
+kind = "unavailable"
+role = "review"
+at_call = 1

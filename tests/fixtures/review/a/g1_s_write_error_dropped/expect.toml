@@ -1,0 +1,11 @@
+kind = "seeded"
+status = "complete"
+
+[[finding]]
+path = "src/lib.rs"
+start_line = 4
+end_line = 4
+function = [3, 6]
+severity = "P1"
+comment_type = "logic"
+root_cause = "The write error is discarded, so a failed save reports success and the record is lost"

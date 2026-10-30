@@ -5,9 +5,12 @@
 
 mod canaries;
 mod conformance;
+mod eval;
 mod fuzz;
+mod golden;
 mod layers;
 mod leak_guard;
+mod record;
 mod schema;
 mod spdx;
 
@@ -35,7 +38,13 @@ usage: cargo xtask <task>
   fuzz --run <secs>            run each fuzz target for <secs> seconds
   schema-gen                   write integrations/schemas/ from gitcko-protocol
   schema-check                 fail if integrations/schemas/ differs from the types
-  layers                       check crates only depend on their own or lower layers";
+  layers                       check crates only depend on their own or lower layers
+  golden [--bless]             run every review case on cassettes, compare to tests/goldens/
+  eval --smoke                 goldens, then Suites P, F and A on cassettes
+  eval --suite <P,F,Adv-A,A> --live-model <binding> [--runs <n>] [--spend-cap <usd>] [--only <prefix>]
+                               measure the suites against a live model; writes evals/reports/
+  cassettes record --suite <s> --model <binding> [--spend-cap <usd>] [--only <prefix>]
+                               record a suite's cassettes (never in CI; needs the model's key)";
 
 type Result<T = ()> = std::result::Result<T, String>;
 
@@ -65,6 +74,11 @@ fn main() -> ExitCode {
         ["schema-gen"] => schema::generate(),
         ["schema-check"] => schema::check(),
         ["layers"] => layers::check(),
+        ["golden"] => golden::run(eval::ENGINE, false),
+        ["golden", "--bless"] => golden::run(eval::ENGINE, true),
+        ["eval", "--smoke"] => eval::smoke(eval::ENGINE),
+        ["eval", rest @ ..] => eval::live(eval::ENGINE, rest),
+        ["cassettes", "record", rest @ ..] => record::run(eval::ENGINE, rest, &env_var),
         _ => Err(USAGE.to_string()),
     };
     match result {
@@ -74,6 +88,10 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+fn env_var(name: &str) -> Option<String> {
+    std::env::var(name).ok()
 }
 
 fn setup() -> Result {

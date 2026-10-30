@@ -1,0 +1,11 @@
+kind = "seeded"
+status = "complete"
+
+[[finding]]
+path = "src/lib.rs"
+start_line = 15
+end_line = 15
+function = [12, 16]
+severity = "P1"
+comment_type = "logic"
+root_cause = "get locks the mutex while bump still holds it, so every call to bump deadlocks"
