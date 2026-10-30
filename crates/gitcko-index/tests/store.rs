@@ -222,6 +222,28 @@ fn purge_never_removes_a_revision_being_read() {
     assert_eq!(entries(&revisions).len(), 1, "the active one stays");
 }
 
+/// A process forked while a revision is open inherits its lock until it execs, so the
+/// lock can outlive the reader for an instant; purge waits that out.
+#[test]
+fn purge_waits_out_a_lock_held_for_an_instant() {
+    let (repo, _dir, a, b) = two_revisions();
+    let root = TempDir::new("store-root");
+    let store = Store::new(root.path());
+    let first = store.publish("demo", &a, &mut go).unwrap();
+    drop(store.open(&repo, "demo", &first).unwrap());
+    store.publish("demo", &b, &mut go).unwrap();
+    let revisions = index_dir(root.path(), "demo").join("revisions");
+    let lock = std::fs::File::open(revisions.join(&first).join("lock")).unwrap();
+    lock.lock_shared().unwrap();
+    let held = std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(50));
+        drop(lock);
+    });
+    store.purge_stale("demo").unwrap();
+    held.join().unwrap();
+    assert!(!entries(&revisions).contains(&first));
+}
+
 #[cfg(unix)]
 #[test]
 fn folders_are_0700_and_files_0600() {
