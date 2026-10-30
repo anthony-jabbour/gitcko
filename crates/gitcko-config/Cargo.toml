@@ -11,6 +11,7 @@ repository.workspace = true
 gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
 gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
 gitcko-redact = { path = "../gitcko-redact", version = "0.0.0" }
+globset.workspace = true
 ignore.workspace = true
 serde.workspace = true
 serde_json.workspace = true

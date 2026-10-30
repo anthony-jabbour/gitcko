@@ -422,6 +422,13 @@ pub(crate) fn load_repo(
             "paths are relative to this folder and can't start with `/` or use `..` or `\\`",
         ));
     }
+    // Names the key, never the pattern, which comes from the repository.
+    if let Some((key, _)) = paths
+        .iter()
+        .find(|(key, p)| key.ends_with(".scope") && crate::scope::glob(p).is_err())
+    {
+        return Err(parsed.error(Some(key), "not a valid glob"));
+    }
 
     let mut items = Vec::new();
     for (key, value) in flatten(&parsed.json) {

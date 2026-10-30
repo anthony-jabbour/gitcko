@@ -909,6 +909,7 @@ dependencies = [
  "gitcko-protocol",
  "gitcko-redact",
  "gitcko-test-support",
+ "globset",
  "ignore",
  "insta",
  "serde",

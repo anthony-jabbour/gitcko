@@ -16,6 +16,7 @@ mod defaults;
 mod file;
 mod ignore;
 mod pr;
+mod scope;
 
 use std::collections::BTreeMap;
 use std::fmt;
@@ -226,6 +227,22 @@ impl Resolved {
     /// The resolved user settings as their public type.
     pub fn user_config(&self) -> UserConfig {
         serde_json::from_value(self.nested()).expect("validated while resolving")
+    }
+
+    /// `sha256:<hex>` of the resolved values and `rules.md` texts (CONFIGURATION §11),
+    /// recorded with the review so two runs can be compared. serde_json keeps object
+    /// keys sorted, so the JSON is canonical: formatting and comments don't change it.
+    /// Sources are left out, except each `rules.md`'s folder, which decides where it
+    /// applies.
+    pub fn policy_digest(&self) -> String {
+        let rules_md: Vec<(&str, Option<&str>)> = self
+            .rules_md
+            .iter()
+            .map(|(text, source)| (text.as_str(), source.file.as_deref()))
+            .collect();
+        let canonical = serde_json::json!({ "config": self.nested(), "rules_md": rules_md });
+        let hash = gitcko_domain::ContentHash::of(canonical.to_string().as_bytes());
+        format!("sha256:{hash}")
     }
 
     fn nested(&self) -> Value {

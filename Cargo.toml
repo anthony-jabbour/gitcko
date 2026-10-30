@@ -12,13 +12,14 @@ license = "AGPL-3.0-or-later"
 repository = "https://github.com/anthony-jabbour/gitcko"
 
 [workspace.dependencies]
-# Listed per phase at once (Phase 1, then 2, then 3) so parallel crate PRs don't edit this file;
+# Listed per phase at once (Phase 1, then 2, 3, 4) so parallel crate PRs don't edit this file;
 # an entry only reaches Cargo.lock once a crate uses it.
 gitcko-protocol = { path = "crates/gitcko-protocol" }
 criterion = "0.8"
 futures-util = "0.3"
 gix = { version = "0.90", default-features = false }
 gix-validate = "0.13"
+globset = "0.4"
 http = "1"
 ignore = "0.4"
 insta = { version = "1.49", features = ["json"] }
