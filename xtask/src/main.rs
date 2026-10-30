@@ -5,6 +5,7 @@
 
 mod canaries;
 mod conformance;
+mod engine;
 mod eval;
 mod fuzz;
 mod golden;

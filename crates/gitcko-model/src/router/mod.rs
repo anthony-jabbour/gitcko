@@ -469,6 +469,7 @@ fn record(
         run_id: run.id.clone(),
         role: request.role,
         policy: POLICY.to_owned(),
+        binding: binding.name.clone(),
         provider: binding.provider,
         model: binding.model.clone(),
         family: binding.family,

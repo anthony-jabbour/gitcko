@@ -1,0 +1,37 @@
+[package]
+name = "gitcko-review"
+version = "0.0.0"
+description = "Gitcko's review engine: from a commit range to a typed review, with every model call budgeted and every gap reported"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
+gitcko-diff = { path = "../gitcko-diff", version = "0.0.0" }
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
+gitcko-graph = { path = "../gitcko-graph", version = "0.0.0" }
+gitcko-index = { path = "../gitcko-index", version = "0.0.0" }
+gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
+gitcko-prompts = { path = "../gitcko-prompts", version = "0.0.0" }
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+gitcko-redact = { path = "../gitcko-redact", version = "0.0.0" }
+gitcko-syntax = { path = "../gitcko-syntax", version = "0.0.0" }
+gitcko-tools = { path = "../gitcko-tools", version = "0.0.0" }
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+gitcko-model = { path = "../gitcko-model", features = ["fake"] }
+gitcko-test-support = { path = "../gitcko-test-support" }
+futures-util.workspace = true
+proptest.workspace = true
+tokio = { workspace = true, features = ["test-util"] }
+tokio-util.workspace = true
+toml.workspace = true
+
+[lints]
+workspace = true
