@@ -30,6 +30,10 @@ pub struct RunEvent {
 /// they don't know as `Unknown`, so adding an event type later breaks no one.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type")]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "a run emits tens of events, each serialized once; boxing a variant would only complicate the wire type"
+)]
 pub enum RunEventKind {
     #[serde(rename = "lifecycle.changed")]
     LifecycleChanged {
@@ -47,21 +51,38 @@ pub enum RunEventKind {
         #[serde(default)]
         counts: BTreeMap<String, u64>,
     },
+    /// One model call attempt, from the router's call record (MODEL_ROUTING §12). Values
+    /// are names, codes and numbers only: never prompt or response text, keys or hosts.
     #[serde(rename = "model_call.completed")]
     ModelCallCompleted {
         step: Option<String>,
         role: String,
         binding: String,
         class: String,
-        duration_ms: u64,
-        input_tokens: u64,
-        output_tokens: u64,
-        /// `null` when the provider doesn't report cost.
-        cost_usd: Option<f64>,
+        provider: String,
+        /// The model family, which judge independence and inversion compare.
+        family: String,
+        reasoning_effort: Option<String>,
+        /// The routing policy as `id@version`.
+        policy: String,
+        prompt: PromptRef,
+        /// 1 for the first try.
         attempt: u32,
-        outcome: String,
         /// The binding this call fell back from, if it was a fallback.
         fallback_from: Option<String>,
+        /// A fixed code such as `primary_failed` or `circuit_open`, set with `fallback_from`.
+        fallback_reason: Option<String>,
+        /// The author-family inversion decision, for roles that apply it.
+        inversion: Option<String>,
+        /// `null` when the provider didn't report it; never 0 for unknown.
+        input_tokens: Option<u64>,
+        output_tokens: Option<u64>,
+        /// `null` when the provider doesn't report cost.
+        cost_usd: Option<f64>,
+        /// `null` when no token arrived.
+        first_token_ms: Option<u64>,
+        duration_ms: u64,
+        outcome: String,
     },
     #[serde(rename = "breaker.changed")]
     BreakerChanged {
@@ -92,6 +113,14 @@ pub enum RunEventKind {
     #[serde(other)]
     #[schemars(skip)]
     Unknown,
+}
+
+/// A versioned prompt: changing its text changes its version, and with it every
+/// recorded replay keyed on it (DEVELOPMENT §6).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct PromptRef {
+    pub id: String,
+    pub version: String,
 }
 
 /// The stage a run is in, as shown to the user while it works. The last five are

@@ -402,6 +402,11 @@ pub struct Versions {
     pub policy: String,
     pub routing_policy: String,
     pub index: String,
+    /// The prompt bundle version: the highest version among the prompts the run used.
+    pub prompts: String,
+    /// `sha256:<hex>` of the resolved config (CONFIGURATION §11), so two runs can be
+    /// compared.
+    pub policy_digest: String,
 }
 
 /// What the run cost in model calls and tokens, for budgets and the user's own
