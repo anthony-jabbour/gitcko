@@ -381,6 +381,8 @@ pub struct CaseRun {
     pub caught_high: usize,
     pub finding_ids: Vec<String>,
     pub problems: Vec<String>,
+    /// One line per finding, for the person checking a live run's matches by hand.
+    pub audit: Vec<String>,
 }
 
 pub fn score(case: &Case, outcome: &Outcome) -> CaseRun {
@@ -405,6 +407,7 @@ pub fn score(case: &Case, outcome: &Outcome) -> CaseRun {
             problems.push("published a finding the case doesn't expect".into());
         }
     }
+    let audit = audit_lines(case, outcome, &labels);
     CaseRun {
         case: case.id(),
         kind: case.expect.kind,
@@ -418,7 +421,36 @@ pub fn score(case: &Case, outcome: &Outcome) -> CaseRun {
             .map(|f| f.id.clone())
             .collect(),
         problems,
+        audit,
     }
+}
+
+/// Each finding as a reader must see it to judge the match: its label, where it sits,
+/// what it says, and the cause it was matched to.
+fn audit_lines(case: &Case, outcome: &Outcome, labels: &[Label]) -> Vec<String> {
+    let flat = |text: &str| text.split_whitespace().collect::<Vec<_>>().join(" ");
+    outcome
+        .review
+        .findings
+        .iter()
+        .zip(labels)
+        .map(|(f, label)| {
+            let matched = match label {
+                Label::Tp(i) | Label::Dup(i) => {
+                    format!(" Matched: {}", flat(&case.expect.findings[*i].root_cause))
+                }
+                Label::WrongLoc | Label::Fp => String::new(),
+            };
+            format!(
+                "{label:?} {}:{}-{}: {}. {}{matched}",
+                f.path,
+                f.start_line,
+                f.end_line,
+                flat(&f.title),
+                flat(&f.body)
+            )
+        })
+        .collect()
 }
 
 /// A rate with its sample, reported with a Wilson 95 % interval. EVALS §5 asks for a
@@ -603,6 +635,18 @@ fn suite_section(suite: Suite, runs: &[CaseRun]) -> (String, Vec<String>) {
             r.problems.join("; ")
         ));
     }
+    let audit: Vec<String> = runs
+        .iter()
+        .flat_map(|r| {
+            r.audit
+                .iter()
+                .map(move |line| format!("- {}: {line}\n", r.case))
+        })
+        .collect();
+    if !audit.is_empty() {
+        text.push_str("\nFindings, for checking each match by hand:\n\n");
+        text.push_str(&audit.concat());
+    }
     (text, failures)
 }
 
@@ -637,25 +681,44 @@ fn measure(
     let mut report = String::new();
     let mut failures = Vec::new();
     let mut spent = 0.0;
+    // A stop keeps what was already measured: that spend shouldn't go unreported.
+    let mut stopped = None;
     for &suite in suites {
         let mut runs = Vec::new();
-        for case in selected(root, suite, only)? {
+        'cases: for case in selected(root, suite, only)? {
             for _ in 0..runs_per_case {
                 if let Some(cap) = spend_cap
                     && spent >= cap
                 {
-                    return Err(format!(
+                    stopped = Some(format!(
                         "stopped at the spend cap: ${spent:.2} of ${cap:.2}"
                     ));
+                    break 'cases;
                 }
-                let outcome = run_case(engine, &case, models)?;
-                spent += outcome.cost_usd.unwrap_or(0.0);
-                runs.push(score(&case, &outcome));
+                match run_case(engine, &case, models) {
+                    Ok(outcome) => {
+                        spent += outcome.cost_usd.unwrap_or(0.0);
+                        runs.push(score(&case, &outcome));
+                    }
+                    Err(e) => {
+                        stopped = Some(e);
+                        break 'cases;
+                    }
+                }
             }
         }
-        let (section, failed) = suite_section(suite, &runs);
-        report.push_str(&section);
-        failures.extend(failed);
+        if !runs.is_empty() {
+            let (section, failed) = suite_section(suite, &runs);
+            report.push_str(&section);
+            failures.extend(failed);
+        }
+        if stopped.is_some() {
+            break;
+        }
+    }
+    if let Some(reason) = stopped {
+        report.push_str(&format!("\nStopped early: {reason}\n"));
+        failures.push(reason);
     }
     report.push_str(&format!("\nProvider-reported spend: ${spent:.2}\n"));
     Ok((report, failures))
@@ -853,6 +916,7 @@ pub(crate) mod tests {
             caught_high: high.1,
             finding_ids: Vec::new(),
             problems: Vec::new(),
+            audit: Vec::new(),
         }
     }
 
@@ -1244,10 +1308,10 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn the_spend_cap_stops_the_run_before_the_next_case() {
+    fn the_spend_cap_stops_the_run_and_keeps_what_it_measured() {
         let dir = suite_dir(4);
         let engine = Fake(Default::default(), 1.0);
-        let err = measure(
+        let (report, failures) = measure(
             &engine,
             dir.path(),
             &[Suite::P],
@@ -1256,9 +1320,17 @@ pub(crate) mod tests {
             Some(2.0),
             None,
         )
-        .unwrap_err();
-        assert!(err.contains("spend cap"), "{err}");
+        .unwrap();
         assert_eq!(engine.0.get(), 2);
+        assert_eq!(failures.len(), 1, "{failures:?}");
+        assert!(failures[0].contains("spend cap"), "{failures:?}");
+        assert!(report.contains("Stopped early"), "{report}");
+        assert!(
+            report.contains("p/case0") && report.contains("p/case1"),
+            "{report}"
+        );
+        assert!(!report.contains("p/case2"), "{report}");
+        assert!(report.contains("$2.00"), "{report}");
         // Control: a higher cap finishes every case, and every run of each.
         let engine = Fake(Default::default(), 1.0);
         let (report, failures) = measure(
@@ -1273,13 +1345,53 @@ pub(crate) mod tests {
         .unwrap();
         assert_eq!(engine.0.get(), 12);
         assert_eq!(failures, Vec::<String>::new());
+        assert!(!report.contains("Stopped early"), "{report}");
         assert!(report.contains("$12.00"), "{report}");
+    }
+
+    /// Succeeds `.0` times, then fails.
+    struct Breaks(u32, std::cell::Cell<u32>);
+
+    impl Engine for Breaks {
+        fn review(&self, _case: &Case, _repo: &Path, _models: &Models) -> Result<Outcome> {
+            self.1.set(self.1.get() + 1);
+            if self.1.get() > self.0 {
+                return Err("the provider went away".into());
+            }
+            Ok(Outcome {
+                review: review(),
+                cost_usd: Some(1.0),
+            })
+        }
+    }
+
+    #[test]
+    fn an_engine_error_stops_the_run_and_keeps_what_it_measured() {
+        let dir = suite_dir(3);
+        let engine = Breaks(1, Default::default());
+        let (report, failures) = measure(
+            &engine,
+            dir.path(),
+            &[Suite::P, Suite::P],
+            &Models::Live("m".into()),
+            1,
+            None,
+            None,
+        )
+        .unwrap();
+        assert_eq!(engine.1.get(), 2, "nothing runs after the stop");
+        assert_eq!(failures, ["the provider went away"]);
+        assert!(
+            report.contains("p/case0") && report.contains("Stopped early"),
+            "{report}"
+        );
+        assert_eq!(report.matches("## Suite").count(), 1, "{report}");
     }
 
     #[test]
     fn a_not_built_engine_fails_instead_of_passing_empty() {
         let dir = suite_dir(1);
-        let err = measure(
+        let (report, failures) = measure(
             &NotBuilt,
             dir.path(),
             &[Suite::P],
@@ -1288,8 +1400,85 @@ pub(crate) mod tests {
             None,
             None,
         )
-        .unwrap_err();
-        assert!(err.contains("isn't built yet"), "{err}");
+        .unwrap();
+        assert_eq!(failures.len(), 1, "{failures:?}");
+        assert!(failures[0].contains("isn't built yet"), "{failures:?}");
+        assert!(report.contains("Stopped early"), "{report}");
+        assert!(
+            !report.contains("## Suite"),
+            "no results, no section: {report}"
+        );
+    }
+
+    #[test]
+    fn a_report_shows_each_finding_beside_the_cause_it_was_matched_to() {
+        let seeded = Expect {
+            kind: Kind::Seeded,
+            findings: vec![Expected {
+                root_cause: "the expected cause".into(),
+                ..expected(20, 22)
+            }],
+            ..clean_expect()
+        };
+        let mut hit = finding("a", "src/lib.rs", 20, 21);
+        hit.title = "A title".into();
+        hit.body = "Spread over\ntwo lines".into();
+        let mut stray = finding("b", "src/other.rs", 9, 9);
+        stray.title = "Another title".into();
+        let outcome = Outcome {
+            review: Review {
+                findings: vec![hit, stray, finding("c", "src/lib.rs", 21, 21)],
+                ..review()
+            },
+            cost_usd: None,
+        };
+        let run = score(&case(Suite::A, seeded), &outcome);
+        assert_eq!(run.audit.len(), 3);
+        assert!(
+            run.audit[2].starts_with("Dup(0)") && run.audit[2].contains("the expected cause"),
+            "{}",
+            run.audit[2]
+        );
+        let first = &run.audit[0];
+        for part in [
+            "Tp(0)",
+            "src/lib.rs:20-21",
+            "A title",
+            "Spread over two lines",
+            "the expected cause",
+        ] {
+            assert!(first.contains(part), "{part}: {first}");
+        }
+        assert!(
+            run.audit[1].contains("Fp") && run.audit[1].contains("src/other.rs:9-9"),
+            "{}",
+            run.audit[1]
+        );
+        assert!(!run.audit[1].contains("expected cause"), "{}", run.audit[1]);
+        let (report, _) = suite_section(Suite::A, &[run]);
+        assert!(
+            report.contains("A title") && report.contains("Another title"),
+            "{report}"
+        );
+    }
+
+    #[test]
+    fn the_many_hunks_case_really_has_many_hunks() {
+        let case = committed(Suite::P)
+            .into_iter()
+            .find(|c| c.name == "truncated_many_hunks")
+            .unwrap();
+        let repo = gitcko_test_support::script_repo(
+            &std::path::absolute(case.dir.join("make.sh")).unwrap(),
+            &case.name,
+        );
+        let changed = gitcko_test_support::git(repo.path())
+            .args(["diff", "--name-only", "base", "main"])
+            .output()
+            .unwrap();
+        let path = String::from_utf8_lossy(&changed.stdout).trim().to_string();
+        let hunks = changed_lines(repo.path(), &path).len();
+        assert!(hunks >= 500, "{hunks} hunks in {path}");
     }
 
     #[test]
