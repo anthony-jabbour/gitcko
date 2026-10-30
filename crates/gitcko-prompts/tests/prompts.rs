@@ -207,3 +207,74 @@ fn repair_lists_problems_by_code_and_keeps_the_reply_out_of_the_instruction() {
     assert!(last.contains("- hypotheses has too many items"));
     assert!(!last.contains("CANARYreply55"));
 }
+
+/// Each schema's rules for a provider's strict mode, at every level: every property
+/// required, no extras, and only keywords strict mode accepts.
+fn assert_strict(schema: &serde_json::Value, at: &str) {
+    let Some(node) = schema.as_object() else {
+        return;
+    };
+    for banned in ["default", "format", "$schema"] {
+        assert!(!node.contains_key(banned), "{at}: has {banned}");
+    }
+    if node.contains_key("$ref") {
+        assert_eq!(node.len(), 1, "{at}: a $ref stands alone");
+    }
+    if let Some(properties) = node.get("properties").and_then(|p| p.as_object()) {
+        assert_eq!(node["additionalProperties"], false, "{at}");
+        let mut required: Vec<&str> = node["required"]
+            .as_array()
+            .unwrap_or_else(|| panic!("{at}: required"))
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect();
+        let mut names: Vec<&str> = properties.keys().map(String::as_str).collect();
+        required.sort();
+        names.sort();
+        assert_eq!(required, names, "{at}");
+        for (name, value) in properties {
+            assert_strict(value, &format!("{at}.{name}"));
+        }
+    }
+    for key in ["items", "anyOf", "oneOf", "allOf"] {
+        match node.get(key) {
+            Some(serde_json::Value::Array(list)) => list
+                .iter()
+                .for_each(|v| assert_strict(v, &format!("{at}/{key}"))),
+            Some(v) => assert_strict(v, &format!("{at}/{key}")),
+            None => {}
+        }
+    }
+    for key in ["$defs", "definitions"] {
+        if let Some(map) = node.get(key).and_then(|d| d.as_object()) {
+            map.iter()
+                .for_each(|(k, v)| assert_strict(v, &format!("{at}/{k}")));
+        }
+    }
+}
+
+#[test]
+fn every_reply_schema_meets_strict_mode() {
+    let c = change("c");
+    for req in [
+        risk(&c),
+        plan(&c),
+        investigate("h", "d", vec![]),
+        judge("c", &[]),
+    ] {
+        let format = req.response_format.as_ref().unwrap();
+        assert_strict(&format.schema, &req.prompt.id);
+    }
+    // What strict mode makes the model send: optional fields present as null still parse.
+    let reply =
+        r#"{"verdict":"accept","confidence":0.9,"severity":null,"reason":"r","missing_fact":null}"#;
+    let parsed = gitcko_prompts::parse::<gitcko_prompts::JudgeOutput>(reply).unwrap();
+    assert_eq!(parsed.severity, None);
+    let schema = judge("c", &[]).response_format.unwrap().schema;
+    assert!(
+        schema["properties"]["severity"]
+            .to_string()
+            .contains("null"),
+        "still nullable"
+    );
+}

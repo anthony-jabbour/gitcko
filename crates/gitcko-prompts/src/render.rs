@@ -9,6 +9,7 @@
 use gitcko_model::{Message, PromptRef, Request, ResponseFormat, Tool};
 use gitcko_protocol::config::ModelRole;
 use schemars::JsonSchema;
+use serde_json::Value;
 
 use crate::fence;
 use crate::output::{InvestigationOutput, JudgeOutput, PlanOutput, RiskOutput};
@@ -75,9 +76,44 @@ fn prompt(id: (&str, &str)) -> PromptRef {
 }
 
 fn schema<T: JsonSchema>(name: &str) -> ResponseFormat {
+    let mut schema =
+        serde_json::to_value(schemars::schema_for!(T)).expect("a generated schema is JSON");
+    make_strict(&mut schema);
     ResponseFormat {
         name: name.into(),
-        schema: serde_json::to_value(schemars::schema_for!(T)).expect("a generated schema is JSON"),
+        schema,
+    }
+}
+
+/// Rewrites a schema for a provider's strict mode, which refuses the whole request
+/// otherwise: every property required (an optional one stays nullable, so the model
+/// sends `null`), and no keyword strict mode doesn't take.
+fn make_strict(schema: &mut Value) {
+    let Some(node) = schema.as_object_mut() else {
+        return;
+    };
+    for keyword in ["default", "format", "$schema"] {
+        node.remove(keyword);
+    }
+    // A `$ref` must stand alone; a doc comment on the field would sit beside it.
+    if node.contains_key("$ref") {
+        node.retain(|key, _| key == "$ref");
+    }
+    if let Some(properties) = node.get_mut("properties").and_then(Value::as_object_mut) {
+        let names = properties.keys().cloned().map(Value::String).collect();
+        properties.values_mut().for_each(make_strict);
+        node.insert("required".into(), Value::Array(names));
+    }
+    for key in ["items", "anyOf", "oneOf", "allOf", "$defs", "definitions"] {
+        match node.get_mut(key) {
+            Some(Value::Array(list)) => list.iter_mut().for_each(make_strict),
+            // These two are maps of schemas by name, not schemas themselves.
+            Some(Value::Object(map)) if key == "$defs" || key == "definitions" => {
+                map.values_mut().for_each(make_strict)
+            }
+            Some(value) => make_strict(value),
+            None => {}
+        }
     }
 }
 
@@ -223,4 +259,43 @@ pub fn repair(original: &Request, reply: &str, problems: &[crate::Problem]) -> R
         text: format!("{REPAIR_TEXT}\n{}\n{REPAIR_END}", listed.join("\n")),
     });
     req
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn strict_mode_reaches_every_shape_and_keeps_names_that_look_like_keywords() {
+        let mut schema = json!({
+            "$schema": "x",
+            "properties": {
+                // A field may be called what a keyword is called.
+                "default": { "$ref": "#/$defs/A", "description": "beside the ref" },
+                "either": { "anyOf": [
+                    { "properties": { "n": { "type": "integer", "format": "uint32" } } },
+                    { "type": "null" },
+                ] },
+                "list": { "default": [], "items": { "type": "number", "format": "double" } },
+            },
+            "$defs": { "A": { "type": "string", "default": "a" } },
+        });
+        make_strict(&mut schema);
+        assert_eq!(
+            schema,
+            json!({
+                "properties": {
+                    "default": { "$ref": "#/$defs/A" },
+                    "either": { "anyOf": [
+                        { "properties": { "n": { "type": "integer" } }, "required": ["n"] },
+                        { "type": "null" },
+                    ] },
+                    "list": { "items": { "type": "number" } },
+                },
+                "required": ["default", "either", "list"],
+                "$defs": { "A": { "type": "string" } },
+            })
+        );
+    }
 }
