@@ -12,6 +12,7 @@ Each folder below is created by the first fixture that needs it.
 | `webhooks/github/`, `webhooks/origin/` | Recorded webhook deliveries from code hosts, signed with throwaway development secrets. |
 | `outputs/` | Malformed model outputs (truncated JSON, extra prose, wrong values, valid-looking nonsense) that the output parser must repair or reject. |
 | `tool_args/` | Seeds for the `tool_args` fuzz target: one byte picking a review tool, then the argument JSON a model would send. |
+| `outputs/` | Model replies the output parser must accept or refuse (truncated JSON, extra prose, wrong values, invented paths and lines), with the expected result listed in `gitcko-prompts/tests/outputs.rs`. |
 | `windows/` | Path cases that break on Windows: backslashes, drive letters, UNC paths, CRLF line endings, reserved names like `CON`, case-only collisions and very long paths. |
 
 ## Annotating expected findings

@@ -1,0 +1,24 @@
+[package]
+name = "gitcko-prompts"
+version = "0.0.0"
+description = "Gitcko's versioned review prompts, the fence that keeps repository text apart from instructions, and strict parsers for what the model sends back"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+gitcko-redact = { path = "../gitcko-redact" }
+proptest.workspace = true
+
+[lints]
+workspace = true
