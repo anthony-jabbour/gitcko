@@ -166,3 +166,55 @@ fn the_policy_digest_changes_with_values_not_with_formatting() {
     assert_ne!(a, digest("strictness = 1\n", Some("Prefer the pool!")));
     assert_ne!(a, digest("strictness = 1\n", None));
 }
+
+#[test]
+fn glob_characters_in_a_folder_name_are_not_part_of_the_pattern() {
+    // `[` in the folder would make `a[b/src/**` an invalid glob if the folder were
+    // joined into the pattern; `[1]` would match `1` instead of the literal `[1]`.
+    for dir in ["a[b", "lib[1]"] {
+        let files = files(vec![folder(
+            Some(dir),
+            r#"
+[[rules]]
+id = "src"
+rule = "Only src."
+scope = ["src/**"]
+"#,
+        )]);
+        assert_eq!(
+            rule_ids(&files, &format!("{dir}/src/x.rs")),
+            ["src"],
+            "{dir}"
+        );
+        assert!(
+            rule_ids(&files, &format!("{dir}/test/x.rs")).is_empty(),
+            "{dir}"
+        );
+    }
+}
+
+#[test]
+fn an_invalid_context_file_scope_is_refused_at_load() {
+    let files = files(vec![folder(
+        None,
+        "[[context.files]]\npath = \"a.sql\"\nscope = [\"{x\"]\n",
+    )]);
+    let path = RepoPath::parse("src/a.rs").unwrap();
+    let err = resolve_repo(&files, &path, &RunFlags::default(), &Ceilings::local()).unwrap_err();
+    assert_eq!(err.key.as_deref(), Some("context.files.scope"));
+    assert_eq!(err.line, Some(4));
+}
+
+#[test]
+fn a_folder_rule_never_applies_to_a_path_outside_that_folder() {
+    let files = files(vec![folder(
+        Some("pkg"),
+        "[[rules]]\nid = \"pkg\"\nrule = \"x\"\nscope = [\"**\"]\n",
+    )]);
+    let inside = RepoPath::parse("pkg/a.rs").unwrap();
+    let resolved = resolve_repo(&files, &inside, &RunFlags::default(), &Ceilings::local()).unwrap();
+    assert_eq!(resolved.rules_for(&inside).len(), 1);
+    // Asking the same resolution about another folder's file finds nothing.
+    let outside = RepoPath::parse("other/a.rs").unwrap();
+    assert!(resolved.rules_for(&outside).is_empty());
+}

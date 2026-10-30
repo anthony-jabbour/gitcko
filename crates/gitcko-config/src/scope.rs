@@ -7,7 +7,7 @@
 //! Plain globs via `globset` (from ripgrep), with `*` stopping at `/` and `**` crossing
 //! folders, as in gitignore. Unlike `ignore` there is no negation: a scope only narrows.
 
-use globset::{Glob, GlobBuilder, GlobSet, GlobSetBuilder};
+use globset::{GlobBuilder, GlobSet, GlobSetBuilder};
 use serde_json::Value;
 
 use gitcko_domain::RepoPath;
@@ -15,9 +15,14 @@ use gitcko_protocol::config::{ContextFile, Rule};
 
 use crate::{Layer, Resolved, Source};
 
-/// One glob, compiled the same way at load (to refuse a bad one) and at match time.
-pub(crate) fn glob(pattern: &str) -> Result<Glob, globset::Error> {
-    GlobBuilder::new(pattern).literal_separator(true).build()
+/// One `scope` list, compiled exactly as written: at load to refuse a bad list, and
+/// again at match time, so what was validated is what runs.
+pub(crate) fn scope_set(patterns: &[String]) -> Result<GlobSet, globset::Error> {
+    let mut set = GlobSetBuilder::new();
+    for pattern in patterns {
+        set.add(GlobBuilder::new(pattern).literal_separator(true).build()?);
+    }
+    set.build()
 }
 
 /// The folder prefix (`""` or `"pkg/"`) of the config file an item came from.
@@ -28,16 +33,16 @@ fn base(source: &Source) -> &str {
     }
 }
 
-/// True when `scope` is absent or one of its globs, joined to `base`, matches `path`.
+/// True when `scope` is absent, or `path` is under `base` and one of the globs matches
+/// the rest of it. The folder is stripped from the path rather than joined to the
+/// patterns, so glob characters in a folder name (`lib[1]/`) stay literal.
 fn in_scope(base: &str, scope: Option<&[String]>, path: &RepoPath) -> bool {
     let Some(scope) = scope else { return true };
-    let mut set = GlobSetBuilder::new();
-    for pattern in scope {
-        // Checked when the file was loaded, so this can't fail.
-        set.add(glob(&format!("{base}{pattern}")).expect("validated at load"));
-    }
-    let set: GlobSet = set.build().expect("validated at load");
-    set.is_match(path.as_str())
+    let Some(rest) = path.as_str().strip_prefix(base) else {
+        return false;
+    };
+    // The same list compiled at load, so this can't fail.
+    scope_set(scope).expect("validated at load").is_match(rest)
 }
 
 impl Resolved {
