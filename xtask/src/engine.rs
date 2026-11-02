@@ -141,6 +141,13 @@ fn execute(
         .build()
         .map_err(|e| e.to_string())?;
     let finished = runtime.block_on(review(input, router, run));
+    if injector.is_some_and(|i| !i.fired()) {
+        return Err(format!(
+            "{}: the run ended before its fault was reached, so the case tested nothing; \
+             when recording, an earlier call may have outrun the injected deadline: record again",
+            case.id()
+        ));
+    }
     let cost_usd = finished.review.usage.cost_usd;
     Ok(Outcome {
         review: finished.review,
@@ -229,6 +236,11 @@ mod tests {
     /// call it gets fails), so only cases whose faulted call is the first review call
     /// can finish here; the rest need recordings. Without `faulted`, nothing is injected.
     fn run_fake(name: &str, faulted: bool) -> (Case, Outcome) {
+        let (case, outcome) = try_fake(name, faulted);
+        (case, outcome.unwrap())
+    }
+
+    fn try_fake(name: &str, faulted: bool) -> (Case, Result<Outcome>) {
         let case = load(&root().join(crate::eval::ROOT), Suite::F)
             .unwrap()
             .into_iter()
@@ -253,8 +265,20 @@ mod tests {
         let script = std::path::absolute(case.dir.join("make.sh")).unwrap();
         let repo = gitcko_test_support::script_repo(&script, &case.name);
         let armed = faulted.then_some(&injector);
-        let outcome = execute(&case, repo.path(), &router, armed, false).unwrap();
+        let outcome = execute(&case, repo.path(), &router, armed, false);
         (case, outcome)
+    }
+
+    /// Here the inner fails the first review call, so the run ends before call 2, where
+    /// the fault waits. Under record the same happens when an earlier call outruns the
+    /// injected deadline: the result could still look right, with nothing recorded.
+    #[test]
+    fn a_fault_the_run_never_reached_fails_the_case() {
+        let (_, got) = try_fake("deadline_investigate", true);
+        let err = got.err().unwrap();
+        assert!(err.contains("before its fault was reached"), "{err}");
+        // Positive control: a fault at the first call is reached.
+        assert!(try_fake("deadline_plan", true).1.is_ok());
     }
 
     /// Judge fault cases are left out until the judge lands, and `malformed` and the

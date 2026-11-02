@@ -7,7 +7,7 @@
 //! recording one writes nothing for them and a replaying one reads nothing.
 
 use std::sync::Arc;
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::time::Duration;
 
 use futures_util::{StreamExt, stream};
@@ -22,7 +22,9 @@ use tokio_util::sync::CancellationToken;
 use crate::eval::{Fault, FaultKind, FaultRole};
 
 /// Shorter than the first-token timeout, so a call that hangs meets the run's deadline
-/// first. Well under a minute, so a live run isn't left waiting on it either.
+/// first. Well under a minute, so a live run isn't left waiting on it either. The router
+/// can't move a run's deadline once set, so it runs from the start: an earlier live call
+/// slower than this ends the run before the fault, and the engine then fails the case.
 const DEADLINE: Duration = Duration::from_secs(20);
 
 /// One case's fault: the call count and the run token are shared by every binding.
@@ -30,6 +32,7 @@ const DEADLINE: Duration = Duration::from_secs(20);
 pub struct Injector {
     fault: Fault,
     calls: Arc<AtomicU32>,
+    fired: Arc<AtomicBool>,
     cancel: CancellationToken,
 }
 
@@ -38,6 +41,7 @@ impl Injector {
         Injector {
             fault: fault.clone(),
             calls: Arc::default(),
+            fired: Arc::default(),
             cancel: CancellationToken::new(),
         }
     }
@@ -56,6 +60,12 @@ impl Injector {
             inner,
             injector: self.clone(),
         })
+    }
+
+    /// Whether the fault was injected at all. A run that ended before the named call
+    /// tested nothing, however its result looks.
+    pub fn fired(&self) -> bool {
+        self.fired.load(Ordering::SeqCst)
     }
 
     /// Whether the `n`th call of the faulted role (1 is the first) is hit.
@@ -90,6 +100,7 @@ impl ModelProvider for Faulty {
         if request.role != role || !it.hits(it.calls.fetch_add(1, Ordering::SeqCst) + 1) {
             return self.inner.stream(request, cancel);
         }
+        it.fired.store(true, Ordering::SeqCst);
         match it.fault.kind {
             FaultKind::Timeout => fail(ErrorKind::Timeout(TimeoutKind::FirstToken)),
             FaultKind::Unavailable => fail(ErrorKind::Overloaded),
