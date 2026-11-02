@@ -220,8 +220,16 @@ mod tests {
     }
 
     #[test]
-    fn the_shipped_placeholder_ids_never_reach_a_provider() {
-        let config = models_config(&committed(), None).unwrap();
+    fn a_placeholder_id_never_reaches_a_provider() {
+        // The committed file with its ids put back to the placeholders it shipped with.
+        let unchosen: String = committed()
+            .lines()
+            .map(|l| match l.starts_with("model = ") {
+                true => format!("model = \"{UNCHOSEN}a-pinned-model\"\n"),
+                false => format!("{l}\n"),
+            })
+            .collect();
+        let config = models_config(&unchosen, None).unwrap();
         let resolved = resolve(&config, &fake_env()).unwrap();
         for models in [
             Models::Live("review".into()),
@@ -232,8 +240,11 @@ mod tests {
                 .unwrap();
             assert!(err.contains("pinned model id"), "{err}");
         }
-        // Positive control: replay builds, since it reaches no provider at all.
+        // Positive controls: replay builds, since it reaches no provider at all, and the
+        // committed ids are accepted for a recording.
         assert!(providers(&resolved, &Models::Replay, &fake_env(), None).is_ok());
+        let chosen = resolve(&models_config(&committed(), None).unwrap(), &fake_env()).unwrap();
+        assert!(providers(&chosen, &Models::Record("review".into()), &fake_env(), None).is_ok());
     }
 
     /// The review of a Suite F case over an inner provider that answers nothing (every
