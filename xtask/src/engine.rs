@@ -176,7 +176,7 @@ impl Engine for ReviewEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::eval::{Suite, load, run_case};
+    use crate::eval::{Suite, load};
     use gitcko_protocol::review::ReviewStatus;
 
     fn committed() -> String {
@@ -397,17 +397,11 @@ mod tests {
         );
     }
 
+    /// Also the proof that replay never falls back to a live call: a request nobody
+    /// recorded fails loudly. (Real cases can't show it once their cassettes exist.)
     #[test]
     #[should_panic(expected = "no cassette")]
     fn a_call_before_the_fault_still_reads_its_cassette() {
         let _ = faulted_replay_call(2);
-    }
-
-    #[test]
-    #[should_panic(expected = "no cassette")]
-    fn replay_without_a_cassette_fails_loudly() {
-        let cases = load(&root().join(crate::eval::ROOT), Suite::A).unwrap();
-        let case = cases.iter().find(|c| c.expect.fault.is_none()).unwrap();
-        let _ = run_case(&ReviewEngine, case, &Models::Replay);
     }
 }

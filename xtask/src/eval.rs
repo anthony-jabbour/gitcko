@@ -1153,7 +1153,7 @@ pub(crate) mod tests {
         r
     }
 
-    fn clean_expect() -> Expect {
+    pub(crate) fn clean_expect() -> Expect {
         Expect {
             kind: Kind::Clean,
             status: ReviewStatus::Complete,

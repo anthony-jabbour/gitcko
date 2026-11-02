@@ -7,6 +7,8 @@
 
 use std::path::Path;
 
+use gitcko_protocol::review::Review;
+
 use crate::Result;
 use crate::eval::{self, Engine, Models, Suite};
 
@@ -76,10 +78,27 @@ pub fn run(engine: &dyn Engine, args: &[&str], env: &dyn Fn(&str) -> Option<Stri
         }
         let outcome = eval::run_case(engine, &case, &models)?;
         spent += outcome.cost_usd.unwrap_or(0.0);
+        ended_as_expected(&case.id(), &case.expect, &outcome.review)?;
+
         println!("recorded {} (${spent:.2} so far)", case.id());
     }
     println!("provider-reported spend: ${spent:.2}");
     Ok(())
+}
+
+/// A live call that fails is passed through and not recorded, so a run that ended
+/// otherwise than its case expects may leave a call replay will ask for and not find.
+/// Saying so here lets the case be recorded again while the key is at hand; calls it
+/// already holds replay, so only the missing ones go live.
+fn ended_as_expected(id: &str, expect: &eval::Expect, review: &Review) -> Result {
+    let problems = eval::honesty_problems(expect, review);
+    if problems.is_empty() {
+        return Ok(());
+    }
+    Err(format!(
+        "{id}: {}; a call may have failed live, so record it again",
+        problems.join("; ")
+    ))
 }
 
 #[cfg(test)]
@@ -98,6 +117,18 @@ mod tests {
         // Control: the same arguments get past the guard without CI.
         let err = run(&NotBuilt, &["--suite", "A"], &|_| None).unwrap_err();
         assert!(err.contains("--model"), "{err}");
+    }
+
+    #[test]
+    fn a_run_that_ended_otherwise_than_expected_is_not_called_recorded() {
+        use crate::eval::tests::{clean_expect, review};
+        let mut failed = review();
+        failed.status = gitcko_protocol::review::ReviewStatus::Partial;
+        failed.reason_codes = vec!["provider_failure".into()];
+        let err = ended_as_expected("a/x", &clean_expect(), &failed).unwrap_err();
+        assert!(err.contains("record it again"), "{err}");
+        // Control: the run the case expects passes.
+        assert!(ended_as_expected("a/x", &clean_expect(), &review()).is_ok());
     }
 
     #[test]
