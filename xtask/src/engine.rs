@@ -19,6 +19,7 @@ use serde::Deserialize;
 
 use crate::Result;
 use crate::eval::{Case, Engine, Models, Outcome};
+use crate::fault::Injector;
 
 const MODELS: &str = "evals/models.toml";
 const CASSETTES: &str = "tests/cassettes";
@@ -54,11 +55,14 @@ fn models_config(text: &str, binding: Option<&str>) -> Result<ModelsConfig> {
     Ok(models)
 }
 
-/// One provider per binding: cassettes on replay, the adapter otherwise.
+/// One provider per binding: cassettes on replay, the adapter otherwise. A case's fault
+/// wraps outside either, so a faulted call is never sent and never recorded; under
+/// record the cassette holds exactly the calls a replay of the faulted case makes.
 fn providers(
     resolved: &ResolvedModels,
     models: &Models,
     env: &BTreeMap<String, String>,
+    fault: Option<&Injector>,
 ) -> Result<BTreeMap<String, Arc<dyn ModelProvider>>> {
     let mut out: BTreeMap<String, Arc<dyn ModelProvider>> = BTreeMap::new();
     for (name, binding) in &resolved.bindings {
@@ -81,12 +85,16 @@ fn providers(
                 }
             }
         };
+        let provider = match fault {
+            Some(fault) => fault.wrap(provider),
+            None => provider,
+        };
         out.insert(name.clone(), provider);
     }
     Ok(out)
 }
 
-fn router(models: &Models) -> Result<Router> {
+fn router(models: &Models, fault: Option<&Injector>) -> Result<Router> {
     let text = std::fs::read_to_string(root().join(MODELS))
         .map_err(|_| format!("{MODELS} can't be read"))?;
     let binding = match models {
@@ -103,46 +111,65 @@ fn router(models: &Models) -> Result<Router> {
         crate::dotenv::load(&root())?
     };
     let resolved = resolve(&config, &env).map_err(|e| e.to_string())?;
-    let providers = providers(&resolved, models, &env)?;
+    let providers = providers(&resolved, models, &env, fault)?;
     Ok(Router::new(resolved, providers))
+}
+
+/// Runs the review of `repo` through `router`; `remote` is whether a live provider is behind it.
+fn execute(
+    case: &Case,
+    repo: &Path,
+    router: &Router,
+    injector: Option<&Injector>,
+    remote: bool,
+) -> Result<Outcome> {
+    let repo = Repo::open(repo).map_err(|e| e.to_string())?;
+    let at = |rev| repo.resolve(rev).map_err(|e| e.to_string());
+    // Results carry no events here, so their times are never read.
+    let now = || "1970-01-01T00:00:00Z".to_string();
+    let input = ReviewInput {
+        repo: &repo,
+        base: at("base")?,
+        head: at("main")?,
+        now: &now,
+    };
+    let mut run = base_run(format!("rv_{}", case.name), remote);
+    if let Some(injector) = injector {
+        injector.arm(&mut run);
+    }
+    // A replayed fault has no socket to wait on, so retries and the deadline run on a
+    // paused clock instead of costing their time.
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .start_paused(injector.is_some() && !remote)
+        .build()
+        .map_err(|e| e.to_string())?;
+    let finished = runtime.block_on(review(input, router, run));
+    if injector.is_some_and(|i| !i.fired()) {
+        return Err(format!(
+            "{}: the run ended before its fault was reached, so the case tested nothing; \
+             when recording, an earlier call may have outrun the injected deadline: record again",
+            case.id()
+        ));
+    }
+    let cost_usd = finished.review.usage.cost_usd;
+    Ok(Outcome {
+        review: finished.review,
+        cost_usd,
+    })
 }
 
 impl Engine for ReviewEngine {
     fn review(&self, case: &Case, repo: &Path, models: &Models) -> Result<Outcome> {
-        // ponytail: scripted faults arrive with their provider wrapper (batch B5b); until
-        // then a fault case can't be run honestly, so it isn't run.
-        if case.expect.fault.is_some() {
-            return Err(format!("{}: fault injection isn't built yet", case.id()));
-        }
-        let router = router(models)?;
-        let repo = Repo::open(repo).map_err(|e| e.to_string())?;
-        let at = |rev| repo.resolve(rev).map_err(|e| e.to_string());
-        // Results carry no events here, so their times are never read.
-        let now = || "1970-01-01T00:00:00Z".to_string();
-        let input = ReviewInput {
-            repo: &repo,
-            base: at("base")?,
-            head: at("main")?,
-            now: &now,
-        };
-        let remote = *models != Models::Replay;
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| e.to_string())?;
-        let finished = runtime.block_on(async {
-            review(
-                input,
-                &router,
-                base_run(format!("rv_{}", case.name), remote),
-            )
-            .await
-        });
-        let cost_usd = finished.review.usage.cost_usd;
-        Ok(Outcome {
-            review: finished.review,
-            cost_usd,
-        })
+        let injector = case.expect.fault.as_ref().map(Injector::new);
+        let router = router(models, injector.as_ref())?;
+        execute(
+            case,
+            repo,
+            &router,
+            injector.as_ref(),
+            *models != Models::Replay,
+        )
     }
 }
 
@@ -150,6 +177,7 @@ impl Engine for ReviewEngine {
 mod tests {
     use super::*;
     use crate::eval::{Suite, load, run_case};
+    use gitcko_protocol::review::ReviewStatus;
 
     fn committed() -> String {
         std::fs::read_to_string(root().join(MODELS)).unwrap()
@@ -199,20 +227,151 @@ mod tests {
             Models::Live("review".into()),
             Models::Record("review".into()),
         ] {
-            let err = providers(&resolved, &models, &fake_env()).err().unwrap();
+            let err = providers(&resolved, &models, &fake_env(), None)
+                .err()
+                .unwrap();
             assert!(err.contains("pinned model id"), "{err}");
         }
         // Positive control: replay builds, since it reaches no provider at all.
-        assert!(providers(&resolved, &Models::Replay, &fake_env()).is_ok());
+        assert!(providers(&resolved, &Models::Replay, &fake_env(), None).is_ok());
+    }
+
+    /// The review of a Suite F case over an inner provider that answers nothing (every
+    /// call it gets fails), so only cases whose faulted call is the first review call
+    /// can finish here; the rest need recordings. Without `faulted`, nothing is injected.
+    fn run_fake(name: &str, faulted: bool) -> (Case, Outcome) {
+        let (case, outcome) = try_fake(name, faulted);
+        (case, outcome.unwrap())
+    }
+
+    fn try_fake(name: &str, faulted: bool) -> (Case, Result<Outcome>) {
+        let case = load(&root().join(crate::eval::ROOT), Suite::F)
+            .unwrap()
+            .into_iter()
+            .find(|c| c.name == name)
+            .unwrap();
+        let injector = Injector::new(case.expect.fault.as_ref().unwrap());
+        let resolved = resolve(&models_config(&committed(), None).unwrap(), &fake_env()).unwrap();
+        let inner: Arc<dyn ModelProvider> = Arc::new(gitcko_model::FakeProvider::new(vec![]));
+        let providers = resolved
+            .bindings
+            .keys()
+            .map(|n| {
+                let p = if faulted {
+                    injector.wrap(inner.clone())
+                } else {
+                    inner.clone()
+                };
+                (n.clone(), p)
+            })
+            .collect();
+        let router = Router::new(resolved, providers);
+        let script = std::path::absolute(case.dir.join("make.sh")).unwrap();
+        let repo = gitcko_test_support::script_repo(&script, &case.name);
+        let armed = faulted.then_some(&injector);
+        let outcome = execute(&case, repo.path(), &router, armed, false);
+        (case, outcome)
+    }
+
+    /// Here the inner fails the first review call, so the run ends before call 2, where
+    /// the fault waits. Under record the same happens when an earlier call outruns the
+    /// injected deadline: the result could still look right, with nothing recorded.
+    #[test]
+    fn a_fault_the_run_never_reached_fails_the_case() {
+        let (_, got) = try_fake("deadline_investigate", true);
+        let err = got.err().unwrap();
+        assert!(err.contains("before its fault was reached"), "{err}");
+        // Positive control: a fault at the first call is reached.
+        assert!(try_fake("deadline_plan", true).1.is_ok());
+    }
+
+    /// Judge fault cases are left out until the judge lands, and `malformed` and the
+    /// risk-classifier cases need a recorded reply for the call the fault spares.
+    #[test]
+    fn faults_at_the_first_review_call_end_the_run_as_the_case_expects() {
+        for name in [
+            "timeout_plan",
+            "unavailable_plan",
+            "refusal_plan",
+            "tokens_plan",
+            "deadline_plan",
+            "invalid_repair_plan",
+            "cancel_plan",
+        ] {
+            let started = std::time::Instant::now();
+            let (case, got) = run_fake(name, true);
+            // On the paused clock the deadline and the backoffs cost no real time.
+            assert!(
+                started.elapsed().as_secs() < 10,
+                "{name}: {:?}",
+                started.elapsed()
+            );
+            assert_eq!(got.review.status, case.expect.status, "{name}");
+            let mut reasons = got.review.reason_codes.clone();
+            reasons.sort();
+            let mut want = case.expect.reason_codes.clone();
+            want.sort();
+            assert_eq!(reasons, want, "{name}");
+            // Positive control: with nothing injected the run is the baseline failure, so
+            // every other result above came from the fault.
+            let (_, plain) = run_fake(name, false);
+            assert_eq!(plain.review.status, ReviewStatus::Failed);
+            assert_eq!(
+                plain.review.reason_codes,
+                ["provider_failure", "review_failed"]
+            );
+        }
+    }
+
+    /// The first provider `providers` builds for a replay with a timeout injected at `at_call`.
+    fn faulted_replay_call(
+        at_call: u32,
+    ) -> Vec<std::result::Result<gitcko_model::Event, gitcko_model::ProviderError>> {
+        use crate::eval::{Fault, FaultKind, FaultRole};
+        use futures_util::StreamExt;
+        let fault = Fault {
+            kind: FaultKind::Timeout,
+            role: FaultRole::Review,
+            at_call,
+        };
+        let injector = Injector::new(&fault);
+        let resolved = resolve(&models_config(&committed(), None).unwrap(), &fake_env()).unwrap();
+        let built = providers(&resolved, &Models::Replay, &fake_env(), Some(&injector)).unwrap();
+        let request = gitcko_model::Request {
+            role: ModelRole::Review,
+            prompt: gitcko_model::PromptRef {
+                id: "review".into(),
+                version: "1".into(),
+            },
+            messages: vec![],
+            tools: vec![],
+            response_format: None,
+            max_output: 16,
+            reasoning_effort: None,
+            temperature: None,
+        };
+        let stream = built
+            .values()
+            .next()
+            .unwrap()
+            .stream(request, Default::default());
+        futures_util::FutureExt::now_or_never(stream.collect::<Vec<_>>()).unwrap()
     }
 
     #[test]
-    fn a_case_with_a_fault_is_refused_rather_than_run_without_it() {
-        let cases = load(&root().join(crate::eval::ROOT), Suite::F).unwrap();
-        let err = run_case(&ReviewEngine, &cases[0], &Models::Replay)
-            .err()
-            .unwrap();
-        assert!(err.contains("fault injection"), "{err}");
+    fn a_fault_wraps_the_replay_providers_so_a_faulted_call_reads_no_cassette() {
+        let items = faulted_replay_call(1);
+        assert!(
+            items[0]
+                .as_ref()
+                .is_err_and(|e| matches!(e.kind, gitcko_model::ErrorKind::Timeout(_)))
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "no cassette")]
+    fn a_call_before_the_fault_still_reads_its_cassette() {
+        let _ = faulted_replay_call(2);
     }
 
     #[test]

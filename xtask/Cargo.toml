@@ -15,10 +15,16 @@ gitcko-protocol.workspace = true
 gitcko-redact = { path = "../crates/gitcko-redact" }
 gitcko-review = { path = "../crates/gitcko-review" }
 gitcko-test-support = { path = "../crates/gitcko-test-support" }
+futures-util.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-tokio.workspace = true
+# test-util for the paused clock fault cases run under, so a backoff or deadline costs no time.
+tokio = { workspace = true, features = ["test-util"] }
+tokio-util.workspace = true
 toml.workspace = true
+
+[dev-dependencies]
+gitcko-model = { path = "../crates/gitcko-model", features = ["fake"] }
 
 [lints]
 workspace = true
