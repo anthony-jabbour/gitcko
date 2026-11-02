@@ -108,6 +108,11 @@ jobs:
         run: |
           cargo xtask conformance --provider openrouter
           cargo xtask conformance --provider ollama
+      # Replay recorded cassettes only: no key, no network.
+      - name: Golden reviews
+        run: cargo xtask golden
+      - name: Eval smoke
+        run: cargo xtask eval --smoke
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
