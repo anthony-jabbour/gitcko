@@ -738,3 +738,115 @@ fn a_long_hit_says_where_it_really_ends() {
     );
     assert_eq!(hit["lines"].as_str().unwrap().lines().count(), 3);
 }
+
+/// The `sN` id of a symbol, asked for by name.
+fn symbol_id(tools: &mut Tools<'_>, name: &str) -> String {
+    let out = call(tools, "find_symbol", json!({ "name": name }));
+    out.body["symbols"][0]["symbol"]
+        .as_str()
+        .unwrap()
+        .to_string()
+}
+
+#[test]
+fn a_path_the_caller_holds_back_is_hidden_from_the_index_tools_too() {
+    let f = fixture();
+    let util = RepoPath::parse("src/util.rs").unwrap();
+
+    // Positive control: all of this is visible until it's held back.
+    let mut open = f.tools(Limits::default());
+    let helper = symbol_id(&mut open, "helper");
+    let total = symbol_id(&mut open, "total");
+    let callees = call(&mut open, "find_callees", json!({ "symbol": total }));
+    assert!(
+        callees.body.to_string().contains("src/lib.rs"),
+        "{}",
+        callees.body
+    );
+    assert!(
+        callees.body.to_string().contains(&helper),
+        "{}",
+        callees.body
+    );
+    let by_path = call(
+        &mut open,
+        "find_symbol",
+        json!({"name": "helper", "path": "src/util.rs"}),
+    );
+    assert_eq!(by_path.status, Status::Ok);
+    assert_eq!(
+        call(&mut open, "git_log", json!({"path": "src/util.rs"})).status,
+        Status::Ok
+    );
+    assert_ne!(
+        call(&mut open, "find_importers", json!({"path": "src/util.rs"})).status,
+        Status::HeldBack
+    );
+
+    let mut held = f.tools(Limits::default());
+    held.hold_back([util]);
+    let found = call(&mut held, "find_symbol", json!({"name": "helper"}));
+    assert_eq!(found.body["symbols"], json!([]), "{}", found.body);
+    let callees = call(&mut held, "find_callees", json!({ "symbol": total }));
+    assert!(
+        !callees.body.to_string().contains(&helper),
+        "{}",
+        callees.body
+    );
+    assert_eq!(
+        call(&mut held, "find_callers", json!({ "symbol": helper })).status,
+        Status::NotFound
+    );
+    for (tool, args) in [
+        (
+            "find_symbol",
+            json!({"name": "helper", "path": "src/util.rs"}),
+        ),
+        ("find_importers", json!({"path": "src/util.rs"})),
+        ("git_log", json!({"path": "src/util.rs"})),
+        ("read_file", json!({"path": "src/util.rs"})),
+    ] {
+        assert_eq!(
+            call(&mut held, tool, args).status,
+            Status::HeldBack,
+            "{tool}"
+        );
+    }
+}
+
+#[test]
+fn a_test_in_a_held_back_file_is_not_listed() {
+    let dir = empty_repo("held-test");
+    let lib: &[u8] = b"mod hidden;\n\npub fn helper() -> u32 {\n    1\n}\n";
+    let hidden: &[u8] = b"#[test]\nfn checks_helper() {\n    assert_eq!(crate::helper(), 1);\n}\n";
+    let commit = literal_commit(
+        dir.path(),
+        &[
+            (b"Cargo.toml", "100644", b"[package]\nname = \"demo\"\n"),
+            (b"src/lib.rs", "100644", lib),
+            (b"src/hidden.rs", "100644", hidden),
+        ],
+    );
+    let repo = Repo::open(dir.path()).unwrap();
+    let head = repo.resolve(&commit).unwrap();
+    let index = build(&repo, head, &IndexLimits::default()).unwrap();
+    let change = gitcko_diff::ChangeSet::default();
+
+    let mut open = Tools::new(&repo, &index, &change, head, head, Limits::default());
+    let helper = symbol_id(&mut open, "helper");
+    let tests = call(&mut open, "find_tests", json!({ "symbol": helper }));
+    assert!(
+        tests.body.to_string().contains("checks_helper"),
+        "{}",
+        tests.body
+    );
+
+    let mut held = Tools::new(&repo, &index, &change, head, head, Limits::default());
+    held.hold_back([RepoPath::parse("src/hidden.rs").unwrap()]);
+    let tests = call(&mut held, "find_tests", json!({ "symbol": helper }));
+    assert!(
+        !tests.body.to_string().contains("checks_helper"),
+        "{}",
+        tests.body
+    );
+}

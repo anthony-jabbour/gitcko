@@ -139,6 +139,10 @@ pub struct Findings {
 }
 
 impl Findings {
+    fn out_of_actions(&self) -> bool {
+        self.tool_actions >= u64::from(ACTIONS_PER_RUN)
+    }
+
     pub fn counts(&self) -> Vec<(&'static str, u64)> {
         vec![
             ("supported", self.supported),
@@ -182,12 +186,11 @@ pub async fn run_all(
     );
     tools.hold_back(snapshot.held_back_names());
     let mut found = Findings::default();
-    let mut actions_left = ACTIONS_PER_RUN;
     let mut queue = tasks.into_iter();
     while let Some(task) = queue.next() {
         let past_deadline = until.is_some_and(|u| Instant::now() >= u);
         let reserve = calls.reserve_reached();
-        if actions_left == 0 {
+        if found.out_of_actions() {
             // Not a budget: the review simply saw less than it set out to.
             found.deferred += 1 + queue.len() as u64;
             ledger.reduced(reason::TRUNCATED);
@@ -205,14 +208,7 @@ pub async fn run_all(
             break;
         }
         match investigate_one(
-            calls,
-            snapshot,
-            &task,
-            &mut tools,
-            &mut actions_left,
-            until,
-            &mut found,
-            ledger,
+            calls, snapshot, &task, &mut tools, until, &mut found, ledger,
         )
         .await
         {
@@ -277,7 +273,6 @@ async fn investigate_one(
     snapshot: &Snapshot<'_>,
     task: &Task,
     tools: &mut Tools<'_>,
-    actions_left: &mut u32,
     until: Option<Instant>,
     found: &mut Findings,
     ledger: &mut Completeness,
@@ -340,13 +335,12 @@ async fn investigate_one(
                 // The same call again gets the same answer and costs a turn of progress.
                 Some(text) => text.clone(),
                 // One reply can ask for any number of calls; the caps hold within it.
-                None if actions >= ACTIONS_PER_HYPOTHESIS || *actions_left == 0 => {
+                None if actions >= ACTIONS_PER_HYPOTHESIS || found.out_of_actions() => {
                     r#"{"status":"action_limit"}"#.to_string()
                 }
                 None => {
                     progressed = true;
                     actions += 1;
-                    *actions_left = actions_left.saturating_sub(1);
                     found.tool_actions += 1;
                     let text = tools.run_raw(&call.name, &call.arguments).to_message();
                     cache.insert(key, text.clone());
@@ -372,7 +366,7 @@ async fn investigate_one(
             request.tools = Vec::new();
         }
         // Out of actions: the same, without the budget being at fault.
-        if actions >= ACTIONS_PER_HYPOTHESIS || *actions_left == 0 {
+        if actions >= ACTIONS_PER_HYPOTHESIS || found.out_of_actions() {
             request.tools = Vec::new();
         }
     }

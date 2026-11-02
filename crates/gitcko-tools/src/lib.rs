@@ -228,8 +228,26 @@ impl<'a> Tools<'a> {
 
     /// The text of `path` at `side`, or why not. Held back by name before any read, and
     /// by content after.
+    /// A path whose text, and whose names in the index, stay away from the model.
+    fn held(&self, path: &RepoPath) -> bool {
+        is_sensitive_name(path) || self.held_back.contains(path)
+    }
+
+    fn symbol_held(&self, i: usize) -> bool {
+        let graph = &self.index.graph;
+        self.held(&graph.files[graph.symbols[i].file].path)
+    }
+
+    fn endpoint_held(&self, end: &Endpoint) -> bool {
+        match end {
+            Endpoint::Symbol(s) => self.symbol_held(*s),
+            Endpoint::File(f) => self.held(&self.index.graph.files[*f].path),
+            Endpoint::Module(..) => false,
+        }
+    }
+
     fn text(&self, path: &RepoPath, side: Side) -> Result<String, ToolOutput> {
-        if is_sensitive_name(path) || self.held_back.contains(path) {
+        if self.held(path) {
             return Err(ToolOutput::fail(Status::HeldBack, "sensitive_file"));
         }
         let commit = self.commit(side);
@@ -522,7 +540,7 @@ impl<'a> Tools<'a> {
     /// Parses `s12` into a symbol index that exists in this revision.
     fn symbol(&self, arg: &SymbolArg) -> Option<usize> {
         let i: usize = arg.symbol.strip_prefix('s')?.parse().ok()?;
-        (i < self.index.graph.symbols.len()).then_some(i)
+        (i < self.index.graph.symbols.len() && !self.symbol_held(i)).then_some(i)
     }
 
     fn find_symbol(&mut self, args: &FindSymbol) -> ToolOutput {
@@ -536,10 +554,18 @@ impl<'a> Tools<'a> {
                 Err(_) => return ToolOutput::fail(Status::Invalid, "bad_path"),
             },
         };
+        if path.as_ref().is_some_and(|p| self.held(p)) {
+            return ToolOutput::fail(Status::HeldBack, "sensitive_file");
+        }
         let found = self
             .index
             .find_symbol(name, path.as_ref(), self.limits.results);
-        let symbols: Vec<Value> = found.symbols.iter().map(|&i| self.symbol_json(i)).collect();
+        let symbols: Vec<Value> = found
+            .symbols
+            .iter()
+            .filter(|&&i| !self.symbol_held(i))
+            .map(|&i| self.symbol_json(i))
+            .collect();
         ToolOutput::ok(
             json!({ "symbols": symbols }),
             found.truncated,
@@ -550,6 +576,17 @@ impl<'a> Tools<'a> {
     fn edges_json(&self, edges: &[usize]) -> Vec<Value> {
         edges
             .iter()
+            .filter(|&&e| {
+                let edge = &self.index.graph.edges[e];
+                let to_held = match &edge.to {
+                    Target::Resolved(t) => self.endpoint_held(t),
+                    Target::Candidates(c) => c.iter().all(|t| self.endpoint_held(t)),
+                    Target::Unresolved(_) => false,
+                };
+                !to_held
+                    && !self.endpoint_held(&edge.from)
+                    && !self.held(&self.index.graph.files[edge.file].path)
+            })
             .map(|&e| {
                 let edge = &self.index.graph.edges[e];
                 let end = |p: &Endpoint| match p {
@@ -559,7 +596,10 @@ impl<'a> Tools<'a> {
                 };
                 let to = match &edge.to {
                     Target::Resolved(t) => end(t),
-                    Target::Candidates(c) => json!(c.iter().map(end).collect::<Vec<_>>()),
+                    Target::Candidates(c) => {
+                        let shown = c.iter().filter(|t| !self.endpoint_held(t)).map(end);
+                        json!(shown.collect::<Vec<_>>())
+                    }
                     Target::Unresolved(path) => json!(path.join("::")),
                 };
                 json!({
@@ -597,6 +637,9 @@ impl<'a> Tools<'a> {
         let Ok(path) = RepoPath::parse(&args.path) else {
             return ToolOutput::fail(Status::Invalid, "bad_path");
         };
+        if self.held(&path) {
+            return ToolOutput::fail(Status::HeldBack, "sensitive_file");
+        }
         let graph = &self.index.graph;
         let Some(file) = graph.files.iter().position(|f| f.path == path) else {
             return ToolOutput::fail(Status::NotFound, "no_such_file");
@@ -634,6 +677,7 @@ impl<'a> Tools<'a> {
         let tests: Vec<Value> = found
             .tests
             .iter()
+            .filter(|&&(i, _)| !self.symbol_held(i))
             .map(|&(i, why)| {
                 let mut v = self.symbol_json(i);
                 v["evidence_kind"] = json!(format!("{why:?}").to_lowercase());
@@ -655,6 +699,9 @@ impl<'a> Tools<'a> {
                 Err(_) => return ToolOutput::fail(Status::Invalid, "bad_path"),
             },
         };
+        if path.as_ref().is_some_and(|p| self.held(p)) {
+            return ToolOutput::fail(Status::HeldBack, "sensitive_file");
+        }
         let log = match self.repo.log(
             self.head,
             path.as_ref(),
