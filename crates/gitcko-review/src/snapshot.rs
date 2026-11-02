@@ -58,6 +58,8 @@ pub struct Snapshot<'a> {
     /// The base's config as it applies to each investigated path: nested `.gitcko/`
     /// folders only reach the paths under them.
     pub configs: BTreeMap<RepoPath, Resolved>,
+    /// Folders below the root holding a `.gitcko/`.
+    config_folders: Vec<String>,
     pub config_invalid: bool,
     pub commit_messages: Vec<String>,
     /// An unchanged file the review may lean on is over an index limit.
@@ -158,6 +160,11 @@ pub fn take<'a>(input: &ReviewInput<'a>) -> Result<Snapshot<'a>, &'static str> {
         .collect();
 
     let dispositions: Vec<FileDisposition> = dispositions;
+    let config_folders = files
+        .folders
+        .iter()
+        .filter_map(|f| f.folder.as_ref().map(|p| p.as_str().to_string()))
+        .collect();
     let mut configs = BTreeMap::new();
     // Broken config applying nowhere reviewed still means the ignore list is in doubt.
     let mut config_invalid = ignore.is_none();
@@ -195,6 +202,7 @@ pub fn take<'a>(input: &ReviewInput<'a>) -> Result<Snapshot<'a>, &'static str> {
         index,
         dispositions,
         configs,
+        config_folders,
         config_invalid,
         commit_messages,
         repo_index_gap,
@@ -343,18 +351,29 @@ impl Snapshot<'_> {
             .collect()
     }
 
-    /// One digest for the policy this review ran under, however many folders it spans.
+    /// One digest for the policy this review ran under: each config with the folder that
+    /// governs it. Not the changed paths, or nearly every review would get its own digest
+    /// and the digest would stop saying whether two ran under the same policy.
     pub fn policy_digest(&self) -> String {
-        let digests: BTreeSet<String> =
-            self.configs.values().map(Resolved::policy_digest).collect();
-        match digests.len() {
-            0 => Resolved::default().policy_digest(),
-            1 => digests.into_iter().next().unwrap_or_default(),
-            _ => {
-                let joined = digests.into_iter().collect::<Vec<_>>().join("\n");
-                format!("sha256:{}", ContentHash::of(joined.as_bytes()))
-            }
-        }
+        let pairs: BTreeSet<String> = self
+            .configs
+            .iter()
+            .map(|(path, config)| {
+                let folder = self.governing_folder(path);
+                format!("{folder}\u{0}{}", config.policy_digest())
+            })
+            .collect();
+        let joined = pairs.into_iter().collect::<Vec<_>>().join("\n");
+        format!("sha256:{}", ContentHash::of(joined.as_bytes()))
+    }
+
+    /// The deepest `.gitcko/` folder above `path`, or `""` for the repository root.
+    fn governing_folder(&self, path: &RepoPath) -> &str {
+        self.config_folders
+            .iter()
+            .filter(|folder| path.as_str().starts_with(&format!("{folder}/")))
+            .max_by_key(|folder| folder.len())
+            .map_or("", String::as_str)
     }
 
     /// Every gap in what the review could see.

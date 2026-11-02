@@ -485,6 +485,85 @@ async fn each_folder_s_rules_reach_the_model_with_their_scope() {
 }
 
 #[tokio::test]
+async fn the_policy_digest_binds_config_to_its_folder_but_not_to_the_changed_files() {
+    let digest = |script: String, label: &'static str| async move {
+        let dir = repo_from(label, &script);
+        let provider = scripted(|r, _| default_reply(r));
+        let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
+        outcome.review.versions.policy_digest
+    };
+    // Config only, no rules files: a rule's digest names its file, which would tell the
+    // folders apart by itself.
+    let folders = |one: &str, two: &str, a: &str, b: &str| {
+        format!(
+            r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p {one}/.gitcko {two}/.gitcko
+echo 'pub fn a() -> u32 {{ 1 }}' > {one}/x.rs
+echo 'pub fn b() -> u32 {{ 1 }}' > {two}/y.rs
+echo 'ignore = ["{a}"]' > {one}/.gitcko/config.toml
+echo 'ignore = ["{b}"]' > {two}/.gitcko/config.toml
+git add -A
+git commit -q -m Base
+git branch base
+echo 'pub fn a() -> u32 {{ 2 }}' > {one}/x.rs
+echo 'pub fn b() -> u32 {{ 2 }}' > {two}/y.rs
+git add -A
+git commit -q -m Head
+"#
+        )
+    };
+    let configs = |a: &str, b: &str| folders("a", "b", a, b);
+    let one = digest(configs("first", "second"), "digest-one").await;
+    assert!(one.starts_with("sha256:"), "{one}");
+    // The same two configs, each governing the other folder, is a different policy.
+    assert_ne!(
+        one,
+        digest(configs("second", "first"), "digest-swapped").await
+    );
+    // Positive control: the same policy twice is the same digest.
+    assert_eq!(
+        one,
+        digest(configs("first", "second"), "digest-again").await
+    );
+
+    // The deepest folder governs: a nested pair swapped is also a different policy.
+    assert_ne!(
+        digest(folders("a", "a/b", "first", "second"), "digest-nested").await,
+        digest(
+            folders("a", "a/b", "second", "first"),
+            "digest-nested-swapped"
+        )
+        .await
+    );
+
+    // Other files changing under the same root policy stays the same policy.
+    let root_only = |file: &str| {
+        format!(
+            r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p .gitcko
+printf 'schema_version = 1\n' > .gitcko/config.toml
+echo 'pub fn a() -> u32 {{ 1 }}' > x.rs
+echo 'pub fn b() -> u32 {{ 1 }}' > y.rs
+git add -A
+git commit -q -m Base
+git branch base
+echo 'pub fn c() -> u32 {{ 2 }}' > {file}
+git add -A
+git commit -q -m Head
+"#
+        )
+    };
+    assert_eq!(
+        digest(root_only("x.rs"), "digest-x").await,
+        digest(root_only("y.rs"), "digest-y").await
+    );
+}
+
+#[tokio::test]
 async fn a_broken_nested_config_is_reported_though_its_parent_stands_in() {
     let broken = "echo 'not = [valid' > b/.gitcko/config.toml";
     let dir = repo_from("broken-nested", &TWO_FOLDERS.replace("BROKEN", broken));
