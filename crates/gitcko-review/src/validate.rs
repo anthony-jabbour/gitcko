@@ -241,8 +241,16 @@ fn check(
     reader: &mut Reader<'_, '_>,
     reviewed: &[&RepoPath],
     ledger: &Ledger,
-    c: Candidate,
+    mut c: Candidate,
 ) -> Result<Item, &'static str> {
+    // What the gates would make of it anyway (REVIEW_RULES §3): security is `logic`, and
+    // style is P2. Settled here so dedup and suppression rank the report it will be.
+    if c.category == gitcko_prompts::Category::Security {
+        c.comment_type = gitcko_prompts::CommentType::Logic;
+    }
+    if c.comment_type == gitcko_prompts::CommentType::Style {
+        c.severity = gitcko_prompts::Severity::P2;
+    }
     // Written so NaN fails too.
     if !(0.0..=1.0).contains(&c.confidence) || c.start_line == 0 || c.end_line < c.start_line {
         return Err(why::MALFORMED);

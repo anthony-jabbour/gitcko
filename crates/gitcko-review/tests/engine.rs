@@ -3326,3 +3326,50 @@ async fn a_p0_report_of_a_bug_is_kept_though_its_comment_type_is_off() {
     // The never-suppressed report stands for the issue, as it would alone.
     assert_eq!(finding.severity, Severity::P0);
 }
+
+#[tokio::test]
+async fn a_style_report_claiming_p0_does_not_displace_an_allowed_one() {
+    let dir = with_base_files("schema_version = 1\ncomment_types = [\"logic\"]", None);
+    let provider = reporting(
+        "src/lib.rs",
+        vec![("read_file", json!({"path": "src/lib.rs"}))],
+        |results| {
+            let id = evidence_of(&results[0]);
+            let mut style = candidate("src/lib.rs", &[id]);
+            style["comment_type"] = json!("style");
+            style["severity"] = json!("P0");
+            style["confidence"] = json!(0.8);
+            style["start_line"] = json!(1);
+            style["end_line"] = json!(1);
+            let mut logic = style.clone();
+            logic["comment_type"] = json!("logic");
+            logic["severity"] = json!("P1");
+            vec![style, logic]
+        },
+        |_| text(&verdict("accept", 0.9)),
+    );
+    let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
+    let [finding] = outcome.review.findings.as_slice() else {
+        panic!("{:?}", reasons(&outcome))
+    };
+    // Style is P2 only (REVIEW_RULES §3), so it never outranked the logic report.
+    assert_eq!(finding.severity, Severity::P1);
+}
+
+#[tokio::test]
+async fn a_security_report_filed_as_style_keeps_its_severity() {
+    let provider = finder(
+        |c| {
+            c["category"] = json!("security");
+            c["comment_type"] = json!("style");
+            c["severity"] = json!("P0");
+        },
+        |_| text(&verdict("accept", 0.9)),
+    );
+    let outcome = review_fault_crate(provider, run_with_budget(base_budget())).await;
+    let [finding] = outcome.review.findings.as_slice() else {
+        panic!("{:?}", reasons(&outcome))
+    };
+    // Security is `logic` (REVIEW_RULES §3), so the style cap to P2 never applies.
+    assert_eq!(finding.severity, Severity::P0);
+}
