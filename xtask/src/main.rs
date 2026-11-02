@@ -7,6 +7,7 @@ mod canaries;
 mod conformance;
 mod engine;
 mod eval;
+mod fault;
 mod fuzz;
 mod golden;
 mod layers;

@@ -74,6 +74,7 @@ The RFC covers the problem, the proposal, alternatives, migration and how it wil
 | Adapter conformance | `cargo xtask conformance --provider <openrouter\|ollama>` (a maintainer runs `--live` by hand) | changes to `crates/gitcko-model*/` |
 | Fuzz targets build | `cargo xtask fuzz --build` (run with `cargo xtask fuzz --run <secs>`) | changes to the diff or config parsers or `fuzz/` |
 | Schema compatibility | `cargo xtask schema-check` (regenerate with `cargo xtask schema-gen`) | changes to `crates/gitcko-protocol/` or `integrations/schemas/` |
+| Record cassettes | `cargo xtask cassettes record --suite <s> --model <binding>` (a maintainer runs it by hand with the model's key; refused under `CI`) | a maintainer, when a prompt, case or the review pipeline changes its model calls |
 | CLA | CLA Assistant | all PRs |
 
 `cargo xtask check` runs the first three. Tests are deterministic: they use the fixtures described in [tests/fixtures/README.md](tests/fixtures/README.md) and replay recorded model responses as described in [tests/cassettes/README.md](tests/cassettes/README.md), never a live model or the network. More checks (golden review fixtures, eval smoke tests) are added as the code they test lands. A PR isn't accepted just because it compiles.
