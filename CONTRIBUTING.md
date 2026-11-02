@@ -104,7 +104,7 @@ No key, token or password ever goes in a tracked file: not in code, config, fixt
 
 | Where it runs | Where the key lives |
 |---|---|
-| Your machine, `cargo xtask` live runs | `.env` at the repo root: `cp .env.example .env`, `chmod 600 .env`, then fill it in. A variable set in your shell wins |
+| Your machine, `cargo xtask` live runs | `.env` at the repo root: `cp .env.example .env`, `chmod 600 .env`, then fill it in. A variable set in your shell wins. On Windows, set the keys in your shell: there the file is refused, since its permissions can't be checked |
 | GitHub Actions | The `live-models` environment's secrets, which only maintainer-started workflows reach. Pull request CI has no keys and no network to models |
 | The `gitcko` binary | The real environment (`OPENROUTER_API_KEY`). It never reads a `.env`, because the repository under review could plant one |
 

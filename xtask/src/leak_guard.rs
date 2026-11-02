@@ -698,18 +698,46 @@ mod tests {
         let root = gitcko_test_support::workspace_root();
         let ignored = |file: &str| {
             let status = Command::new("git")
-                .args(["check-ignore", "-q", "--no-index", file])
+                // As on Linux: macOS and Windows checkouts ignore case by default, which
+                // would hide a pattern that only matches one spelling.
+                .args([
+                    "-c",
+                    "core.ignorecase=false",
+                    "check-ignore",
+                    "-q",
+                    "--no-index",
+                    file,
+                ])
                 .current_dir(&root)
                 .status()
                 .unwrap();
             assert!(matches!(status.code(), Some(0 | 1)), "{status}");
             status.success()
         };
+        // The guard ignores case, so the ignore file must too: `client.KEY`, `Id_Rsa`.
+        let spellings = |s: &str| {
+            let mixed: String = s
+                .chars()
+                .enumerate()
+                .map(|(i, c)| {
+                    if i % 2 == 0 {
+                        c.to_ascii_uppercase()
+                    } else {
+                        c
+                    }
+                })
+                .collect();
+            [s.to_string(), s.to_ascii_uppercase(), mixed]
+        };
         for suffix in DENIED_KEY_SUFFIXES {
-            assert!(ignored(&format!("deep/er/x{suffix}")), "{suffix}");
+            for s in spellings(suffix) {
+                assert!(ignored(&format!("deep/er/x{s}")), "{s}");
+            }
         }
         for name in DENIED_KEY_NAMES {
-            assert!(ignored(&format!("deep/er/{name}")), "{name}");
+            for s in spellings(name) {
+                assert!(ignored(&format!("deep/er/{s}")), "{s}");
+            }
         }
         for name in [".env", ".ENV", "web/.env.local"] {
             assert!(ignored(name), "{name}");

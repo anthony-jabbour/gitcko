@@ -13,27 +13,28 @@ CLAUDE.local.md
 !.[eE][nN][vV].[tT][eE][mM][pP][lL][aA][tT][eE]
 # Key material, by name. The leak guard denies the same list, so a forced add still stops
 # at the push: keep the two in step (a test in xtask/src/leak_guard.rs checks).
-*.pem
-*.key
-*.p12
-*.pfx
-*.jks
-*.keystore
-*.ppk
-*.tfvars
-*.tfvars.json
-id_rsa
-id_dsa
-id_ecdsa
-id_ed25519
-.netrc
-.pypirc
-credentials.json
-service-account.json
-secrets.toml
-secrets.yaml
-secrets.yml
-secrets.json
+# Letter classes, as for .env above, so other spellings match on every OS.
+*.[pP][eE][mM]
+*.[kK][eE][yY]
+*.[pP]12
+*.[pP][fF][xX]
+*.[jJ][kK][sS]
+*.[kK][eE][yY][sS][tT][oO][rR][eE]
+*.[pP][pP][kK]
+*.[tT][fF][vV][aA][rR][sS]
+*.[tT][fF][vV][aA][rR][sS].[jJ][sS][oO][nN]
+[iI][dD]_[rR][sS][aA]
+[iI][dD]_[dD][sS][aA]
+[iI][dD]_[eE][cC][dD][sS][aA]
+[iI][dD]_[eE][dD]25519
+.[nN][eE][tT][rR][cC]
+.[pP][yY][pP][iI][rR][cC]
+[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL][sS].[jJ][sS][oO][nN]
+[sS][eE][rR][vV][iI][cC][eE]-[aA][cC][cC][oO][uU][nN][tT].[jJ][sS][oO][nN]
+[sS][eE][cC][rR][eE][tT][sS].[tT][oO][mM][lL]
+[sS][eE][cC][rR][eE][tT][sS].[yY][aA][mM][lL]
+[sS][eE][cC][rR][eE][tT][sS].[yY][mM][lL]
+[sS][eE][cC][rR][eE][tT][sS].[jJ][sS][oO][nN]
 # cargo-fuzz output: build dir, the growing corpus and crash inputs
 /fuzz/target/
 /fuzz/corpus/

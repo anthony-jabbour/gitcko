@@ -66,14 +66,22 @@ fn refuse_if_shared(file: &Path) -> Result {
     Ok(())
 }
 
+/// Windows has no mode bits, and its ACLs can't be checked here without a new
+/// dependency, so a key file is refused rather than trusted unchecked.
 #[cfg(not(unix))]
 fn refuse_if_shared(_file: &Path) -> Result {
-    Ok(())
+    Err(
+        ".env can't be checked for other readers on this OS: set the keys in your shell instead"
+            .into(),
+    )
 }
 
 /// `base` with the keys from `root/.env` added. What's already set wins, and no `.env` at
 /// all is fine: the shell or a CI secret may provide everything.
-fn with_file(mut base: BTreeMap<String, String>, root: &Path) -> Result<BTreeMap<String, String>> {
+pub(crate) fn with_file(
+    mut base: BTreeMap<String, String>,
+    root: &Path,
+) -> Result<BTreeMap<String, String>> {
     let file = root.join(FILE);
     if !file.exists() {
         return Ok(base);
@@ -128,6 +136,8 @@ mod tests {
         assert!(ignored.is_empty(), "{ignored:?}");
     }
 
+    // Loading a file is Unix only (see `refuse_if_shared`).
+    #[cfg(unix)]
     #[test]
     fn the_shell_wins_over_the_file_and_the_file_fills_the_rest() {
         let dir = empty_repo("dotenv-merge");
@@ -147,6 +157,8 @@ mod tests {
         assert!(with_file(BTreeMap::new(), dir.path()).unwrap().is_empty());
     }
 
+    // Loading a file is Unix only (see `refuse_if_shared`).
+    #[cfg(unix)]
     #[test]
     fn canary_a_tracked_env_is_refused_without_echoing_it() {
         let dir = empty_repo("dotenv-tracked");
@@ -179,6 +191,20 @@ mod tests {
         let err = with_file(BTreeMap::new(), dir.path()).unwrap_err();
         assert!(err.contains("chmod 600"), "{err}");
         assert!(!err.contains(&fake_key()), "{err}");
+    }
+
+    /// Windows has no mode bits to check, so a file is refused there rather than trusted.
+    #[cfg(not(unix))]
+    #[test]
+    fn canary_off_unix_a_file_is_refused_without_echoing_it() {
+        let dir = empty_repo("dotenv-windows");
+        write_env(&dir, &format!("OPENROUTER_API_KEY={}\n", fake_key()));
+        let err = with_file(BTreeMap::new(), dir.path()).unwrap_err();
+        assert!(err.contains("shell"), "{err}");
+        assert!(!err.contains(&fake_key()), "{err}");
+        // Positive control: with no file, the shell alone is fine.
+        std::fs::remove_file(dir.path().join(FILE)).unwrap();
+        assert!(with_file(BTreeMap::new(), dir.path()).is_ok());
     }
 
     /// The real template: if it carried a value, this is what would load it.
