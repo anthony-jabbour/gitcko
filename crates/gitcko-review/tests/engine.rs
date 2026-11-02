@@ -408,6 +408,13 @@ async fn a_hypothesis_about_a_file_outside_the_review_is_not_investigated() {
 
 /// A repository with `.gitcko/` files on the base and a change to two files.
 fn with_base_config(config: &str) -> TempDir {
+    with_base_files(config, Some("Always look for the frobnicator."))
+}
+
+fn with_base_files(config: &str, rules_md: Option<&str>) -> TempDir {
+    let rules_line = rules_md
+        .map(|text| format!("echo '{text}' > .gitcko/rules.md"))
+        .unwrap_or_default();
     let scripts = TempDir::new("base-config");
     let script = scripts.path().join("make.sh");
     let body = format!(
@@ -420,7 +427,7 @@ echo 'pub fn gen() -> u32 {{ 1 }}' > gen/out.rs
 cat > .gitcko/config.toml <<'GITCKO'
 {config}
 GITCKO
-echo 'Always look for the frobnicator.' > .gitcko/rules.md
+{rules_line}
 git add -A
 git commit -q -m Base
 git branch base
@@ -2395,7 +2402,7 @@ async fn a_dismissed_finding_stays_gone_unless_it_is_on_the_never_suppressed_lis
 #[tokio::test]
 async fn rules_from_the_base_link_findings_and_set_a_severity_floor() {
     let config = "schema_version = 1\n[[rules]]\nid = \"no-div\"\nrule = \"Never divide by a length.\"\nseverity = \"P1\"";
-    let dir = with_base_config(config);
+    let dir = with_base_files(config, None);
     let go = |dir: &TempDir| {
         let provider = finder_at(
             json!({"path": "src/lib.rs"}),
@@ -2418,10 +2425,44 @@ async fn rules_from_the_base_link_findings_and_set_a_severity_floor() {
     assert_eq!(finding.linked_rule.as_deref(), Some("no-div"));
     assert_eq!(finding.severity, Severity::P1, "the rule's floor");
     // No rule in force, no rule finding: nothing to link it to.
-    let bare = with_base_config("schema_version = 1\nstrictness = 2");
+    let bare = with_base_files("schema_version = 1\nstrictness = 2", None);
     let outcome = go(&bare).await;
     assert!(outcome.review.findings.is_empty());
     assert_eq!(reasons(&outcome), [("suppress", "no_rule_in_force")]);
+
+    // `rules.md` is a rule source too (REVIEW_RULES §10), with no id to link to.
+    let written = with_base_files("schema_version = 1", Some("Never divide by a length."));
+    let outcome = go(&written).await;
+    let [finding] = outcome.review.findings.as_slice() else {
+        panic!("{:?}", reasons(&outcome))
+    };
+    assert_eq!(finding.linked_rule, None);
+    assert_eq!(finding.severity, Severity::P2);
+
+    // Which of several a model meant can't be known, so neither id nor floor is claimed.
+    let rule = |id: &str, severity: &str| {
+        format!("[[rules]]\nid = \"{id}\"\nrule = \"A rule.\"\nseverity = \"{severity}\"\n")
+    };
+    let several = format!(
+        "schema_version = 1\n{}{}",
+        rule("one", "P0"),
+        rule("two", "P1")
+    );
+    let outcome = go(&with_base_files(&several, None)).await;
+    let [finding] = outcome.review.findings.as_slice() else {
+        panic!("{:?}", reasons(&outcome))
+    };
+    assert_eq!(finding.linked_rule, None);
+    assert_eq!(finding.severity, Severity::P2);
+
+    // Nor when one rule sits beside a `rules.md` the finding may have come from.
+    let single = format!("schema_version = 1\n{}", rule("one", "P0"));
+    let outcome = go(&with_base_files(&single, Some("Another rule."))).await;
+    let [finding] = outcome.review.findings.as_slice() else {
+        panic!("{:?}", reasons(&outcome))
+    };
+    assert_eq!(finding.linked_rule, None);
+    assert_eq!(finding.severity, Severity::P2);
 }
 
 #[tokio::test]

@@ -101,10 +101,11 @@ pub fn run(
     (kept, dropped)
 }
 
-/// Ties a rule finding to the rule it enforces: among the base's enabled rules that
-/// reach the file, the one with the highest severity floor, then the lowest id (the
-/// engine can't tell which of several a model meant, so it takes the strictest). Its
-/// severity is a floor, never a ceiling. False when no rule is in force.
+/// Ties a rule finding to the rule it enforces. A candidate doesn't name its rule, so the
+/// engine only claims one when one is possible: a lone `[[rules]]` entry, with its id and
+/// severity floor. Beside other rules or a `rules.md` the finding stands unlinked, since a
+/// wrong link would misstate the finding and raise its severity. False when no rule at all
+/// is in force.
 fn link_rule(item: &mut Item, snapshot: &Snapshot<'_>) -> bool {
     let Some(config) = snapshot.configs.get(&item.config_path) else {
         return false;
@@ -112,51 +113,17 @@ fn link_rule(item: &mut Item, snapshot: &Snapshot<'_>) -> bool {
     let Ok(path) = RepoPath::parse(&item.candidate.path) else {
         return false;
     };
-    let mut rules: Vec<_> = config
+    let mut rules = config
         .rules_for(&path)
         .into_iter()
-        .filter(|r| r.enabled != Some(false))
-        .collect();
-    rules.sort_by_key(|r| (r.severity.is_none(), r.severity, r.id.clone()));
-    let Some(rule) = rules.into_iter().next() else {
-        return false;
-    };
-    item.rule = rule.id;
-    item.floor = rule.severity.map(model_severity);
-    true
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::validate::fixtures::item;
-
-    #[test]
-    fn the_never_suppressed_list_by_category_and_severity() {
-        let listed = [
-            Category::Security,
-            Category::DataIntegrity,
-            Category::ResourceManagement,
-        ];
-        for category in [
-            Category::Correctness,
-            Category::Security,
-            Category::DataIntegrity,
-            Category::Concurrency,
-            Category::Performance,
-            Category::ResourceManagement,
-            Category::RepositoryRule,
-        ] {
-            let mut p1 = item("a.rs", "t", category, (1, 1));
-            p1.candidate.severity = Model::P1;
-            assert_eq!(
-                never_suppressed(&p1),
-                listed.contains(&category),
-                "{category:?}"
-            );
-            // Any P0 is on the list, whatever it is about.
-            p1.candidate.severity = Model::P0;
-            assert!(never_suppressed(&p1), "{category:?}");
+        .filter(|r| r.enabled != Some(false));
+    match (rules.next(), rules.next()) {
+        (Some(rule), None) if config.rules_md.is_empty() => {
+            item.rule = rule.id;
+            item.floor = rule.severity.map(model_severity);
+            true
         }
+        (None, _) => !config.rules_md.is_empty(),
+        _ => true,
     }
 }
