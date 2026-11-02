@@ -257,8 +257,7 @@ fn record(inner: EventStream, mut file: File, path: PathBuf, redactor: Redactor)
         // path's backslashes), and the deltas joined, since a key can span chunks.
         // The redactor's shapes cover `Bearer <token>`; a header name is refused alone.
         let meaning = plain_text(&file);
-        let leaks = redactor.redact(&meaning) != meaning
-            || meaning.to_ascii_lowercase().contains("authorization");
+        let leaks = redactor.redact(&meaning) != meaning || names_auth_header(&meaning);
         let written = !leaks
             && path.parent().is_some_and(|dir| std::fs::create_dir_all(dir).is_ok())
             && std::fs::write(&path, text).is_ok();
@@ -272,6 +271,15 @@ fn record(inner: EventStream, mut file: File, path: PathBuf, redactor: Redactor)
     })
     .flat_map(futures_util::stream::iter)
     .boxed()
+}
+
+/// An auth header by name: a line that is only the name (a JSON key, as `plain_text`
+/// lists them) or the name followed by a colon, quoted or not. Not the bare word: a
+/// review of an auth bug says "authorization" in prose, and refusing that would leave
+/// exactly those cases unrecorded.
+fn names_auth_header(meaning: &str) -> bool {
+    let lower = meaning.to_ascii_lowercase().replace(['"', '\''], "");
+    lower.contains("authorization:") || lower.lines().any(|l| l.trim() == "authorization")
 }
 
 /// Every string and key in the file and in tool-call arguments, decoded, one per line,

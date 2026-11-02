@@ -137,6 +137,17 @@ async fn recording_a_call_it_already_holds_replays_it() {
     assert_eq!(only_file(dir.path()), first);
 }
 
+/// A review of an auth bug names authorization in prose; only a header is refused.
+#[tokio::test]
+async fn prose_about_authorization_is_recorded() {
+    let dir = tempfile::tempdir().unwrap();
+    let text = "Expired sessions now pass the authorization check in allow().";
+    let inner = Arc::new(FakeProvider::new(vec![response(text)]));
+    let recorder = Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
+    assert_eq!(run(&recorder, request("x")).await, response(text));
+    only_file(dir.path());
+}
+
 #[tokio::test]
 async fn a_failed_call_is_passed_through_and_not_recorded() {
     let dir = tempfile::tempdir().unwrap();
@@ -188,6 +199,7 @@ async fn a_recording_with_a_secret_or_a_local_path_is_not_written() {
     let mut leaks = vec![
         format!("the key is {key}"),
         "Authorization: Basic Zm9v".to_string(),
+        r#"{"authorization": "Basic Zm9v"}"#.to_string(),
         format!("bearer {}", "x".repeat(8)),
         format!("see {}/notes.txt", home.display()),
         format!("see {}/src/lib.rs", cwd.display()),
