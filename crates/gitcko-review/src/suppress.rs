@@ -40,6 +40,16 @@ fn model_severity(severity: Severity) -> Model {
     }
 }
 
+/// Whether the comment types in force for the item's file include its own.
+pub fn type_allowed(snapshot: &Snapshot<'_>, item: &Item) -> bool {
+    let kind = match item.candidate.comment_type {
+        gitcko_prompts::CommentType::Logic => gitcko_protocol::review::CommentType::Logic,
+        gitcko_prompts::CommentType::Syntax => gitcko_protocol::review::CommentType::Syntax,
+        gitcko_prompts::CommentType::Style => gitcko_protocol::review::CommentType::Style,
+    };
+    policy(snapshot, &item.config_path).types.contains(&kind)
+}
+
 pub fn run(
     items: Vec<Item>,
     snapshot: &Snapshot<'_>,
@@ -75,15 +85,9 @@ pub fn run(
                     .take(MARKER_LINES)
                     .any(|l| GENERATED.iter().any(|m| l.contains(m)))
             });
-        let policy = policy(snapshot, &item.config_path);
-        let kind = match item.candidate.comment_type {
-            gitcko_prompts::CommentType::Logic => gitcko_protocol::review::CommentType::Logic,
-            gitcko_prompts::CommentType::Syntax => gitcko_protocol::review::CommentType::Syntax,
-            gitcko_prompts::CommentType::Style => gitcko_protocol::review::CommentType::Style,
-        };
         let verdict = if generated && !protected {
             Err("generated_file")
-        } else if !protected && !policy.types.contains(&kind) {
+        } else if !protected && !type_allowed(snapshot, &item) {
             Err("comment_type_disabled")
         } else if !protected && dismissed.contains(&item.id) {
             Err("dismissed")

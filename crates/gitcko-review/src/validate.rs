@@ -252,7 +252,12 @@ fn check(
     let inline = reviewed.contains(&&path);
     // A changed file the review set aside (held back, ignored, binary, deferred) is not
     // one it may speak of; an unchanged one can be, if it traces back to the change.
-    if changed && !inline {
+    // The base's `ignore` covers unchanged files too: a finding may not land on one.
+    let ignored = snapshot
+        .ignore
+        .as_ref()
+        .is_some_and(|i| i.is_ignored(&path));
+    if (changed && !inline) || ignored {
         return Err(why::NOT_REVIEWED);
     }
     let side = domain_side(c.side);

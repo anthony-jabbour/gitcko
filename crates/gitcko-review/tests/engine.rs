@@ -3188,3 +3188,76 @@ git commit -q -m Head
     let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
     assert_eq!(outcome.review.findings.len(), 1, "{:?}", reasons(&outcome));
 }
+
+#[tokio::test]
+async fn an_unchanged_file_the_base_ignores_gets_no_comment() {
+    let go = |config: &'static str| async move {
+        let dir = repo_from(
+            "ignored-unchanged",
+            &format!(
+                r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p src shared .gitcko
+echo 'pub fn one() -> u32 {{ 1 }}' > src/lib.rs
+echo 'pub fn v() -> u32 {{ 1 }}' > shared/v.rs
+printf '{config}' > .gitcko/config.toml
+git add -A
+git commit -q -m Base
+git branch base
+echo 'pub fn one() -> u32 {{ 2 }}' > src/lib.rs
+git add -A
+git commit -q -m Head
+"#
+            ),
+        );
+        let provider = reporting(
+            "src/lib.rs",
+            vec![
+                ("read_file", json!({"path": "shared/v.rs"})),
+                ("read_file", json!({"path": "src/lib.rs"})),
+            ],
+            |results| {
+                let mut c = candidate(
+                    "shared/v.rs",
+                    &[evidence_of(&results[0]), evidence_of(&results[1])],
+                );
+                c["start_line"] = json!(1);
+                c["end_line"] = json!(1);
+                vec![c]
+            },
+            |_| text(&verdict("accept", 0.9)),
+        );
+        review_repo(dir.path(), provider, run_with_budget(base_budget())).await
+    };
+    let ignored = go("schema_version = 1\\nignore = [\"shared/**\"]\\n").await;
+    assert!(ignored.review.findings.is_empty());
+    assert_eq!(reasons(&ignored), [("validate", "path_not_reviewed")]);
+    // Positive control: not ignored, the same outside-diff finding stands.
+    let open = go("schema_version = 1\\n").await;
+    assert_eq!(open.review.findings.len(), 1, "{:?}", reasons(&open));
+}
+
+#[tokio::test]
+async fn of_two_reports_of_one_bug_the_one_the_repo_allows_is_kept() {
+    let dir = with_base_files("schema_version = 1\ncomment_types = [\"logic\"]", None);
+    let provider = reporting(
+        "src/lib.rs",
+        vec![("read_file", json!({"path": "src/lib.rs"}))],
+        |results| {
+            let id = evidence_of(&results[0]);
+            let mut surer = candidate("src/lib.rs", &[id]);
+            surer["comment_type"] = json!("syntax");
+            surer["confidence"] = json!(0.95);
+            surer["start_line"] = json!(1);
+            surer["end_line"] = json!(1);
+            let mut allowed = surer.clone();
+            allowed["comment_type"] = json!("logic");
+            allowed["confidence"] = json!(0.8);
+            vec![surer, allowed]
+        },
+        |_| text(&verdict("accept", 0.9)),
+    );
+    let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
+    assert_eq!(outcome.review.findings.len(), 1, "{:?}", reasons(&outcome));
+}

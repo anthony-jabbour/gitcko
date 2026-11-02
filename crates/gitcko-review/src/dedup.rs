@@ -17,7 +17,7 @@ use crate::validate::Item;
 fn key(item: &Item) -> String {
     let c = &item.candidate;
     format!(
-        "{}\0{:?}\0{:010}\0{:010}\0{:?}\0{}\0{:?}\0{}\0{}\0{}\0{:?}",
+        "{}\0{:?}\0{:010}\0{:010}\0{:?}\0{}\0{:?}\0{}\0{}\0{}\0{:?}\0{}\0{:?}\0{:?}",
         c.path,
         c.side,
         c.start_line,
@@ -28,14 +28,20 @@ fn key(item: &Item) -> String {
         c.confidence.to_bits(),
         c.cause,
         c.trigger,
-        c.evidence
+        c.evidence,
+        c.impact,
+        c.suggestion,
+        c.comment_type
     )
 }
 
-/// The report to keep as the finding: the most severe, then the most confident.
-fn rank(item: &Item) -> (Severity, Reverse<u64>, String) {
+/// The report to keep as the finding: one whose comment type the policy allows, then the
+/// most severe, then the most confident. Keeping a disallowed one would let suppression
+/// drop an issue an allowed report had raised.
+fn rank(item: &Item, allowed: &dyn Fn(&Item) -> bool) -> (bool, Severity, Reverse<u64>, String) {
     // Confidences are in [0, 1], where the bit pattern orders like the number.
     (
+        !allowed(item),
         item.candidate.severity,
         Reverse(item.candidate.confidence.to_bits()),
         key(item),
@@ -67,8 +73,8 @@ fn union<'a>(ids: impl Iterator<Item = &'a String>) -> Vec<String> {
 }
 
 /// Folds `other` into `kept`; whichever is the better report becomes the finding.
-fn absorb(kept: &mut Item, other: Item) {
-    let (mut best, rest) = if rank(&other) < rank(kept) {
+fn absorb(kept: &mut Item, other: Item, allowed: &dyn Fn(&Item) -> bool) {
+    let (mut best, rest) = if rank(&other, allowed) < rank(kept, allowed) {
         (other, kept.clone())
     } else {
         (kept.clone(), other)
@@ -105,12 +111,12 @@ fn overlap(a: &Item, b: &Item) -> bool {
         && y.start_line <= x.end_line
 }
 
-pub fn run(mut items: Vec<Item>) -> Vec<Item> {
+pub fn run(mut items: Vec<Item>, allowed: &dyn Fn(&Item) -> bool) -> Vec<Item> {
     items.sort_by_cached_key(key);
     let mut kept: Vec<Item> = Vec::new();
     for item in items {
         match kept.iter().position(|k| same_cause(k, &item)) {
-            Some(at) => absorb(&mut kept[at], item),
+            Some(at) => absorb(&mut kept[at], item, allowed),
             None => kept.push(item),
         }
     }
@@ -137,6 +143,49 @@ mod tests {
 
     use super::*;
     use crate::validate::fixtures::item;
+
+    fn run(items: Vec<Item>) -> Vec<Item> {
+        super::run(items, &|_| true)
+    }
+
+    #[test]
+    fn a_report_the_policy_allows_is_kept_over_a_surer_one_it_does_not() {
+        let mut syntax = item("a.rs", "Same", Category::Correctness, (2, 3));
+        syntax.candidate.comment_type = gitcko_prompts::CommentType::Syntax;
+        syntax.candidate.confidence = 0.95;
+        let mut logic = item("a.rs", "Same", Category::Correctness, (8, 9));
+        logic.candidate.confidence = 0.8;
+        let only_logic = |i: &Item| i.candidate.comment_type == gitcko_prompts::CommentType::Logic;
+        let kept = super::run(vec![syntax.clone(), logic.clone()], &only_logic);
+        assert_eq!(
+            kept[0].candidate.comment_type,
+            gitcko_prompts::CommentType::Logic
+        );
+        // Positive control: with every type allowed, the surer report stands.
+        let kept = run(vec![syntax, logic]);
+        assert_eq!(
+            kept[0].candidate.comment_type,
+            gitcko_prompts::CommentType::Syntax
+        );
+    }
+
+    #[test]
+    fn reports_that_differ_only_in_what_they_say_merge_the_same_either_way() {
+        let a = item("a.rs", "Same", Category::Correctness, (2, 3));
+        let differ: [fn(&mut Item); 3] = [
+            |i| i.candidate.impact = "Another impact.".into(),
+            |i| i.candidate.suggestion = Some("Guard it.".into()),
+            |i| i.candidate.comment_type = gitcko_prompts::CommentType::Syntax,
+        ];
+        for change in differ {
+            let mut b = a.clone();
+            change(&mut b);
+            assert_eq!(
+                format!("{:?}", run(vec![a.clone(), b.clone()])),
+                format!("{:?}", run(vec![b, a.clone()]))
+            );
+        }
+    }
 
     #[test]
     fn one_root_cause_at_two_places_is_one_finding_that_lists_both() {

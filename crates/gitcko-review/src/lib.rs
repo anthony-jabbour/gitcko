@@ -224,7 +224,7 @@ pub async fn review_with(
 
     calls.events.started("dedup");
     let before = items.len();
-    let mut items = dedup::run(items);
+    let mut items = dedup::run(items, &|item| suppress::type_allowed(&snap, item));
     counts(calls.events, "dedup", items.len(), before - items.len());
     // Ids are fixed here, before anything is dropped: feedback names a finding by its id,
     // and a sibling dropped later mustn't change the id of one that stays.
