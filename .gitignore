@@ -11,6 +11,29 @@ CLAUDE.local.md
 !.[eE][nN][vV].[eE][xX][aA][mM][pP][lL][eE]
 !.[eE][nN][vV].[sS][aA][mM][pP][lL][eE]
 !.[eE][nN][vV].[tT][eE][mM][pP][lL][aA][tT][eE]
+# Key material, by name. The leak guard denies the same list, so a forced add still stops
+# at the push: keep the two in step (a test in xtask/src/leak_guard.rs checks).
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.ppk
+*.tfvars
+*.tfvars.json
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+.netrc
+.pypirc
+credentials.json
+service-account.json
+secrets.toml
+secrets.yaml
+secrets.yml
+secrets.json
 # cargo-fuzz output: build dir, the growing corpus and crash inputs
 /fuzz/target/
 /fuzz/corpus/

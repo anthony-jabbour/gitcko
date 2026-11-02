@@ -98,6 +98,22 @@ AI tools are welcome. In the PR template, say which tools helped (for example: "
 - A test you add must fail before your fix and pass after it, even if an AI wrote it.
 - We close PRs that look like unchecked machine output, such as large changes with no tests or explanation, or that ignore review feedback, and say why.
 
+## Secrets and API keys
+
+No key, token or password ever goes in a tracked file: not in code, config, fixtures, tests, logs or PR text. Tests build fake secrets from pieces at run time.
+
+| Where it runs | Where the key lives |
+|---|---|
+| Your machine, `cargo xtask` live runs | `.env` at the repo root: `cp .env.example .env`, `chmod 600 .env`, then fill it in. A variable set in your shell wins |
+| GitHub Actions | The `live-models` environment's secrets, which only maintainer-started workflows reach. Pull request CI has no keys and no network to models |
+| The `gitcko` binary | The real environment (`OPENROUTER_API_KEY`). It never reads a `.env`, because the repository under review could plant one |
+
+Use a dedicated key with a spending limit for each purpose.
+
+Three layers stop a leak: `.gitignore`, the leak guard on `git push` (`cargo xtask setup` installs the hook), and the same guard in CI. `xtask` also refuses a `.env` that git tracks or other users can read.
+
+If a key reaches a commit, treat it as compromised, even if the commit was never merged: revoke it at the provider first, then clean up the history.
+
 ## Review, merge and releases
 
 - Every PR gets a maintainer review. Once Gitcko can review code, it reviews every PR too; its findings are advisory and maintainers decide.

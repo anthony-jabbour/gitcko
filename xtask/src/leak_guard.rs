@@ -50,6 +50,33 @@ const DENIED_NAMES_ANYWHERE: &[&str] = &["claude.local.md", ".gitleaksignore"];
 /// or `.env.*` file is denied by name, because gitleaks' rules miss plain
 /// passwords and key formats it doesn't know.
 const ALLOWED_ENV_TEMPLATES: &[&str] = &[".env.example", ".env.sample", ".env.template"];
+/// Key material by file name, because gitleaks only knows the formats it has rules for
+/// and can't read inside a `.p12` at all. Public halves (`id_rsa.pub`) stay allowed.
+const DENIED_KEY_SUFFIXES: &[&str] = &[
+    ".pem",
+    ".key",
+    ".p12",
+    ".pfx",
+    ".jks",
+    ".keystore",
+    ".ppk",
+    ".tfvars",
+    ".tfvars.json",
+];
+const DENIED_KEY_NAMES: &[&str] = &[
+    "id_rsa",
+    "id_dsa",
+    "id_ecdsa",
+    "id_ed25519",
+    ".netrc",
+    ".pypirc",
+    "credentials.json",
+    "service-account.json",
+    "secrets.toml",
+    "secrets.yaml",
+    "secrets.yml",
+    "secrets.json",
+];
 /// Private planning-doc names, denied in every folder except the public files and
 /// test-data folders below. Public docs use other names (e.g. `docs/architecture-overview.md`).
 const DENIED_DOC_NAMES: &[&str] = &[
@@ -124,6 +151,9 @@ fn denied_path(path: &str) -> Option<&'static str> {
     }
     if (name == ".env" || name.starts_with(".env.")) && !ALLOWED_ENV_TEMPLATES.contains(&name) {
         return Some("environment file (may hold secrets)");
+    }
+    if DENIED_KEY_NAMES.contains(&name) || DENIED_KEY_SUFFIXES.iter().any(|e| name.ends_with(e)) {
+        return Some("key or credential file");
     }
     let is_doc_name = DENIED_DOC_NAMES
         .iter()
@@ -634,8 +664,59 @@ mod tests {
             ".ENV",
             "web/.env.local",
             "config/.env.production",
+            "server.pem",
+            "deploy/tls.KEY",
+            "certs/client.p12",
+            "certs/client.pfx",
+            "android/release.jks",
+            "android/release.keystore",
+            "ops/putty.ppk",
+            "infra.tfvars",
+            "infra.tfvars.json",
+            "id_rsa",
+            "home/.ssh/id_ed25519",
+            ".netrc",
+            ".pypirc",
+            "credentials.json",
+            "gcp/service-account.json",
+            "secrets.toml",
+            "config/secrets.yaml",
+            "config/secrets.yml",
+            "config/secrets.json",
         ] {
             assert!(denied_path(path).is_some(), "{path} should be denied");
+        }
+    }
+
+    /// The ignore file is the first line of defence and this list the last; a file only
+    /// one of them knows about would fail late, at push, or not at all.
+    #[test]
+    fn the_ignore_file_covers_what_the_guard_denies() {
+        use super::{DENIED_KEY_NAMES, DENIED_KEY_SUFFIXES};
+        use std::process::Command;
+
+        let root = gitcko_test_support::workspace_root();
+        let ignored = |file: &str| {
+            let status = Command::new("git")
+                .args(["check-ignore", "-q", "--no-index", file])
+                .current_dir(&root)
+                .status()
+                .unwrap();
+            assert!(matches!(status.code(), Some(0 | 1)), "{status}");
+            status.success()
+        };
+        for suffix in DENIED_KEY_SUFFIXES {
+            assert!(ignored(&format!("deep/er/x{suffix}")), "{suffix}");
+        }
+        for name in DENIED_KEY_NAMES {
+            assert!(ignored(&format!("deep/er/{name}")), "{name}");
+        }
+        for name in [".env", ".ENV", "web/.env.local"] {
+            assert!(ignored(name), "{name}");
+        }
+        // Positive control: the template and ordinary source stay committable.
+        for name in [".env.example", "src/key.rs", ".ssh/id_rsa.pub"] {
+            assert!(!ignored(name), "{name}");
         }
     }
 
@@ -654,6 +735,13 @@ mod tests {
             "tests/fixtures/repo/ARCHITECTURE.md",
             "docs/architecture-overview.md",
             ".env.example",
+            // Public halves and ordinary source that merely look similar.
+            ".ssh/id_ed25519.pub",
+            "src/id_map.rs",
+            "src/key.rs",
+            "src/secrets.rs",
+            "xtask/gitleaks-secrets.toml",
+            "crates/x/src/credentials.rs",
             "web/.env.sample",
             ".env.template",
             "src/environment.rs",
