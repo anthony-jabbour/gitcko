@@ -12,7 +12,7 @@ use gitcko_protocol::review::Severity;
 
 use crate::gates::policy;
 use crate::providers::{FeedbackProvider, ProviderStatus};
-use crate::snapshot::Snapshot;
+use crate::snapshot::{Snapshot, scrubbed};
 use crate::validate::{Dropped, Item, Reader};
 
 /// REVIEW_RULES §6, as far as the baseline categories reach: P0, security, data loss,
@@ -122,12 +122,15 @@ fn link_rule(item: &mut Item, snapshot: &Snapshot<'_>) -> bool {
         .into_iter()
         .filter(|r| r.enabled != Some(false))
         .collect();
-    // The judge reads what the finding answers to, not the model's account of it.
+    // The judge reads what the finding answers to, not the model's account of it. Rules
+    // reach a prompt with no tool between, so they are scrubbed as for the planner. A
+    // config holding a credential is refused before this, so `[[rules]]` are scrubbed only
+    // in case that ever changes.
     item.rules = config
         .rules_md
         .iter()
-        .map(|(text, _)| text.clone())
-        .chain(in_force.iter().map(|r| r.rule.clone()))
+        .map(|(text, _)| scrubbed(text))
+        .chain(in_force.iter().map(|r| scrubbed(&r.rule)))
         .collect();
     let mut rules = in_force.into_iter();
     match (rules.next(), rules.next()) {

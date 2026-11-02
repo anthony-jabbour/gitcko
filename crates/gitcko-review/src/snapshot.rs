@@ -215,7 +215,7 @@ pub fn take<'a>(input: &ReviewInput<'a>) -> Result<Snapshot<'a>, &'static str> {
 
 /// Text with credential-shaped strings replaced. Commit subjects and rules go straight
 /// into prompts, with no tool between them and the model.
-fn scrubbed(text: &str) -> String {
+pub(crate) fn scrubbed(text: &str) -> String {
     Redactor::new().redact(text).into_owned()
 }
 

@@ -3261,3 +3261,39 @@ async fn of_two_reports_of_one_bug_the_one_the_repo_allows_is_kept() {
     let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
     assert_eq!(outcome.review.findings.len(), 1, "{:?}", reasons(&outcome));
 }
+
+#[tokio::test]
+async fn canary_a_key_in_rules_md_never_reaches_the_judge() {
+    let key = format!("{}{}", "AKIA", "ABCDEFGHIJKLMNOP");
+    let rule = format!("Use the rules-marker account {key} for tests.");
+    let written = with_base_files("schema_version = 1", Some(&rule));
+    // A key in `config.toml` makes the config unreadable, so `[[rules]]` never get here
+    // with one; `rules.md` does.
+    for dir in [written] {
+        let provider = finder_at(
+            json!({"path": "src/lib.rs"}),
+            "src/lib.rs",
+            |c| {
+                c["category"] = json!("repository_rule");
+                c["start_line"] = json!(1);
+                c["end_line"] = json!(1);
+            },
+            |_| text(&verdict("accept", 0.9)),
+        );
+        let outcome =
+            review_repo(dir.path(), provider.clone(), run_with_budget(base_budget())).await;
+        assert_eq!(outcome.review.findings.len(), 1, "{:?}", reasons(&outcome));
+        let judged: Vec<Request> = provider
+            .requests
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|r| step(r) == "judge")
+            .cloned()
+            .collect();
+        let told = all_prompt_text(&judged);
+        // Positive control: the rule itself reached the judge.
+        assert!(told.contains("rules-marker"), "{told}");
+        assert!(!told.contains(&key));
+    }
+}
