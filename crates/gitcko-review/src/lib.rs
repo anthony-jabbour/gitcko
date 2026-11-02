@@ -224,8 +224,26 @@ pub async fn review_with(
 
     calls.events.started("dedup");
     let before = items.len();
-    let items = dedup::run(items);
+    let mut items = dedup::run(items);
     counts(calls.events, "dedup", items.len(), before - items.len());
+    // Ids are fixed here, before anything is dropped: feedback names a finding by its id,
+    // and a sibling dropped later mustn't change the id of one that stays.
+    let ids = identity::assign(
+        &items
+            .iter()
+            .map(|i| {
+                (
+                    i.candidate.category,
+                    i.entity.as_str(),
+                    i.code.as_str(),
+                    i.candidate.title.as_str(),
+                )
+            })
+            .collect::<Vec<_>>(),
+    );
+    for (item, id) in items.iter_mut().zip(ids) {
+        item.id = id;
+    }
 
     calls.events.started("suppress");
     let (items, gone) = suppress::run(items, &snap, feedback);
@@ -244,7 +262,13 @@ pub async fn review_with(
     dropped.extend(gone);
 
     calls.events.started("gates");
-    let gated = gates::run(judged, &|path| gates::policy(&snap, path));
+    let verbose = snap
+        .investigated()
+        .into_iter()
+        .map(|path| gates::policy(&snap, path).strictness)
+        .min()
+        .unwrap_or(2);
+    let gated = gates::run(judged, &|path| gates::policy(&snap, path), verbose);
     calls.events.completed(
         "gates",
         "ok",

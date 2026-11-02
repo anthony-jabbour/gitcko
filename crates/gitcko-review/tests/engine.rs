@@ -2810,3 +2810,381 @@ fn the_budget_is_the_documented_one() {
     assert_eq!(budget.input_tokens, 400_000);
     assert_eq!(budget.output_tokens, 40_000);
 }
+
+// ---- Identity, suppression, rules and caps across the whole pipeline ----
+
+async fn review_dir_with(
+    dir: &Path,
+    provider: Arc<Scripted>,
+    feedback: &dyn FeedbackProvider,
+) -> Outcome {
+    let repo = Repo::open(dir).unwrap();
+    let now = || "2026-01-01T00:00:00Z".to_string();
+    let input = ReviewInput {
+        repo: &repo,
+        base: at_rev(&repo, "base"),
+        head: at_rev(&repo, "main"),
+        now: &now,
+    };
+    review_with(
+        input,
+        &router(provider),
+        run_with_budget(base_budget()),
+        feedback,
+    )
+    .await
+}
+
+/// The JSON of every tool result the investigator has been handed.
+fn tool_results(request: &Request) -> Vec<Value> {
+    request
+        .messages
+        .iter()
+        .filter_map(|m| match m {
+            Message::Tool { text, .. } => tool_json(text),
+            _ => None,
+        })
+        .collect()
+}
+
+/// One hypothesis on `path`. The investigator runs `reads` (each a `(tool, args)`), then
+/// reports what `found` makes of their results; the judge answers with `judge`.
+fn reporting(
+    path: &'static str,
+    reads: Vec<(&'static str, Value)>,
+    found: impl Fn(&[Value]) -> Vec<Value> + Send + Sync + 'static,
+    judge: impl Fn(&Request) -> Reply + Send + Sync + 'static,
+) -> Arc<Scripted> {
+    scripted(move |r, _| match step(r) {
+        "plan" => text(&plan_of(&[hypothesis(path, "H")])),
+        "investigate" if !was_answered(r) => {
+            let names = ["c1", "c2", "c3", "c4"];
+            let calls: Vec<(&str, &str, Value)> = reads
+                .iter()
+                .zip(names)
+                .map(|((tool, args), id)| (id, *tool, args.clone()))
+                .collect();
+            tools(&calls)
+        }
+        "investigate" => text(&supported(&found(&tool_results(r)))),
+        "judge" => judge(r),
+        _ => default_reply(r),
+    })
+}
+
+fn evidence_of(result: &Value) -> &str {
+    result["evidence"].as_str().unwrap()
+}
+
+#[tokio::test]
+async fn dismissing_one_of_two_bugs_on_the_same_lines_leaves_the_other() {
+    let go = |feedback: Vec<String>| async move {
+        let provider = reporting(
+            "src/lib.rs",
+            vec![("read_file", read_lib())],
+            |results| {
+                let id = evidence_of(&results[0]);
+                let mut second = candidate("src/lib.rs", &[id]);
+                second["title"] = json!("Overflows the sum");
+                vec![candidate("src/lib.rs", &[id]), second]
+            },
+            |_| text(&verdict("accept", 0.9)),
+        );
+        let dir = fixture("f", "timeout_plan");
+        review_dir_with(dir.path(), provider, &Dismissing(feedback)).await
+    };
+    let all = go(Vec::new()).await;
+    let ids: Vec<String> = all.review.findings.iter().map(|f| f.id.clone()).collect();
+    assert_eq!(ids.len(), 2, "{:?}", reasons(&all));
+    for (gone, stays) in [(0, 1), (1, 0)] {
+        let outcome = go(vec![ids[gone].clone()]).await;
+        let left: Vec<&str> = outcome
+            .review
+            .findings
+            .iter()
+            .map(|f| f.id.as_str())
+            .collect();
+        assert_eq!(left, [ids[stays].as_str()], "dismissed {gone}");
+        assert_eq!(reasons(&outcome), [("suppress", "dismissed")]);
+    }
+}
+
+#[tokio::test]
+async fn a_finding_under_a_p0_rule_is_never_suppressed_whatever_it_proposed() {
+    let go = |severity: &'static str, feedback: Vec<String>| async move {
+        let config = format!(
+            "schema_version = 1\n[[rules]]\nid = \"no-div\"\nrule = \"Never divide by a length.\"\nseverity = \"{severity}\""
+        );
+        let dir = with_base_files(&config, None);
+        let provider = finder_at(
+            json!({"path": "src/lib.rs"}),
+            "src/lib.rs",
+            |c| {
+                c["category"] = json!("repository_rule");
+                c["severity"] = json!("P2");
+                c["start_line"] = json!(1);
+                c["end_line"] = json!(1);
+            },
+            |_| text(&verdict("accept", 0.9)),
+        );
+        review_dir_with(dir.path(), provider, &Dismissing(feedback)).await
+    };
+    let id = go("P0", Vec::new()).await.review.findings[0].id.clone();
+    let outcome = go("P0", vec![id.clone()]).await;
+    let [finding] = outcome.review.findings.as_slice() else {
+        panic!("{:?}", reasons(&outcome))
+    };
+    assert_eq!(finding.severity, Severity::P0);
+    // Positive control: under a P1 rule the same dismissal holds.
+    let outcome = go("P1", vec![id]).await;
+    assert!(outcome.review.findings.is_empty());
+    assert_eq!(reasons(&outcome), [("suppress", "dismissed")]);
+}
+
+#[tokio::test]
+async fn the_judge_reads_the_rules_a_rule_finding_answers_to() {
+    let dir = with_base_files(
+        "schema_version = 1\n[[rules]]\nid = \"no-div\"\nrule = \"Never divide by a length.\"",
+        Some("Name every magic number."),
+    );
+    let go = |category: &'static str| {
+        let provider = finder_at(
+            json!({"path": "src/lib.rs"}),
+            "src/lib.rs",
+            move |c| {
+                c["category"] = json!(category);
+                c["start_line"] = json!(1);
+                c["end_line"] = json!(1);
+            },
+            |_| text(&verdict("accept", 0.9)),
+        );
+        let path = dir.path().to_path_buf();
+        async move {
+            let outcome =
+                review_repo(&path, provider.clone(), run_with_budget(base_budget())).await;
+            assert_eq!(outcome.review.findings.len(), 1, "{:?}", reasons(&outcome));
+            let judged: Vec<Request> = provider
+                .requests
+                .lock()
+                .unwrap()
+                .iter()
+                .filter(|r| step(r) == "judge")
+                .cloned()
+                .collect();
+            all_prompt_text(&judged)
+        }
+    };
+    let told = go("repository_rule").await;
+    assert!(told.contains("Never divide by a length."), "{told}");
+    assert!(told.contains("Name every magic number."), "{told}");
+    // Positive control: a finding of another kind isn't judged against the rules.
+    assert!(
+        !go("correctness")
+            .await
+            .contains("Never divide by a length.")
+    );
+}
+
+const TWO_FILES_ONE_LAX: &str = r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p a/.gitcko b
+echo 'pub fn a() -> u32 { 1 }' > a/x.rs
+echo 'pub fn b() -> u32 { 1 }' > b/y.rs
+LAX
+git add -A
+git commit -q -m Base
+git branch base
+echo 'pub fn a() -> u32 { 2 }' > a/x.rs
+echo 'pub fn b() -> u32 { 2 }' > b/y.rs
+git add -A
+git commit -q -m Head
+"#;
+
+#[tokio::test]
+async fn the_most_verbose_changed_file_sets_the_style_cap_even_with_nothing_to_say() {
+    let go = |lax: bool| async move {
+        let config = if lax {
+            "printf 'schema_version = 1\\nstrictness = 1\\n' > a/.gitcko/config.toml"
+        } else {
+            ""
+        };
+        let dir = repo_from("style-cap", &TWO_FILES_ONE_LAX.replace("LAX", config));
+        let provider = reporting(
+            "b/y.rs",
+            vec![("read_file", json!({"path": "b/y.rs"}))],
+            |results| {
+                let id = evidence_of(&results[0]);
+                ["Name one", "Name two", "Name three"]
+                    .iter()
+                    .map(|title| {
+                        let mut c = candidate("b/y.rs", &[id]);
+                        c["title"] = json!(title);
+                        c["comment_type"] = json!("style");
+                        c["severity"] = json!("P2");
+                        c["confidence"] = json!(0.95);
+                        c["start_line"] = json!(1);
+                        c["end_line"] = json!(1);
+                        c
+                    })
+                    .collect()
+            },
+            |_| text(&verdict("accept", 0.95)),
+        );
+        review_repo(dir.path(), provider, run_with_budget(base_budget())).await
+    };
+    // `a/x.rs` asks for strictness 1, though no candidate is about it.
+    let lax = go(true).await;
+    assert_eq!(lax.review.findings.len(), 3, "{:?}", reasons(&lax));
+    // Positive control: with every file at the default, the cap of two holds.
+    let strict = go(false).await;
+    assert_eq!(strict.review.findings.len(), 2);
+    assert_eq!(reasons(&strict), [("gates", "style_cap")]);
+}
+
+#[tokio::test]
+async fn two_questions_about_the_same_lines_are_both_asked() {
+    let provider = reporting(
+        "src/lib.rs",
+        vec![("read_file", read_lib())],
+        |results| {
+            let id = evidence_of(&results[0]);
+            let mut second = candidate("src/lib.rs", &[id]);
+            second["title"] = json!("Overflows the sum");
+            vec![candidate("src/lib.rs", &[id]), second]
+        },
+        |_| {
+            text(
+                &json!({"verdict": "needs_follow_up", "confidence": 0.8, "severity": null,
+                    "reason": "Depends on input.", "missing_fact": "Can this be empty?"})
+                .to_string(),
+            )
+        },
+    );
+    let outcome = review_fault_crate(provider, run_with_budget(base_budget())).await;
+    let ids: Vec<&str> = outcome
+        .review
+        .questions
+        .iter()
+        .map(|q| q.id.as_str())
+        .collect();
+    assert_eq!(ids.len(), 2, "{:?}", reasons(&outcome));
+    assert_ne!(ids[0], ids[1]);
+}
+
+const CRATE_HEAD: &str = r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p src
+printf '[package]\nname = "fixture"\nversion = "0.1.0"\nedition = "2021"\n' > Cargo.toml
+BODY
+"#;
+
+#[tokio::test]
+async fn context_lines_above_a_function_do_not_change_its_finding_id() {
+    let body = r#"printf '// A header.\n\npub fn a(x: u32) -> u32 {\n    x + 1\n}\n' > src/lib.rs
+git add -A
+git commit -q -m Base
+git branch base
+printf '// A header.\n\npub fn a(x: u32) -> u32 {\n    x + 2\n}\n' > src/lib.rs
+git add -A
+git commit -q -m Head"#;
+    let id_of = |start: u32| async move {
+        let dir = repo_from("anchor", &CRATE_HEAD.replace("BODY", body));
+        let provider = finder_at(
+            json!({"path": "src/lib.rs"}),
+            "src/lib.rs",
+            move |c| {
+                c["start_line"] = json!(start);
+                c["end_line"] = json!(4);
+            },
+            |_| text(&verdict("accept", 0.9)),
+        );
+        let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
+        outcome.review.findings[0].id.clone()
+    };
+    // Line 2 is blank, outside the function; line 4 is the change inside it.
+    assert_eq!(id_of(4).await, id_of(2).await);
+}
+
+#[tokio::test]
+async fn the_same_bug_in_a_library_and_its_binary_is_two_findings() {
+    let body = r#"printf 'pub fn run() -> u32 {\n    1\n}\n' > src/lib.rs
+printf 'fn run() -> u32 {\n    1\n}\nfn main() {\n    run();\n}\n' > src/main.rs
+git add -A
+git commit -q -m Base
+git branch base
+printf 'pub fn run() -> u32 {\n    2\n}\n' > src/lib.rs
+printf 'fn run() -> u32 {\n    2\n}\nfn main() {\n    run();\n}\n' > src/main.rs
+git add -A
+git commit -q -m Head"#;
+    let dir = repo_from("lib-and-bin", &CRATE_HEAD.replace("BODY", body));
+    let provider = reporting(
+        "src/lib.rs",
+        vec![
+            ("read_file", json!({"path": "src/lib.rs"})),
+            ("read_file", json!({"path": "src/main.rs"})),
+        ],
+        |results| {
+            ["src/lib.rs", "src/main.rs"]
+                .iter()
+                .zip(results)
+                .map(|(path, result)| {
+                    let mut c = candidate(path, &[evidence_of(result)]);
+                    c["start_line"] = json!(2);
+                    c["end_line"] = json!(2);
+                    c
+                })
+                .collect()
+        },
+        |_| text(&verdict("accept", 0.9)),
+    );
+    let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
+    let mut paths: Vec<&str> = outcome
+        .review
+        .findings
+        .iter()
+        .map(|f| f.path.as_str())
+        .collect();
+    paths.sort();
+    assert_eq!(
+        paths,
+        ["src/lib.rs", "src/main.rs"],
+        "{:?}",
+        reasons(&outcome)
+    );
+}
+
+#[tokio::test]
+async fn removed_lines_of_a_renamed_file_tie_a_finding_to_the_change() {
+    let dir = repo_from(
+        "renamed",
+        r#"#!/usr/bin/env bash
+set -euo pipefail
+git init -q -b main
+mkdir -p src
+printf 'pub fn a() -> u32 {\n    let x = 1;\n    let y = 2;\n    let z = 3;\n    x + y + z\n}\npub fn b() -> u32 {\n    4\n}\npub fn c() -> u32 {\n    5\n}\n' > src/old.rs
+git add -A
+git commit -q -m Base
+git branch base
+git mv src/old.rs src/new.rs
+printf 'pub fn a() -> u32 {\n    let x = 1;\n    let y = 2;\n    x + y\n}\npub fn b() -> u32 {\n    4\n}\npub fn c() -> u32 {\n    5\n}\n' > src/new.rs
+git add -A
+git commit -q -m Head
+"#,
+    );
+    let provider = reporting(
+        "src/new.rs",
+        vec![("read_diff", json!({"path": "src/new.rs"}))],
+        |results| {
+            let removed = results[0]["hunks"][0]["old_evidence"].as_str().unwrap();
+            let mut c = candidate("src/new.rs", &[removed]);
+            c["start_line"] = json!(1);
+            c["end_line"] = json!(5);
+            vec![c]
+        },
+        |_| text(&verdict("accept", 0.9)),
+    );
+    let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
+    assert_eq!(outcome.review.findings.len(), 1, "{:?}", reasons(&outcome));
+}

@@ -52,6 +52,12 @@ fn render(item: &Item) -> String {
             place.path, place.start_line, place.end_line
         ));
     }
+    if !item.rules.is_empty() {
+        out.push_str("\nRepository rules in force here, from the base commit:");
+        for rule in &item.rules {
+            out.push_str(&format!("\n- {rule}"));
+        }
+    }
     for title in &item.overlaps {
         out.push_str(&format!(
             "\nOverlaps another candidate, which may or may not be the same issue: {title}"

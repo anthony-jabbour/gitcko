@@ -57,6 +57,10 @@ pub struct Item {
     /// The repository rule this violates, and the lowest severity it allows.
     pub rule: Option<String>,
     pub floor: Option<gitcko_prompts::Severity>,
+    /// The repository rules in force where a rule finding sits, for the judge to read.
+    pub rules: Vec<String>,
+    /// Set once deduplication has fixed the set of issues (REVIEW_ENGINE §16).
+    pub id: String,
 }
 
 /// Reads files of the snapshot's two commits, once each. A file that is a secret, a
@@ -178,7 +182,8 @@ fn changed_in(
     None
 }
 
-/// The innermost declaration holding `line` of the head's `path`, else the file.
+/// The innermost declaration holding `line` of the head's `path`, else the file. The path
+/// is part of it: a library and its binary can each declare `crate::run`.
 fn entity_of(snapshot: &Snapshot<'_>, path: &str, side: Side, line: u32) -> String {
     let graph = &snapshot.index.graph;
     let found = (side == Side::New).then(|| {
@@ -199,7 +204,7 @@ fn entity_of(snapshot: &Snapshot<'_>, path: &str, side: Side, line: u32) -> Stri
             .min()
     });
     match found.flatten() {
-        Some((_, name)) => name.clone(),
+        Some((_, name)) => format!("{path}#{name}"),
         None => format!("file:{path}"),
     }
 }
@@ -279,8 +284,8 @@ fn check(
     // reviewed file: what ties the claim to this change.
     let link = cited
         .iter()
-        .filter(|e| reviewed.contains(&&e.path))
         .filter_map(|e| {
+            let named = reviewed_as(snapshot, reviewed, &e.path, e.range.side())?;
             changed_in(
                 snapshot,
                 e.path.as_str(),
@@ -288,7 +293,7 @@ fn check(
                 e.range.start(),
                 e.range.end(),
             )
-            .map(|line| (e.path.clone(), line))
+            .map(|line| (named, line))
         })
         .min();
     let (outside, config_path) = if inline {
@@ -309,7 +314,7 @@ fn check(
         (Some(outside), linked)
     };
     Ok(Item {
-        entity: entity_of(snapshot, &c.path, side, c.start_line),
+        entity: entity_of(snapshot, &c.path, side, anchor),
         code,
         outside,
         config_path,
@@ -317,8 +322,32 @@ fn check(
         overlaps: Vec::new(),
         rule: None,
         floor: None,
+        rules: Vec::new(),
+        id: String::new(),
         candidate: c,
     })
+}
+
+/// The reviewed name of the file `path` reads on `side`. A renamed file's old lines are
+/// read under its old name, so on the old side that name counts as the reviewed one.
+fn reviewed_as(
+    snapshot: &Snapshot<'_>,
+    reviewed: &[&RepoPath],
+    path: &RepoPath,
+    side: Side,
+) -> Option<RepoPath> {
+    if reviewed.contains(&path) {
+        return Some(path.clone());
+    }
+    if side != Side::Old {
+        return None;
+    }
+    snapshot
+        .change
+        .files
+        .iter()
+        .filter(|f| f.old_path.as_ref() == Some(path))
+        .find_map(|f| f.new_path.clone().filter(|n| reviewed.contains(&n)))
 }
 
 #[cfg(test)]
@@ -394,6 +423,8 @@ pub mod fixtures {
             overlaps: Vec::new(),
             rule: None,
             floor: None,
+            rules: Vec::new(),
+            id: format!("f_{title}_{}_{}", lines.0, lines.1),
         }
     }
 }

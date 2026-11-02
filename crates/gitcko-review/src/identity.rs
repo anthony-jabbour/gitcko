@@ -34,16 +34,6 @@ fn hashed(prefix: &str, category: Category, entity: &str, code: &str, nth: usize
     format!("{prefix}{}", &hash[..16])
 }
 
-/// `f_` and 16 hex characters from category, entity and the cited code.
-pub fn finding_id(category: Category, entity: &str, code: &str) -> String {
-    hashed("f_", category, entity, code, 0)
-}
-
-/// `q_` and 16 hex characters, the same way.
-pub fn question_id(category: Category, entity: &str, code: &str) -> String {
-    hashed("q_", category, entity, code, 0)
-}
-
 /// One id per issue: `(category, entity, code, title)`. Independent bugs on the same
 /// lines share the first three, and must not share an id, so after the first of them (in
 /// title order) a number is mixed in. The result is in the order of `issues`.
@@ -71,13 +61,16 @@ mod tests {
 
     use super::*;
 
+    fn finding_id(category: Category, entity: &str, code: &str) -> String {
+        hashed("f_", category, entity, code, 0)
+    }
+
     #[test]
     fn an_id_is_f_and_sixteen_hex_characters() {
         let id = finding_id(Category::Security, "fn a", "x / y");
         assert_eq!(id.len(), 18, "{id}");
         assert!(id.starts_with("f_"));
         assert!(id[2..].bytes().all(|b| b.is_ascii_hexdigit()));
-        assert!(question_id(Category::Security, "fn a", "x / y").starts_with("q_"));
     }
 
     #[test]

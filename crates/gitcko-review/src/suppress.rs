@@ -11,7 +11,6 @@ use gitcko_prompts::{Category, Severity as Model};
 use gitcko_protocol::review::Severity;
 
 use crate::gates::policy;
-use crate::identity::finding_id;
 use crate::providers::{FeedbackProvider, ProviderStatus};
 use crate::snapshot::Snapshot;
 use crate::validate::{Dropped, Item, Reader};
@@ -19,8 +18,10 @@ use crate::validate::{Dropped, Item, Reader};
 /// REVIEW_RULES §6, as far as the baseline categories reach: P0, security, data loss,
 /// and leaks. Null dereference, infinite loops and missing input validation have no
 /// category of their own to name them by, so they are suppressible like anything else.
+/// A rule's P0 floor counts: the finding publishes at P0 whatever was proposed.
 pub fn never_suppressed(item: &Item) -> bool {
     item.candidate.severity == Model::P0
+        || item.floor == Some(Model::P0)
         || matches!(
             item.candidate.category,
             Category::Security | Category::DataIntegrity | Category::ResourceManagement
@@ -52,6 +53,15 @@ pub fn run(
     };
     let (mut kept, mut dropped) = (Vec::new(), Vec::new());
     for mut item in items {
+        // A rule's severity floor decides whether the finding is protected, so the rule is
+        // resolved before anything may suppress it.
+        if item.candidate.category == Category::RepositoryRule && !link_rule(&mut item, snapshot) {
+            dropped.push(Dropped {
+                stage: "suppress",
+                reason: "no_rule_in_force",
+            });
+            continue;
+        }
         let protected = never_suppressed(&item);
         let side = match item.candidate.side {
             gitcko_prompts::SideOut::Old => Side::Old,
@@ -75,17 +85,7 @@ pub fn run(
             Err("generated_file")
         } else if !protected && !policy.types.contains(&kind) {
             Err("comment_type_disabled")
-        } else if item.candidate.category == Category::RepositoryRule
-            && !link_rule(&mut item, snapshot)
-        {
-            Err("no_rule_in_force")
-        } else if !protected
-            && dismissed.contains(&finding_id(
-                item.candidate.category,
-                &item.entity,
-                &item.code,
-            ))
-        {
+        } else if !protected && dismissed.contains(&item.id) {
             Err("dismissed")
         } else {
             Ok(())
@@ -113,10 +113,19 @@ fn link_rule(item: &mut Item, snapshot: &Snapshot<'_>) -> bool {
     let Ok(path) = RepoPath::parse(&item.candidate.path) else {
         return false;
     };
-    let mut rules = config
+    let in_force: Vec<_> = config
         .rules_for(&path)
         .into_iter()
-        .filter(|r| r.enabled != Some(false));
+        .filter(|r| r.enabled != Some(false))
+        .collect();
+    // The judge reads what the finding answers to, not the model's account of it.
+    item.rules = config
+        .rules_md
+        .iter()
+        .map(|(text, _)| text.clone())
+        .chain(in_force.iter().map(|r| r.rule.clone()))
+        .collect();
+    let mut rules = in_force.into_iter();
     match (rules.next(), rules.next()) {
         (Some(rule), None) if config.rules_md.is_empty() => {
             item.rule = rule.id;

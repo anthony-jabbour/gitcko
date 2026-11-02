@@ -6,7 +6,6 @@ use gitcko_domain::RepoPath;
 use gitcko_prompts::{Category, CommentType as Kind, JudgeOutput, Severity, SideOut, Verdict};
 use gitcko_protocol::review::{CommentType, Question, Side};
 
-use crate::identity;
 use crate::snapshot::Snapshot;
 use crate::validate::{Dropped, Item};
 
@@ -95,33 +94,15 @@ fn publishes(
     }
 }
 
-pub fn run(judged: Vec<Judged>, policy: &dyn Fn(&RepoPath) -> Policy) -> Gated {
+/// `verbose` is the lowest strictness among the reviewed files: the most verbose config
+/// in the PR sets the PR-wide caps (CONFIGURATION §4.1), whether or not its file has a
+/// finding.
+pub fn run(judged: Vec<Judged>, policy: &dyn Fn(&RepoPath) -> Policy, verbose: u8) -> Gated {
     let mut out = Gated::default();
-    // Ids come from everything that reached the judge, so a sibling dropped here
-    // doesn't change the id of the one that stays.
-    let ids = identity::assign(
-        &judged
-            .iter()
-            .map(|j| {
-                let i = &j.item;
-                (
-                    i.candidate.category,
-                    i.entity.as_str(),
-                    i.code.as_str(),
-                    i.candidate.title.as_str(),
-                )
-            })
-            .collect::<Vec<_>>(),
-    );
-    // The most verbose config in the PR sets the PR-wide caps (CONFIGURATION §4.1).
-    let verbose = judged
-        .iter()
-        .map(|j| policy(&j.item.config_path).strictness)
-        .min()
-        .unwrap_or(2);
     let mut questions: Vec<(Severity, f64, Question)> = Vec::new();
-    for (j, id) in judged.into_iter().zip(ids) {
+    for j in judged {
         let Judged { mut item, judge } = j;
+        let id = item.id.clone();
         let (own, assessed) = (item.candidate.confidence, judge.confidence);
         if !(sound(own) && sound(assessed)) {
             drop(&mut out, "malformed_value");
@@ -160,7 +141,8 @@ pub fn run(judged: Vec<Judged>, policy: &dyn Fn(&RepoPath) -> Policy) -> Gated {
                         severity,
                         confidence,
                         Question {
-                            id: identity::question_id(c.category, &item.entity, &item.code),
+                            // The finding's id, so two issues on one line ask two questions.
+                            id: format!("q_{}", id.strip_prefix("f_").unwrap_or(&id)),
                             path: c.path.clone(),
                             start_line: c.start_line,
                             end_line: c.end_line,
@@ -222,7 +204,8 @@ pub fn run(judged: Vec<Judged>, policy: &dyn Fn(&RepoPath) -> Policy) -> Gated {
                 (&a.2.path, a.2.start_line, &a.2.id).cmp(&(&b.2.path, b.2.start_line, &b.2.id))
             })
     });
-    questions.dedup_by(|a, b| a.2.id == b.2.id);
+    let mut seen = std::collections::BTreeSet::new();
+    questions.retain(|q| seen.insert(q.2.id.clone()));
     for (n, (_, _, q)) in questions.into_iter().enumerate() {
         if n < MAX_QUESTIONS {
             out.questions.push(q);
@@ -240,6 +223,12 @@ mod tests {
 
     use super::*;
     use crate::validate::fixtures::item;
+
+    /// One file's policy, so the PR-wide strictness is that file's.
+    fn run(judged: Vec<Judged>, policy: &dyn Fn(&RepoPath) -> Policy) -> Gated {
+        let verbose = policy(&RepoPath::parse("a.rs").unwrap()).strictness;
+        super::run(judged, policy, verbose)
+    }
 
     fn policy(strictness: u8) -> impl Fn(&RepoPath) -> Policy {
         move |_| Policy {
@@ -432,6 +421,8 @@ mod tests {
         j.judge.verdict = Verdict::NeedsFollowUp;
         j.judge.missing_fact = Some("Is this endpoint public?".into());
         j.item.code = format!("c{n}");
+        // Ids are assigned before the gates, one per issue.
+        j.item.id = format!("f_{n:016x}");
         j
     }
 
@@ -506,12 +497,15 @@ mod tests {
 
     #[test]
     fn findings_come_most_severe_then_most_confident_first_with_distinct_ids() {
-        let mut a = judged(Severity::P1, Kind::Logic, 0.9, 0.9);
-        a.item.candidate.title = "a".into();
-        let mut b = judged(Severity::P0, Kind::Logic, 0.75, 0.75);
-        b.item.candidate.title = "b".into();
-        let mut c = judged(Severity::P1, Kind::Logic, 0.95, 0.95);
-        c.item.candidate.title = "c".into();
+        let named = |severity, confidence, title: &str| {
+            let mut j = judged(severity, Kind::Logic, confidence, confidence);
+            j.item.candidate.title = title.into();
+            j.item.id = format!("f_{title}");
+            j
+        };
+        let a = named(Severity::P1, 0.9, "a");
+        let b = named(Severity::P0, 0.75, "b");
+        let c = named(Severity::P1, 0.95, "c");
         let got = run(vec![a, b, c], &policy(2));
         let order: Vec<&str> = got
             .findings
@@ -519,7 +513,7 @@ mod tests {
             .map(|f| f.item.candidate.title.as_str())
             .collect();
         assert_eq!(order, ["b", "c", "a"]);
-        // Same category, entity and code: three issues, three ids.
+        // Each finding keeps the id it was given.
         let mut ids: Vec<&str> = got.findings.iter().map(|f| f.id.as_str()).collect();
         ids.sort();
         ids.dedup();
@@ -542,6 +536,7 @@ mod tests {
                     let mut j = judged(severity, kind, f64::from(*conf) / 100.0, 0.99);
                     j.item.candidate.title = format!("t{}", n % 4);
                     j.item.code = format!("c{}", n % 3);
+                    j.item.id = format!("f_{n:016x}");
                     j.judge.verdict = [Verdict::Accept, Verdict::Reject, Verdict::NeedsFollowUp][*verdict as usize];
                     j.judge.missing_fact = Some("fact".into());
                     j
