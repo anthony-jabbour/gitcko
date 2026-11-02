@@ -22,7 +22,7 @@ use std::fs::{self, File, OpenOptions};
 use std::io::Write;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use gitcko_domain::{ContentHash, RepoPath};
 use gitcko_git::Repo;
@@ -33,6 +33,10 @@ use crate::{Chunk, Manifest, ParsedFile, Revision, RevisionCoverage, Versions, v
 
 /// Changes whenever the files a stored revision is made of change.
 const STORE_FORMAT: u32 = 1;
+
+/// How long removal waits for a revision's lock to clear before treating it as in use:
+/// far longer than a fork takes to exec, and paid once per revision really being read.
+const LOCK_GRACE: Duration = Duration::from_millis(250);
 
 const DATA_FILES: [&str; 4] = [
     "manifest.json",
@@ -560,8 +564,15 @@ fn remove_unlocked(dir: &Path) -> Result<(), StoreError> {
         let lock = d.join("lock");
         if lock.is_file() {
             let f = File::open(&lock).map_err(io("lock a revision"))?;
-            if f.try_lock().is_err() {
-                return Err(StoreError::InUse);
+            // A child forked while the revision was open holds the lock until it execs, an
+            // instant after the reader is gone, so a held lock gets a moment to clear. Only
+            // ever removed under the lock, so a real reader still keeps its revision.
+            let deadline = Instant::now() + LOCK_GRACE;
+            while f.try_lock().is_err() {
+                if Instant::now() >= deadline {
+                    return Err(StoreError::InUse);
+                }
+                std::thread::sleep(Duration::from_millis(5));
             }
             locks.push(f);
             continue;
