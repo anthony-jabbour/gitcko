@@ -1,0 +1,46 @@
+{
+  "v": 1,
+  "key": "f0fc813a315035655021445287e99d7ef715384e78b2e768754e501ecad1e41f",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "tool_call",
+      "id": "toolu_01PQ1Q3hcGdGdBDfYL5ZdbJV",
+      "name": "search_code",
+      "arguments": "{\"query\": \"table::A\"}"
+    },
+    {
+      "type": "tool_call",
+      "id": "toolu_01FkgTKw2TABTDPWHswsVGMw",
+      "name": "find_importers",
+      "arguments": "{\"path\": \"src/table.rs\"}"
+    },
+    {
+      "type": "tool_call",
+      "id": "toolu_011Uwv9DnH5FVRxKFmKCKCsf",
+      "name": "retrieve_repo_summary",
+      "arguments": "{}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 19454,
+      "output_tokens": 177,
+      "cost_usd": 0.0020339
+    },
+    {
+      "type": "finish",
+      "reason": "tool_calls"
+    }
+  ]
+}

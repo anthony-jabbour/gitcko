@@ -1,0 +1,42 @@
+{
+  "cleared_risks": [
+    {
+      "description": "The old file (e1) contains only is_even; fixture::evens is a new addition, so no pre-existing caller depends on its previous signature. The only resolved caller is the test in src/lib.rs itself (low-confidence resolution, partial coverage), so the change breaks no existing caller.",
+      "name": "Unchanged callers of src/lib.rs: public fixture::evens changed; 1 caller(s) elsewhere"
+    }
+  ],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "Small additive change: a new pure function `evens` built on the existing `is_even`, plus a unit test; the only changed file is src/lib.rs, though the signal reports one external caller of the public API.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "2e6c2ad06ba06fe02933048f8cd52e506dd36640",
+    "head_sha": "2dd2eea8b6643fc51de0858abb5b0f6c44af47e7",
+    "local_changes": false,
+    "merge_base": "2e6c2ad06ba06fe02933048f8cd52e506dd36640"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

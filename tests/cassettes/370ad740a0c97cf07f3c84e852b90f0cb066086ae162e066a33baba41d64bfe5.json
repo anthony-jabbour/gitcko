@@ -1,0 +1,88 @@
+{
+  "v": 1,
+  "key": "370ad740a0c97cf07f3c84e852b90f0cb066086ae162e066a33baba41d64bfe5",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change only"
+    },
+    {
+      "type": "text_delta",
+      "text": " renames local"
+    },
+    {
+      "type": "text_delta",
+      "text": " variables in a sim"
+    },
+    {
+      "type": "text_delta",
+      "text": "ple summ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing"
+    },
+    {
+      "type": "text_delta",
+      "text": " function with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no behavio"
+    },
+    {
+      "type": "text_delta",
+      "text": "ural change,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " risk is min"
+    },
+    {
+      "type": "text_delta",
+      "text": "imal.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 866,
+      "output_tokens": 61,
+      "cost_usd": 0.0001171
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

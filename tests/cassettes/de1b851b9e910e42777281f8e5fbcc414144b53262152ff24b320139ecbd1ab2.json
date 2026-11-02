@@ -1,0 +1,112 @@
+{
+  "v": 1,
+  "key": "de1b851b9e910e42777281f8e5fbcc414144b53262152ff24b320139ecbd1ab2",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"medium"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"priorities\":[\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\"],\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason\":\"Reordering"
+    },
+    {
+      "type": "text_delta",
+      "text": " the Status vari"
+    },
+    {
+      "type": "text_delta",
+      "text": "ants sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ifts their"
+    },
+    {
+      "type": "text_delta",
+      "text": " implicit discriminants ("
+    },
+    {
+      "type": "text_delta",
+      "text": "Busy chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es from 1 to 2"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "and Failed from 2 "
+    },
+    {
+      "type": "text_delta",
+      "text": "to 1), which"
+    },
+    {
+      "type": "text_delta",
+      "text": " breaks any code"
+    },
+    {
+      "type": "text_delta",
+      "text": " that dep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends on those"
+    },
+    {
+      "type": "text_delta",
+      "text": " integ"
+    },
+    {
+      "type": "text_delta",
+      "text": "er values, such as serialization"
+    },
+    {
+      "type": "text_delta",
+      "text": ", F"
+    },
+    {
+      "type": "text_delta",
+      "text": "FI, or casts.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 825,
+      "output_tokens": 263,
+      "cost_usd": 0.000214
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

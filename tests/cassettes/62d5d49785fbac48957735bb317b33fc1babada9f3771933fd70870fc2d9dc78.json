@@ -1,0 +1,100 @@
+{
+  "v": 1,
+  "key": "62d5d49785fbac48957735bb317b33fc1babada9f3771933fd70870fc2d9dc78",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Single-"
+    },
+    {
+      "type": "text_delta",
+      "text": "file change to"
+    },
+    {
+      "type": "text_delta",
+      "text": " a tr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ivial add function; the diff"
+    },
+    {
+      "type": "text_delta",
+      "text": " appears to intro"
+    },
+    {
+      "type": "text_delta",
+      "text": "duce a stray closing br"
+    },
+    {
+      "type": "text_delta",
+      "text": "ace,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which would likely break"
+    },
+    {
+      "type": "text_delta",
+      "text": " compilation r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ather than c"
+    },
+    {
+      "type": "text_delta",
+      "text": "ause a"
+    },
+    {
+      "type": "text_delta",
+      "text": " sub"
+    },
+    {
+      "type": "text_delta",
+      "text": "tle runtime defect.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 798,
+      "output_tokens": 82,
+      "cost_usd": 0.0001208
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

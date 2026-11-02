@@ -1,0 +1,128 @@
+{
+  "v": 1,
+  "key": "17db4cac648960308f372f76c292c9440d013de1358ac5fe025422647716ef57",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/m1"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m2"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m3"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m4"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m5"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m6"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m7"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m8"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m10"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/m11"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change only"
+    },
+    {
+      "type": "text_delta",
+      "text": " adds many"
+    },
+    {
+      "type": "text_delta",
+      "text": " trivial new"
+    },
+    {
+      "type": "text_delta",
+      "text": " modules,"
+    },
+    {
+      "type": "text_delta",
+      "text": " each returning a constant integer"
+    },
+    {
+      "type": "text_delta",
+      "text": ", with no log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic,"
+    },
+    {
+      "type": "text_delta",
+      "text": " I"
+    },
+    {
+      "type": "text_delta",
+      "text": "/O, or chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es to existing code"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 6327,
+      "output_tokens": 140,
+      "cost_usd": 0.0007027
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "v": 1,
+  "key": "da4be03c625fef70c92cd109c388c2a85500763e16a1ebd681f108ccdfb59677",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":[{\"category\":\"corre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ctness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " module rename from"
+    },
+    {
+      "type": "text_delta",
+      "text": " old"
+    },
+    {
+      "type": "text_delta",
+      "text": "_name to new_name may"
+    },
+    {
+      "type": "text_delta",
+      "text": " le"
+    },
+    {
+      "type": "text_delta",
+      "text": "ave call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers that"
+    },
+    {
+      "type": "text_delta",
+      "text": " still"
+    },
+    {
+      "type": "text_delta",
+      "text": " reference crate::old_name"
+    },
+    {
+      "type": "text_delta",
+      "text": " unresolved,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which would break the build. Ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify by searching the"
+    },
+    {
+      "type": "text_delta",
+      "text": " repository"
+    },
+    {
+      "type": "text_delta",
+      "text": " for old"
+    },
+    {
+      "type": "text_delta",
+      "text": "_name references out"
+    },
+    {
+      "type": "text_delta",
+      "text": "side the"
+    },
+    {
+      "type": "text_delta",
+      "text": " chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed files.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":1,\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"start_line\":1,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"title\":\"Module"
+    },
+    {
+      "type": "text_delta",
+      "text": " rename may"
+    },
+    {
+      "type": "text_delta",
+      "text": " break un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed callers of"
+    },
+    {
+      "type": "text_delta",
+      "text": " old_name\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1480,
+      "output_tokens": 344,
+      "cost_usd": 0.00032
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

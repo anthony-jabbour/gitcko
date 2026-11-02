@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "key": "eb1bc3cf75c9faf286005742a8fa4106233d69a9d777069294b8dda1df8af5b1",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The change adds a small"
+    },
+    {
+      "type": "text_delta",
+      "text": " pure function s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ub using saturating_sub"
+    },
+    {
+      "type": "text_delta",
+      "text": " with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no un"
+    },
+    {
+      "type": "text_delta",
+      "text": "safe code"
+    },
+    {
+      "type": "text_delta",
+      "text": " or external dependencies,"
+    },
+    {
+      "type": "text_delta",
+      "text": " though"
+    },
+    {
+      "type": "text_delta",
+      "text": " the commit message mentions a"
+    },
+    {
+      "type": "text_delta",
+      "text": " logo that does not app"
+    },
+    {
+      "type": "text_delta",
+      "text": "ear in the diff.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 852,
+      "output_tokens": 82,
+      "cost_usd": 0.0001262
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

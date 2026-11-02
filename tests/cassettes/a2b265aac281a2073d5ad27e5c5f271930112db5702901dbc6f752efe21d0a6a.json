@@ -1,0 +1,76 @@
+{
+  "v": 1,
+  "key": "a2b265aac281a2073d5ad27e5c5f271930112db5702901dbc6f752efe21d0a6a",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The change replaces a"
+    },
+    {
+      "type": "text_delta",
+      "text": " safe fallback with unw"
+    },
+    {
+      "type": "text_delta",
+      "text": "rap() calls,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so a missing or"
+    },
+    {
+      "type": "text_delta",
+      "text": " non-numeric port set"
+    },
+    {
+      "type": "text_delta",
+      "text": "ting now panics inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of def"
+    },
+    {
+      "type": "text_delta",
+      "text": "aulting to 8080.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 860,
+      "output_tokens": 77,
+      "cost_usd": 0.0001245
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

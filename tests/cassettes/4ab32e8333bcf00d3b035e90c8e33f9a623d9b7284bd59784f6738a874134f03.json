@@ -1,0 +1,104 @@
+{
+  "v": 1,
+  "key": "4ab32e8333bcf00d3b035e90c8e33f9a623d9b7284bd59784f6738a874134f03",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/new_"
+    },
+    {
+      "type": "text_delta",
+      "text": "name.rs\"],\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The change is a p"
+    },
+    {
+      "type": "text_delta",
+      "text": "ure module rename in l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs with"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " new file"
+    },
+    {
+      "type": "text_delta",
+      "text": " src/new_name.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " so risk is lim"
+    },
+    {
+      "type": "text_delta",
+      "text": "ited to wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ether the"
+    },
+    {
+      "type": "text_delta",
+      "text": " ren"
+    },
+    {
+      "type": "text_delta",
+      "text": "amed module"
+    },
+    {
+      "type": "text_delta",
+      "text": "'s"
+    },
+    {
+      "type": "text_delta",
+      "text": " contents and references still"
+    },
+    {
+      "type": "text_delta",
+      "text": " resolve.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 789,
+      "output_tokens": 90,
+      "cost_usd": 0.0001239
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

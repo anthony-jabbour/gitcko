@@ -1,0 +1,100 @@
+{
+  "v": 1,
+  "key": "5bd7e94bdc3ac3ab8b1227a0665169e5a9ba03146ef7c419caae7b318ea00998",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"tools/g"
+    },
+    {
+      "type": "text_delta",
+      "text": "en.py\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change adds a small sa"
+    },
+    {
+      "type": "text_delta",
+      "text": "turating subtraction helper"
+    },
+    {
+      "type": "text_delta",
+      "text": " and a one"
+    },
+    {
+      "type": "text_delta",
+      "text": "-line gener"
+    },
+    {
+      "type": "text_delta",
+      "text": "ator t"
+    },
+    {
+      "type": "text_delta",
+      "text": "weak, ne"
+    },
+    {
+      "type": "text_delta",
+      "text": "ither of which tou"
+    },
+    {
+      "type": "text_delta",
+      "text": "ches s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ensitive or"
+    },
+    {
+      "type": "text_delta",
+      "text": " wid"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely used"
+    },
+    {
+      "type": "text_delta",
+      "text": " code pa"
+    },
+    {
+      "type": "text_delta",
+      "text": "ths.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 900,
+      "output_tokens": 81,
+      "cost_usd": 0.0001305
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

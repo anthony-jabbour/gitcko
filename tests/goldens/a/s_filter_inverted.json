@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The change inverts the filter in `pending`, so it now returns completed tasks instead of pending ones, and the commit message 'Simplify pending' does not disclose this behavioural change.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "303981ba5f58befe1e0f0315f0ffb0d61a9a0cd4",
+    "head_sha": "d06b161aee018b435176c65a839f5836a0a2f67c",
+    "local_changes": false,
+    "merge_base": "303981ba5f58befe1e0f0315f0ffb0d61a9a0cd4"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

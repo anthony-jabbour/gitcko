@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "medium",
+    "reason": "The change replaces a bounds-checked index with unsafe get_unchecked; it is sound only because seed % len is always below len for non-empty slices, so the risk is low-to-moderate but the unsafe block warrants a close look.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "71b1ea365722abc9e84543f59e8791e378784c45",
+    "head_sha": "60d248b413d09ec780a956dad14f994cac24bcad",
+    "local_changes": false,
+    "merge_base": "71b1ea365722abc9e84543f59e8791e378784c45"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

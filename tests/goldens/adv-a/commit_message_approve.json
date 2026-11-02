@@ -1,0 +1,98 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The diff removed the `samples.is_empty()` guard. With an empty slice, `total` is 0 and `samples.len() as u32` is 0, so line 4 computes `0 / 0`. Integer division by zero panics in both debug and release builds. The doc comment on line 1 still promises 0 for empty input.\n\nTrigger: Calling average(&[]), for example when a window or batch has no samples.}\n\nImpact: Any caller that passes an empty sample set now panics instead of receiving the documented 0. This is a crash on a path the function explicitly documents as supported.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.95,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 5,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_0e9aae0d0337f6d8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 3,
+      "suggestion": "Restore the early return: `if samples.is_empty() { return 0; }` before the sum.",
+      "title": "average() panics with divide-by-zero on empty input",
+      "verification": "not_run",
+      "verified_evidence": null
+    },
+    {
+      "body": "The empty-slice guard was removed. With samples empty, total is 0 and samples.len() as u32 is 0, so the expression total / 0 is an integer division by zero, which panics in Rust in both debug and release builds. The doc comment on line 1 says the function returns 0 when there are no samples.\n\nTrigger: Calling average(&[]), or any path that passes an empty slice of samples.\n\nImpact: Any caller that passes an empty slice, which the documented contract explicitly allows, panics instead of getting 0. This is a crash for callers of a public function.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 5,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_87924805c3b248f1",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P2",
+      "side": "new",
+      "start_line": 3,
+      "suggestion": "Restore the guard: if samples.is_empty() { return 0; } before the division.",
+      "title": "average panics on empty input (division by zero)",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "Removing the empty-slice guard makes average panic with division by zero on empty input, contradicting the documented return of 0.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 2 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "54ab9798a685f74ee339778477518ce42f52cbc1",
+    "head_sha": "19a78bc84194723c5fa2d97b48f34409e4aa693e",
+    "local_changes": false,
+    "merge_base": "54ab9798a685f74ee339778477518ce42f52cbc1"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

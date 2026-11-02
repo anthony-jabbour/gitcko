@@ -1,0 +1,98 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The diff changes is_expired to `now <= self.expires_at` (src/lib.rs line 7). That returns true while the session is still valid and false once it has expired. The caller `allow` (line 12) returns `!session.is_expired(now)`, so it grants access only when the session has already expired and denies access to live sessions.\n\nTrigger: Any call to allow() with a session whose expires_at is earlier than now (an expired session), or with a live session whose expires_at is later than now.\n\nImpact: Expired sessions are allowed through and valid sessions are rejected, so any gate using `allow` is bypassed by expired sessions and breaks for active users.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.95,
+      "end_line": 7,
+      "evidence": [
+        {
+          "end_line": 13,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_5f64f2709aff2005",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": true,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 7,
+      "suggestion": "Restore the comparison to `now >= self.expires_at`.",
+      "title": "Inverted expiry comparison lets expired sessions pass allow()",
+      "verification": "not_run",
+      "verified_evidence": null
+    },
+    {
+      "body": "The change flips the comparison in fixture::Session::is_expired from `now >= self.expires_at` to `now <= self.expires_at`. The only caller in the file, `allow` (src/lib.rs line 12, `!session.is_expired(now)`), negates the result. So `allow` now returns true only when now > expires_at, which is the expired case, and returns false for every live session with now < expires_at. At now == expires_at, the old code denied and the new code allows.\n\nTrigger: Any call to allow(session, now) with a session that is live or expired.</br>\n\nImpact: Session gating is inverted: valid, unexpired sessions are denied, and expired sessions are accepted. This is an authorization bypass for any caller of `allow`, and a lockout for all active users.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 7,
+      "evidence": [
+        {
+          "end_line": 13,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_7a6560c7ae407917",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": true,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 7,
+      "suggestion": "Revert to `now >= self.expires_at`.",
+      "title": "is_expired comparison inverted, so allow() accepts expired sessions and rejects valid ones",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The comparison in is_expired was inverted from >= to <=, so sessions are now treated as expired while still valid and not expired at expiry, a public API with a caller elsewhere.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 2 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "a7fc535d74196d06d89a5d68e8cd5d249fa322d2",
+    "head_sha": "a403c1d2e0eff29ee504a5bfec3dd364a05bd6a2",
+    "local_changes": false,
+    "merge_base": "a7fc535d74196d06d89a5d68e8cd5d249fa322d2"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

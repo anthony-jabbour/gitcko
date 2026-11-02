@@ -1,0 +1,96 @@
+{
+  "v": 1,
+  "key": "7c7103fc5abbafbee692adb5fcb1a3d0988f533711467078de034ff42e300faf",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "high\",\"priorities\":[\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"reason\":\"The emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed, so average"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero on empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": ", contradicting the"
+    },
+    {
+      "type": "text_delta",
+      "text": " docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented return"
+    },
+    {
+      "type": "text_delta",
+      "text": " of 0 for"
+    },
+    {
+      "type": "text_delta",
+      "text": " no samples.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 930,
+      "output_tokens": 241,
+      "cost_usd": 0.0002135
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

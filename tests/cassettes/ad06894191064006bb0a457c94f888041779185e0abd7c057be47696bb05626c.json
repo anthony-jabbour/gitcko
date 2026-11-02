@@ -1,0 +1,312 @@
+{
+  "v": 1,
+  "key": "ad06894191064006bb0a457c94f888041779185e0abd7c057be47696bb05626c",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hyp"
+    },
+    {
+      "type": "text_delta",
+      "text": "otheses\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"claim"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " module declaration was"
+    },
+    {
+      "type": "text_delta",
+      "text": " changed from"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "Name` to `name`, but"
+    },
+    {
+      "type": "text_delta",
+      "text": " if"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " file was"
+    },
+    {
+      "type": "text_delta",
+      "text": " tracked as `src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/Name.rs` and"
+    },
+    {
+      "type": "text_delta",
+      "text": " not"
+    },
+    {
+      "type": "text_delta",
+      "text": " renamed in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the same change"
+    },
+    {
+      "type": "text_delta",
+      "text": ", `"
+    },
+    {
+      "type": "text_delta",
+      "text": "src/name.rs` will"
+    },
+    {
+      "type": "text_delta",
+      "text": " not exist on"
+    },
+    {
+      "type": "text_delta",
+      "text": " case-sensitive files"
+    },
+    {
+      "type": "text_delta",
+      "text": "ystems. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " build would fail with"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " missing-"
+    },
+    {
+      "type": "text_delta",
+      "text": "module error. Check"
+    },
+    {
+      "type": "text_delta",
+      "text": " wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ether the file is act"
+    },
+    {
+      "type": "text_delta",
+      "text": "ually renamed in the t"
+    },
+    {
+      "type": "text_delta",
+      "text": "ree.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":1"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":1,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Module declaration renamed without"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " mat"
+    },
+    {
+      "type": "text_delta",
+      "text": "ching file r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ename\"},{\"category\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "rep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ository_rule\",\"claim\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Any unchanged code"
+    },
+    {
+      "type": "text_delta",
+      "text": " that ref"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers to the module by"
+    },
+    {
+      "type": "text_delta",
+      "text": " its old cap"
+    },
+    {
+      "type": "text_delta",
+      "text": "italised path"
+    },
+    {
+      "type": "text_delta",
+      "text": " (for"
+    },
+    {
+      "type": "text_delta",
+      "text": " example `cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate::Name::...`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", `use Name::...`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", or `Name::"
+    },
+    {
+      "type": "text_delta",
+      "text": "` in other files) will"
+    },
+    {
+      "type": "text_delta",
+      "text": " f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ail to resolve after"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ename to"
+    },
+    {
+      "type": "text_delta",
+      "text": " `name`. Search the rep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ository for references"
+    },
+    {
+      "type": "text_delta",
+      "text": " to `"
+    },
+    {
+      "type": "text_delta",
+      "text": "Name` and conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "irm they"
+    },
+    {
+      "type": "text_delta",
+      "text": " were"
+    },
+    {
+      "type": "text_delta",
+      "text": " updated.\",\"end_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":1,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Callers still"
+    },
+    {
+      "type": "text_delta",
+      "text": " use the old cap"
+    },
+    {
+      "type": "text_delta",
+      "text": "italised module path\"}]"
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1387,
+      "output_tokens": 566,
+      "cost_usd": 0.0004217
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

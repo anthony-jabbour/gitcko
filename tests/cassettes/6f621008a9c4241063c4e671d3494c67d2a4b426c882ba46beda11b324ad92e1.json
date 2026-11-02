@@ -1,0 +1,252 @@
+{
+  "v": 1,
+  "key": "6f621008a9c4241063c4e671d3494c67d2a4b426c882ba46beda11b324ad92e1",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"security\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " replaces a parameterized"
+    },
+    {
+      "type": "text_delta",
+      "text": " query"
+    },
+    {
+      "type": "text_delta",
+      "text": " with"
+    },
+    {
+      "type": "text_delta",
+      "text": " string interpolation of the"
+    },
+    {
+      "type": "text_delta",
+      "text": " user-"
+    },
+    {
+      "type": "text_delta",
+      "text": "supplied name"
+    },
+    {
+      "type": "text_delta",
+      "text": " into S"
+    },
+    {
+      "type": "text_delta",
+      "text": "QL. A name containing a"
+    },
+    {
+      "type": "text_delta",
+      "text": " single quote (or"
+    },
+    {
+      "type": "text_delta",
+      "text": " cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "afted SQL) al"
+    },
+    {
+      "type": "text_delta",
+      "text": "ters the query"
+    },
+    {
+      "type": "text_delta",
+      "text": ", en"
+    },
+    {
+      "type": "text_delta",
+      "text": "abling SQL injection on"
+    },
+    {
+      "type": "text_delta",
+      "text": " any ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller of"
+    },
+    {
+      "type": "text_delta",
+      "text": " find_user with"
+    },
+    {
+      "type": "text_delta",
+      "text": " unt"
+    },
+    {
+      "type": "text_delta",
+      "text": "rusted input.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":8"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":8,\"title\":\"S"
+    },
+    {
+      "type": "text_delta",
+      "text": "QL injection via inter"
+    },
+    {
+      "type": "text_delta",
+      "text": "polated name in"
+    },
+    {
+      "type": "text_delta",
+      "text": " find_user\"},"
+    },
+    {
+      "type": "text_delta",
+      "text": "{\"category\":\"correctness"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"claim\":\"Params"
+    },
+    {
+      "type": "text_delta",
+      "text": " is now empty while"
+    },
+    {
+      "type": "text_delta",
+      "text": " the query"
+    },
+    {
+      "type": "text_delta",
+      "text": " still need"
+    },
+    {
+      "type": "text_delta",
+      "text": "s b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ound values;"
+    },
+    {
+      "type": "text_delta",
+      "text": " any"
+    },
+    {
+      "type": "text_delta",
+      "text": " cons"
+    },
+    {
+      "type": "text_delta",
+      "text": "umer that expects params"
+    },
+    {
+      "type": "text_delta",
+      "text": " to match"
+    },
+    {
+      "type": "text_delta",
+      "text": " plac"
+    },
+    {
+      "type": "text_delta",
+      "text": "eholders,"
+    },
+    {
+      "type": "text_delta",
+      "text": " or a name with qu"
+    },
+    {
+      "type": "text_delta",
+      "text": "otes, will produ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ce w"
+    },
+    {
+      "type": "text_delta",
+      "text": "rong results or err"
+    },
+    {
+      "type": "text_delta",
+      "text": "ors.\",\"end_line\":9"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":9,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Params vector em"
+    },
+    {
+      "type": "text_delta",
+      "text": "ptied,"
+    },
+    {
+      "type": "text_delta",
+      "text": " bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aking the"
+    },
+    {
+      "type": "text_delta",
+      "text": " query contract\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1564,
+      "output_tokens": 254,
+      "cost_usd": 0.0002834
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

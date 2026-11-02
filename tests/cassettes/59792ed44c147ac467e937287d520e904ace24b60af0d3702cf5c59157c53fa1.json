@@ -1,0 +1,184 @@
+{
+  "v": 1,
+  "key": "59792ed44c147ac467e937287d520e904ace24b60af0d3702cf5c59157c53fa1",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"inconclusive"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"reason\":\"The read_"
+    },
+    {
+      "type": "text_delta",
+      "text": "file result"
+    },
+    {
+      "type": "text_delta",
+      "text": " ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e1) shows U"
+    },
+    {
+      "type": "text_delta",
+      "text": "+FFFD repl"
+    },
+    {
+      "type": "text_delta",
+      "text": "acement characters on line 2"
+    },
+    {
+      "type": "text_delta",
+      "text": ", which is consistent with inv"
+    },
+    {
+      "type": "text_delta",
+      "text": "alid UTF-8 "
+    },
+    {
+      "type": "text_delta",
+      "text": "bytes, but the tool"
+    },
+    {
+      "type": "text_delta",
+      "text": " dec"
+    },
+    {
+      "type": "text_delta",
+      "text": "odes lossily"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so I c"
+    },
+    {
+      "type": "text_delta",
+      "text": "annot tell whether the file"
+    },
+    {
+      "type": "text_delta",
+      "text": " hol"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds ra"
+    },
+    {
+      "type": "text_delta",
+      "text": "w invalid bytes or"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " literal,"
+    },
+    {
+      "type": "text_delta",
+      "text": " valid U+FFFD"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": "side a comment. A"
+    },
+    {
+      "type": "text_delta",
+      "text": " liter"
+    },
+    {
+      "type": "text_delta",
+      "text": "al U+FFFD in"
+    },
+    {
+      "type": "text_delta",
+      "text": " a comment compiles fine"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so the comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ile fail"
+    },
+    {
+      "type": "text_delta",
+      "text": "ure the"
+    },
+    {
+      "type": "text_delta",
+      "text": " hypothesis describ"
+    },
+    {
+      "type": "text_delta",
+      "text": "es is not established"
+    },
+    {
+      "type": "text_delta",
+      "text": ". No t"
+    },
+    {
+      "type": "text_delta",
+      "text": "ool retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ns raw bytes, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " this"
+    },
+    {
+      "type": "text_delta",
+      "text": " c"
+    },
+    {
+      "type": "text_delta",
+      "text": "annot be sett"
+    },
+    {
+      "type": "text_delta",
+      "text": "led.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5233,
+      "output_tokens": 589,
+      "cost_usd": 0.0008178
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

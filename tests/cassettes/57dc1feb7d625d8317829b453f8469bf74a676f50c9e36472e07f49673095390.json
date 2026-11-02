@@ -1,0 +1,160 @@
+{
+  "v": 1,
+  "key": "57dc1feb7d625d8317829b453f8469bf74a676f50c9e36472e07f49673095390",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":[{\"category\":\"corre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ctness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " swap"
+    },
+    {
+      "type": "text_delta",
+      "text": "ped statements deb"
+    },
+    {
+      "type": "text_delta",
+      "text": "it `to` and cred"
+    },
+    {
+      "type": "text_delta",
+      "text": "it `from`, re"
+    },
+    {
+      "type": "text_delta",
+      "text": "versing the direction of every"
+    },
+    {
+      "type": "text_delta",
+      "text": " transfer. Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller that relies on `"
+    },
+    {
+      "type": "text_delta",
+      "text": "from` los"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing `"
+    },
+    {
+      "type": "text_delta",
+      "text": "amount` and"
+    },
+    {
+      "type": "text_delta",
+      "text": " `to` gaining it"
+    },
+    {
+      "type": "text_delta",
+      "text": " will see bal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ances move the w"
+    },
+    {
+      "type": "text_delta",
+      "text": "rong way."
+    },
+    {
+      "type": "text_delta",
+      "text": " Ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify by chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "king call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers and t"
+    },
+    {
+      "type": "text_delta",
+      "text": "ests of"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "transfer` for the expected"
+    },
+    {
+      "type": "text_delta",
+      "text": " balance dire"
+    },
+    {
+      "type": "text_delta",
+      "text": "ction.\",\"end_line\":7"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":6,\"title\":\"trans"
+    },
+    {
+      "type": "text_delta",
+      "text": "fer now"
+    },
+    {
+      "type": "text_delta",
+      "text": " moves funds in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the re"
+    },
+    {
+      "type": "text_delta",
+      "text": "verse direction\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1465,
+      "output_tokens": 365,
+      "cost_usd": 0.000329
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

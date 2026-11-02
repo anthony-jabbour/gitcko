@@ -1,0 +1,172 @@
+{
+  "v": 1,
+  "key": "70fa9f408e169bcda0cf29f2d6f24e31846d4f9993a151473452f706dba9751c",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "hypotheses\":[{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"category\":\"concurrency"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"claim\":\"b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ump() still holds the gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard `"
+    },
+    {
+      "type": "text_delta",
+      "text": "v` from self"
+    },
+    {
+      "type": "text_delta",
+      "text": ".value.lock() when it"
+    },
+    {
+      "type": "text_delta",
+      "text": " calls self.get(). If"
+    },
+    {
+      "type": "text_delta",
+      "text": " get() also"
+    },
+    {
+      "type": "text_delta",
+      "text": " locks self.value ("
+    },
+    {
+      "type": "text_delta",
+      "text": "lik"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely, since it"
+    },
+    {
+      "type": "text_delta",
+      "text": " reads the same field"
+    },
+    {
+      "type": "text_delta",
+      "text": "), the"
+    },
+    {
+      "type": "text_delta",
+      "text": " non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-reentrant std"
+    },
+    {
+      "type": "text_delta",
+      "text": " Mutex self"
+    },
+    {
+      "type": "text_delta",
+      "text": "-deadlocks on every"
+    },
+    {
+      "type": "text_delta",
+      "text": " call"
+    },
+    {
+      "type": "text_delta",
+      "text": " to"
+    },
+    {
+      "type": "text_delta",
+      "text": " bump(). Confirm"
+    },
+    {
+      "type": "text_delta",
+      "text": " by reading get"
+    },
+    {
+      "type": "text_delta",
+      "text": "() and checking wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ether it locks self.value."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end_line\":15"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":15,\"title\":\"b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ump() calls get"
+    },
+    {
+      "type": "text_delta",
+      "text": "() while holding the same"
+    },
+    {
+      "type": "text_delta",
+      "text": " mutex gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard,"
+    },
+    {
+      "type": "text_delta",
+      "text": " ris"
+    },
+    {
+      "type": "text_delta",
+      "text": "king self-deadlock\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1432,
+      "output_tokens": 334,
+      "cost_usd": 0.0003102
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

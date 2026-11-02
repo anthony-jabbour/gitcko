@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The loop range was changed to 0..xs.len() while the body still indexes xs[i + 1]. On the final iteration i = len-1, so xs[i + 1] is xs[len], which is out of bounds. Any non-empty slice therefore panics, including a single-element slice where i = 0 reads xs[1].\n\nTrigger: Calling pair_sums with any slice of length 1 or more.\n\nImpact: pair_sums panics on every non-empty input. Callers get a crash instead of the adjacent-pair sums. Only the empty input returns normally.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.97,
+      "end_line": 5,
+      "evidence": [
+        {
+          "end_line": 8,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_41b4c534b7e2dfa1",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 4,
+      "suggestion": "Use `for i in 0..xs.len().saturating_sub(1)` or `xs.windows(2).map(|w| w[0] + w[1]).collect()`.",
+      "title": "pair_sums indexes xs[i + 1] past the end on the last iteration and panics for any non-empty input",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The new loop runs i over 0..len and indexes xs[i + 1], which panics out of bounds on the last iteration, and the commit message says it only changes pairing direction, so the behaviour change is unannounced.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "3ddf8549a1392c5edb9bc281d719b4be2958fb0c",
+    "head_sha": "e3e53763347f09a1ce582c404bf737dd50d11afa",
+    "local_changes": false,
+    "merge_base": "3ddf8549a1392c5edb9bc281d719b4be2958fb0c"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

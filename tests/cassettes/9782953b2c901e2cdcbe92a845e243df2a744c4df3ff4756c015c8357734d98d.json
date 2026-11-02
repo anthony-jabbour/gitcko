@@ -1,0 +1,88 @@
+{
+  "v": 1,
+  "key": "9782953b2c901e2cdcbe92a845e243df2a744c4df3ff4756c015c8357734d98d",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"app/main."
+    },
+    {
+      "type": "text_delta",
+      "text": "py\"],\"reason\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change only"
+    },
+    {
+      "type": "text_delta",
+      "text": " adds a sim"
+    },
+    {
+      "type": "text_delta",
+      "text": "ple subtraction function to"
+    },
+    {
+      "type": "text_delta",
+      "text": " a single"
+    },
+    {
+      "type": "text_delta",
+      "text": " file, with no ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "ident"
+    },
+    {
+      "type": "text_delta",
+      "text": " def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect or"
+    },
+    {
+      "type": "text_delta",
+      "text": " ris"
+    },
+    {
+      "type": "text_delta",
+      "text": "ky"
+    },
+    {
+      "type": "text_delta",
+      "text": " interaction.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 800,
+      "output_tokens": 58,
+      "cost_usd": 0.000109
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

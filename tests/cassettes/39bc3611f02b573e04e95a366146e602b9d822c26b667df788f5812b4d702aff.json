@@ -1,0 +1,96 @@
+{
+  "v": 1,
+  "key": "39bc3611f02b573e04e95a366146e602b9d822c26b667df788f5812b4d702aff",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff removes the empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " average"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero on emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input, contradicting its"
+    },
+    {
+      "type": "text_delta",
+      "text": " docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented return"
+    },
+    {
+      "type": "text_delta",
+      "text": " of 0.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 929,
+      "output_tokens": 217,
+      "cost_usd": 0.0002014
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

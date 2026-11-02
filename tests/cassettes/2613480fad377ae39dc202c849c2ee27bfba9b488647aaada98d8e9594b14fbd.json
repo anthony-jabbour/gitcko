@@ -1,0 +1,144 @@
+{
+  "v": 1,
+  "key": "2613480fad377ae39dc202c849c2ee27bfba9b488647aaada98d8e9594b14fbd",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"inconclusive"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"reason\":\"The di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff does"
+    },
+    {
+      "type": "text_delta",
+      "text": " put the raw token into the retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ned string (e2,"
+    },
+    {
+      "type": "text_delta",
+      "text": " lines 1-3), but"
+    },
+    {
+      "type": "text_delta",
+      "text": " a literal search of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the head commit fin"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds no"
+    },
+    {
+      "type": "text_delta",
+      "text": " ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller of login_line (e1"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "is only"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " definition). Whether the"
+    },
+    {
+      "type": "text_delta",
+      "text": " token is"
+    },
+    {
+      "type": "text_delta",
+      "text": " ever log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ged or emitted c"
+    },
+    {
+      "type": "text_delta",
+      "text": "annot be chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "ked from this"
+    },
+    {
+      "type": "text_delta",
+      "text": " repository, so no"
+    },
+    {
+      "type": "text_delta",
+      "text": " conc"
+    },
+    {
+      "type": "text_delta",
+      "text": "rete le"
+    },
+    {
+      "type": "text_delta",
+      "text": "ak path"
+    },
+    {
+      "type": "text_delta",
+      "text": " with"
+    },
+    {
+      "type": "text_delta",
+      "text": " a realistic trigger is"
+    },
+    {
+      "type": "text_delta",
+      "text": " shown.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5551,
+      "output_tokens": 536,
+      "cost_usd": 0.0008231
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

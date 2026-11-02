@@ -1,0 +1,376 @@
+{
+  "v": 1,
+  "key": "d981fc4ca7f7a945c532869bd9ec351327249dea57ce426cc72444f655d8eab9",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return for"
+    },
+    {
+      "type": "text_delta",
+      "text": " emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " was removed, so average"
+    },
+    {
+      "type": "text_delta",
+      "text": "(&[]) now"
+    },
+    {
+      "type": "text_delta",
+      "text": " ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "aluates total"
+    },
+    {
+      "type": "text_delta",
+      "text": " / "
+    },
+    {
+      "type": "text_delta",
+      "text": "0 and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero. The do"
+    },
+    {
+      "type": "text_delta",
+      "text": "c com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment still prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0 for no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples. Show"
+    },
+    {
+      "type": "text_delta",
+      "text": " it"
+    },
+    {
+      "type": "text_delta",
+      "text": " by cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling average with"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice,"
+    },
+    {
+      "type": "text_delta",
+      "text": " and check"
+    },
+    {
+      "type": "text_delta",
+      "text": " whether the"
+    },
+    {
+      "type": "text_delta",
+      "text": " one caller el"
+    },
+    {
+      "type": "text_delta",
+      "text": "sewhere can"
+    },
+    {
+      "type": "text_delta",
+      "text": " pass an empty slice."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics on empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "},{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um is now computed in"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 without"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " early return."
+    },
+    {
+      "type": "text_delta",
+      "text": " Large sample"
+    },
+    {
+      "type": "text_delta",
+      "text": " values can overflow the"
+    },
+    {
+      "type": "text_delta",
+      "text": " s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which panics in debug builds"
+    },
+    {
+      "type": "text_delta",
+      "text": " and wraps sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently in release builds,"
+    },
+    {
+      "type": "text_delta",
+      "text": " giving a w"
+    },
+    {
+      "type": "text_delta",
+      "text": "rong mean."
+    },
+    {
+      "type": "text_delta",
+      "text": " Show it with"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples whose total"
+    },
+    {
+      "type": "text_delta",
+      "text": " exceeds u32::M"
+    },
+    {
+      "type": "text_delta",
+      "text": "AX.\",\"end_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3,\"title\":\"u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 sum can"
+    },
+    {
+      "type": "text_delta",
+      "text": " overflow for"
+    },
+    {
+      "type": "text_delta",
+      "text": " large sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples\"},{\"category\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "correctness\",\"claim\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The one"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public average function l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ives outside the"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff."
+    },
+    {
+      "type": "text_delta",
+      "text": " It may rely on the old cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ract of retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ning 0 for an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice, so it would"
+    },
+    {
+      "type": "text_delta",
+      "text": " now panic."
+    },
+    {
+      "type": "text_delta",
+      "text": " Check that caller's"
+    },
+    {
+      "type": "text_delta",
+      "text": " hand"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling of empty input.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":1"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Changed public cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ract may"
+    },
+    {
+      "type": "text_delta",
+      "text": " break the"
+    },
+    {
+      "type": "text_delta",
+      "text": " external"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1675,
+      "output_tokens": 611,
+      "cost_usd": 0.000473
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

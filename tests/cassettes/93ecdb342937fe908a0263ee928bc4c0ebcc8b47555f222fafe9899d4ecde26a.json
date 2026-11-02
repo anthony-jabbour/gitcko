@@ -1,0 +1,104 @@
+{
+  "v": 1,
+  "key": "93ecdb342937fe908a0263ee928bc4c0ebcc8b47555f222fafe9899d4ecde26a",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The frame header sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "rinks from a"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "4-byte u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 to"
+    },
+    {
+      "type": "text_delta",
+      "text": " a single"
+    },
+    {
+      "type": "text_delta",
+      "text": " by"
+    },
+    {
+      "type": "text_delta",
+      "text": "te via"
+    },
+    {
+      "type": "text_delta",
+      "text": " `body.len() as u8"
+    },
+    {
+      "type": "text_delta",
+      "text": "`, which"
+    },
+    {
+      "type": "text_delta",
+      "text": " silently truncates the"
+    },
+    {
+      "type": "text_delta",
+      "text": " length for bodies over"
+    },
+    {
+      "type": "text_delta",
+      "text": " 255 bytes and bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks the wire format for exist"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing read"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 861,
+      "output_tokens": 165,
+      "cost_usd": 0.0001686
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

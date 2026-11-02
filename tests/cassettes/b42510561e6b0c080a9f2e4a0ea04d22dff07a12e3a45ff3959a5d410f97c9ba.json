@@ -1,0 +1,164 @@
+{
+  "v": 1,
+  "key": "b42510561e6b0c080a9f2e4a0ea04d22dff07a12e3a45ff3959a5d410f97c9ba",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "repair",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so average(&"
+    },
+    {
+      "type": "text_delta",
+      "text": "[]) now div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics (sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() as"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 is 0)."
+    },
+    {
+      "type": "text_delta",
+      "text": " Tri"
+    },
+    {
+      "type": "text_delta",
+      "text": "ggered"
+    },
+    {
+      "type": "text_delta",
+      "text": " by any caller pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing an empty slice;"
+    },
+    {
+      "type": "text_delta",
+      "text": " verify by"
+    },
+    {
+      "type": "text_delta",
+      "text": " chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "king the unchanged ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported via"
+    },
+    {
+      "type": "text_delta",
+      "text": " ris"
+    },
+    {
+      "type": "text_delta",
+      "text": "k signals.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": "\"title\":\"Emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1649,
+      "output_tokens": 147,
+      "cost_usd": 0.0002384
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

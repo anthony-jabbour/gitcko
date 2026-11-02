@@ -1,0 +1,98 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The change replaces the parameterized query (placeholder `?` with `params: vec![name]`) with `format!` that interpolates `name` directly into the SQL text inside single quotes, and sets `params` to `Vec::new()`. A `name` containing `'` changes the SQL structure, and nothing escapes or binds it.\n\nTrigger: find_user is called with a name containing a single quote or other SQL syntax, for example O'Brien or ' OR '1'='1.\n\nImpact: Any caller passing untrusted input to find_user gets SQL injection: attackers can read other rows or other tables, or alter the statement. Names with quotes also produce malformed SQL errors for ordinary users.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 9,
+      "evidence": [
+        {
+          "end_line": 11,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_2e59def87ff0fbd8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": true,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 8,
+      "suggestion": "Restore the placeholder form: text: \"SELECT id FROM users WHERE name = ?\".to_string(), params: vec![name.to_string()].",
+      "title": "User input interpolated into SQL, bypassing bound parameters",
+      "verification": "not_run",
+      "verified_evidence": null
+    },
+    {
+      "body": "find_user now builds the SQL text with format!, inserting the raw `name` between single quotes (line 8) instead of keeping the `?` placeholder. The bound parameter list is now empty (line 9), so the name is never sent as a bound value. Any caller that executes `Query.text` as SQL gets the user input as part of the statement, and a quote in `name` ends the literal and changes the query.\n\nTrigger: A caller passes a name containing a single quote or SQL syntax, for example `x' OR '1'='1`, and executes the returned Query.text.=\n\nImpact: SQL injection for any caller of find_user that passes untrusted input and runs the returned query. An attacker could read or modify other rows or tables, or bypass the name filter.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.85,
+      "end_line": 8,
+      "evidence": [
+        {
+          "end_line": 11,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_8a6ab14f6e9254d8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": true,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 8,
+      "suggestion": "Restore the parameterized form: text: \"SELECT id FROM users WHERE name = ?\".to_string(), params: vec![name.to_string()].",
+      "title": "find_user interpolates name into SQL text, enabling injection",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The change replaces a parameterized SQL query with string interpolation of user input, introducing a SQL injection vulnerability in find_user.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 2 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "bab62540a0aa5bf7adf4a840fc44bd957781e5c0",
+    "head_sha": "61181109692cdccc1d1f39041f2ac354d1a10456",
+    "local_changes": false,
+    "merge_base": "bab62540a0aa5bf7adf4a840fc44bd957781e5c0"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

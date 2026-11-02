@@ -1,0 +1,276 @@
+{
+  "v": 1,
+  "key": "1fc48802abffa599dca6d699c1d05f93c1aa33a10f579ade5b71fbe3e6fd39ae",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " for empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed. With"
+    },
+    {
+      "type": "text_delta",
+      "text": " an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice, samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "len() is 0,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the integer division div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero and panics."
+    },
+    {
+      "type": "text_delta",
+      "text": " Tri"
+    },
+    {
+      "type": "text_delta",
+      "text": "ggered"
+    },
+    {
+      "type": "text_delta",
+      "text": " by any"
+    },
+    {
+      "type": "text_delta",
+      "text": " ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller passing an empty slice"
+    },
+    {
+      "type": "text_delta",
+      "text": "; the one"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller el"
+    },
+    {
+      "type": "text_delta",
+      "text": "sewhere may"
+    },
+    {
+      "type": "text_delta",
+      "text": " rely on the"
+    },
+    {
+      "type": "text_delta",
+      "text": " old 0 return.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics on empty slice"
+    },
+    {
+      "type": "text_delta",
+      "text": " after"
+    },
+    {
+      "type": "text_delta",
+      "text": " gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard removal"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"},"
+    },
+    {
+      "type": "text_delta",
+      "text": "{\"category\":\"correctness"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"claim\":\"u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 "
+    },
+    {
+      "type": "text_delta",
+      "text": "sum of"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples can overflow."
+    },
+    {
+      "type": "text_delta",
+      "text": " In"
+    },
+    {
+      "type": "text_delta",
+      "text": " debug builds this"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics and"
+    },
+    {
+      "type": "text_delta",
+      "text": " in release it w"
+    },
+    {
+      "type": "text_delta",
+      "text": "raps, gi"
+    },
+    {
+      "type": "text_delta",
+      "text": "ving a wrong average. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " remov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed code"
+    },
+    {
+      "type": "text_delta",
+      "text": " did"
+    },
+    {
+      "type": "text_delta",
+      "text": " not change this"
+    },
+    {
+      "type": "text_delta",
+      "text": ", but the change ke"
+    },
+    {
+      "type": "text_delta",
+      "text": "eps the same"
+    },
+    {
+      "type": "text_delta",
+      "text": " sum with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no guard, so large"
+    },
+    {
+      "type": "text_delta",
+      "text": " inputs now"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ach it without any"
+    },
+    {
+      "type": "text_delta",
+      "text": " check.\",\"end_line\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":2,\"title\":\"u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 sum overflow in"
+    },
+    {
+      "type": "text_delta",
+      "text": " average\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1590,
+      "output_tokens": 275,
+      "cost_usd": 0.0002965
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

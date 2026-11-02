@@ -1,0 +1,46 @@
+{
+  "cleared_risks": [
+    {
+      "description": "src/new_name.rs exists at head (e1) and src/lib.rs declares `pub mod new_name;` (e2), so the module resolves and the E0583 missing-file error does not occur.",
+      "name": "Module declaration points at a file that may not exist"
+    },
+    {
+      "description": "A complete literal search of the head commit for `old_name` returned zero hits, so no unchanged code in this repository still references the old module. The head `src/lib.rs` is a single line, `pub mod new_name;`. The only remaining risk is out-of-repo dependents, which these tools cannot see, and that is speculation rather than evidence.",
+      "name": "Remaining references to the old module name would fail to resolve"
+    }
+  ],
+  "coverage": {
+    "changed_files": 2,
+    "held_back": [],
+    "investigated_files": 2,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The change is a pure module rename in lib.rs with the new file src/new_name.rs, so risk is limited to whether the renamed module's contents and references still resolve.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 2 investigated file(s).",
+  "target": {
+    "base_sha": "7e896ccccce2b56e7545200e252b081305f1281d",
+    "head_sha": "2fccd64456188a378f1889c3d5b7b06f49521ca3",
+    "local_changes": false,
+    "merge_base": "7e896ccccce2b56e7545200e252b081305f1281d"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

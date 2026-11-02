@@ -1,0 +1,96 @@
+{
+  "v": 1,
+  "key": "1d4d94f4543b703ee558e67fa6e80f2a147b077d5676604580a87fba5a480d63",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The diff tou"
+    },
+    {
+      "type": "text_delta",
+      "text": "ches only"
+    },
+    {
+      "type": "text_delta",
+      "text": " src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs with"
+    },
+    {
+      "type": "text_delta",
+      "text": " a t"
+    },
+    {
+      "type": "text_delta",
+      "text": "iny change"
+    },
+    {
+      "type": "text_delta",
+      "text": " to"
+    },
+    {
+      "type": "text_delta",
+      "text": " a simple add function, though"
+    },
+    {
+      "type": "text_delta",
+      "text": " the remov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed closing brace su"
+    },
+    {
+      "type": "text_delta",
+      "text": "ggests a"
+    },
+    {
+      "type": "text_delta",
+      "text": " possible syntax error"
+    },
+    {
+      "type": "text_delta",
+      "text": " wor"
+    },
+    {
+      "type": "text_delta",
+      "text": "th checking.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 783,
+      "output_tokens": 78,
+      "cost_usd": 0.0001173
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

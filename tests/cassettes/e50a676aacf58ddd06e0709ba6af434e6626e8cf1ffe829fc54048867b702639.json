@@ -1,0 +1,412 @@
+{
+  "v": 1,
+  "key": "e50a676aacf58ddd06e0709ba6af434e6626e8cf1ffe829fc54048867b702639",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " swaps the two bal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ance upd"
+    },
+    {
+      "type": "text_delta",
+      "text": "ates in the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public trans"
+    },
+    {
+      "type": "text_delta",
+      "text": "fer function. The base"
+    },
+    {
+      "type": "text_delta",
+      "text": " code deb"
+    },
+    {
+      "type": "text_delta",
+      "text": "ited `"
+    },
+    {
+      "type": "text_delta",
+      "text": "from` and credited `to`"
+    },
+    {
+      "type": "text_delta",
+      "text": ". At"
+    },
+    {
+      "type": "text_delta",
+      "text": " head, line"
+    },
+    {
+      "type": "text_delta",
+      "text": " 6 deb"
+    },
+    {
+      "type": "text_delta",
+      "text": "its `to` and line 7"
+    },
+    {
+      "type": "text_delta",
+      "text": " credits `from`, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " every call"
+    },
+    {
+      "type": "text_delta",
+      "text": " moves the am"
+    },
+    {
+      "type": "text_delta",
+      "text": "ount in the opposite direction"
+    },
+    {
+      "type": "text_delta",
+      "text": " from"
+    },
+    {
+      "type": "text_delta",
+      "text": " the documented contract that"
+    },
+    {
+      "type": "text_delta",
+      "text": " `from` p"
+    },
+    {
+      "type": "text_delta",
+      "text": "ays `to"
+    },
+    {
+      "type": "text_delta",
+      "text": "`.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.85"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"counterevidence\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[],\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":7"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":[\"e1\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"impact\":\"Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller of the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public `transfer` g"
+    },
+    {
+      "type": "text_delta",
+      "text": "ets balances mo"
+    },
+    {
+      "type": "text_delta",
+      "text": "ved back"
+    },
+    {
+      "type": "text_delta",
+      "text": "wards: the payer's bal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ance grows and the pay"
+    },
+    {
+      "type": "text_delta",
+      "text": "ee's sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "rinks. This"
+    },
+    {
+      "type": "text_delta",
+      "text": " is a money-mov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ement regression."
+    },
+    {
+      "type": "text_delta",
+      "text": " No call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers or tests are"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": " this"
+    },
+    {
+      "type": "text_delta",
+      "text": " repository"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so the impact dep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends on external users"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate.\",\"path\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":6"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the base"
+    },
+    {
+      "type": "text_delta",
+      "text": " order: `from.balance -"
+    },
+    {
+      "type": "text_delta",
+      "text": "= amount;"
+    },
+    {
+      "type": "text_delta",
+      "text": "` then `to.balance +="
+    },
+    {
+      "type": "text_delta",
+      "text": " amount;`."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"title"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"trans"
+    },
+    {
+      "type": "text_delta",
+      "text": "fer deb"
+    },
+    {
+      "type": "text_delta",
+      "text": "its the"
+    },
+    {
+      "type": "text_delta",
+      "text": " receiver and credits the s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ender\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any call to"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "transfer(from, to,"
+    },
+    {
+      "type": "text_delta",
+      "text": " amount)` with a"
+    },
+    {
+      "type": "text_delta",
+      "text": " positive amount."
+    },
+    {
+      "type": "text_delta",
+      "text": "</"
+    },
+    {
+      "type": "text_delta",
+      "text": "br"
+    },
+    {
+      "type": "text_delta",
+      "text": ">"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Head source"
+    },
+    {
+      "type": "text_delta",
+      "text": " at src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs lines"
+    },
+    {
+      "type": "text_delta",
+      "text": " 5-8"
+    },
+    {
+      "type": "text_delta",
+      "text": " confirms the swapped"
+    },
+    {
+      "type": "text_delta",
+      "text": " statements, so the dire"
+    },
+    {
+      "type": "text_delta",
+      "text": "ction is reversed. No in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-repo callers or tests"
+    },
+    {
+      "type": "text_delta",
+      "text": " ex"
+    },
+    {
+      "type": "text_delta",
+      "text": "ist, so re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ach"
+    },
+    {
+      "type": "text_delta",
+      "text": "ability r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ests on the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public API.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5649,
+      "output_tokens": 838,
+      "cost_usd": 0.0009839
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "v": 1,
+  "key": "5573ded42bf9ba8a6faa3e35ba18590fb17f803de3e7fb1161d17160a2685498",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/new_"
+    },
+    {
+      "type": "text_delta",
+      "text": "name.rs\"],\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " is a module"
+    },
+    {
+      "type": "text_delta",
+      "text": " rename plus one"
+    },
+    {
+      "type": "text_delta",
+      "text": " tr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ivial"
+    },
+    {
+      "type": "text_delta",
+      "text": " additive function,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so"
+    },
+    {
+      "type": "text_delta",
+      "text": " the main"
+    },
+    {
+      "type": "text_delta",
+      "text": " risk is a bro"
+    },
+    {
+      "type": "text_delta",
+      "text": "ken module reference from"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ename r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ather than log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ects.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 881,
+      "output_tokens": 79,
+      "cost_usd": 0.0001276
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

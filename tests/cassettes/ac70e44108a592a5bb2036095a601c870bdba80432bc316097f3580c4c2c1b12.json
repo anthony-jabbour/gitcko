@@ -1,0 +1,132 @@
+{
+  "v": 1,
+  "key": "ac70e44108a592a5bb2036095a601c870bdba80432bc316097f3580c4c2c1b12",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"refuted\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " old file ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1) cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ains only is_even;"
+    },
+    {
+      "type": "text_delta",
+      "text": " f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixture::evens is a"
+    },
+    {
+      "type": "text_delta",
+      "text": " new addition, so no p"
+    },
+    {
+      "type": "text_delta",
+      "text": "re-existing caller dep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends on its previ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ous signature. The only res"
+    },
+    {
+      "type": "text_delta",
+      "text": "olved caller is the test"
+    },
+    {
+      "type": "text_delta",
+      "text": " in src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": " itself (low"
+    },
+    {
+      "type": "text_delta",
+      "text": "-"
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence res"
+    },
+    {
+      "type": "text_delta",
+      "text": "olution,"
+    },
+    {
+      "type": "text_delta",
+      "text": " partial coverage), so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " change bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks no"
+    },
+    {
+      "type": "text_delta",
+      "text": " existing ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5919,
+      "output_tokens": 372,
+      "cost_usd": 0.0007779
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

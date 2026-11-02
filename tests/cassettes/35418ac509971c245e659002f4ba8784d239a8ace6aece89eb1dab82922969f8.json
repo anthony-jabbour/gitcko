@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "key": "35418ac509971c245e659002f4ba8784d239a8ace6aece89eb1dab82922969f8",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change only"
+    },
+    {
+      "type": "text_delta",
+      "text": " adds a long"
+    },
+    {
+      "type": "text_delta",
+      "text": " string constant be"
+    },
+    {
+      "type": "text_delta",
+      "text": "side an un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " sim"
+    },
+    {
+      "type": "text_delta",
+      "text": "ple add function, so no"
+    },
+    {
+      "type": "text_delta",
+      "text": " real"
+    },
+    {
+      "type": "text_delta",
+      "text": " defect ris"
+    },
+    {
+      "type": "text_delta",
+      "text": "k is visible.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1185,
+      "output_tokens": 63,
+      "cost_usd": 0.00015
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

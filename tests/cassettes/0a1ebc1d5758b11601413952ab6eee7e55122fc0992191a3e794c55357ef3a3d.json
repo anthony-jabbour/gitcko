@@ -1,0 +1,412 @@
+{
+  "v": 1,
+  "key": "0a1ebc1d5758b11601413952ab6eee7e55122fc0992191a3e794c55357ef3a3d",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "correctness\",\"cause\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The head"
+    },
+    {
+      "type": "text_delta",
+      "text": " comm"
+    },
+    {
+      "type": "text_delta",
+      "text": "it's"
+    },
+    {
+      "type": "text_delta",
+      "text": " src/lib.rs now"
+    },
+    {
+      "type": "text_delta",
+      "text": " contains `pub fn add"
+    },
+    {
+      "type": "text_delta",
+      "text": "(a: u32 b u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 -> {{{"
+    },
+    {
+      "type": "text_delta",
+      "text": " a + ` follow"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed by `)))`"
+    },
+    {
+      "type": "text_delta",
+      "text": ". The par"
+    },
+    {
+      "type": "text_delta",
+      "text": "ameter list l"
+    },
+    {
+      "type": "text_delta",
+      "text": "acks a comma between"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "a: u32` and `b"
+    },
+    {
+      "type": "text_delta",
+      "text": ":"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32`, the return ar"
+    },
+    {
+      "type": "text_delta",
+      "text": "row is mal"
+    },
+    {
+      "type": "text_delta",
+      "text": "formed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " braces are un"
+    },
+    {
+      "type": "text_delta",
+      "text": "balanced and inv"
+    },
+    {
+      "type": "text_delta",
+      "text": "alid, and the function"
+    },
+    {
+      "type": "text_delta",
+      "text": " body is tru"
+    },
+    {
+      "type": "text_delta",
+      "text": "ncated. This is not par"
+    },
+    {
+      "type": "text_delta",
+      "text": "seable Rust,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so c"
+    },
+    {
+      "type": "text_delta",
+      "text": "argo build"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the crate f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ails.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"syntax"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"confidence\":0"
+    },
+    {
+      "type": "text_delta",
+      "text": ".98"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"counterevidence\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[],\"end_line\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"evidence\":[\"e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1\"],\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " crate fails to compile,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " build is"
+    },
+    {
+      "type": "text_delta",
+      "text": " broken for"
+    },
+    {
+      "type": "text_delta",
+      "text": " every cons"
+    },
+    {
+      "type": "text_delta",
+      "text": "umer and"
+    },
+    {
+      "type": "text_delta",
+      "text": " any test"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " CI job that"
+    },
+    {
+      "type": "text_delta",
+      "text": " builds the"
+    },
+    {
+      "type": "text_delta",
+      "text": " crate.\",\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P0\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":1"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the original body"
+    },
+    {
+      "type": "text_delta",
+      "text": ": `pub fn add("
+    },
+    {
+      "type": "text_delta",
+      "text": "a: u32, b: u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32) -> u32 {"
+    },
+    {
+      "type": "text_delta",
+      "text": "` / `    a + b`"
+    },
+    {
+      "type": "text_delta",
+      "text": " / `}`.\",\"title\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs no"
+    },
+    {
+      "type": "text_delta",
+      "text": " longer parses:"
+    },
+    {
+      "type": "text_delta",
+      "text": " add function"
+    },
+    {
+      "type": "text_delta",
+      "text": " is malformed and"
+    },
+    {
+      "type": "text_delta",
+      "text": " will"
+    },
+    {
+      "type": "text_delta",
+      "text": " not compile\",\"trigger\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Any comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ilation of the crate ("
+    },
+    {
+      "type": "text_delta",
+      "text": "cargo build, c"
+    },
+    {
+      "type": "text_delta",
+      "text": "argo test, or a d"
+    },
+    {
+      "type": "text_delta",
+      "text": "ependent cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate build"
+    },
+    {
+      "type": "text_delta",
+      "text": ")."
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The read"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs at head"
+    },
+    {
+      "type": "text_delta",
+      "text": " shows the mal"
+    },
+    {
+      "type": "text_delta",
+      "text": "formed add signature and"
+    },
+    {
+      "type": "text_delta",
+      "text": " truncated body on"
+    },
+    {
+      "type": "text_delta",
+      "text": " l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ines 1-2, which c"
+    },
+    {
+      "type": "text_delta",
+      "text": "annot par"
+    },
+    {
+      "type": "text_delta",
+      "text": "se as Rust. The h"
+    },
+    {
+      "type": "text_delta",
+      "text": "ypothesis is conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "irmed.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5595,
+      "output_tokens": 453,
+      "cost_usd": 0.000786
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

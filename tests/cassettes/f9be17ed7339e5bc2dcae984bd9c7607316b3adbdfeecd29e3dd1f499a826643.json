@@ -1,0 +1,104 @@
+{
+  "v": 1,
+  "key": "f9be17ed7339e5bc2dcae984bd9c7607316b3adbdfeecd29e3dd1f499a826643",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"refuted\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Literal searches for"
+    },
+    {
+      "type": "text_delta",
+      "text": " `Name::`, `cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate::Name`, and `"
+    },
+    {
+      "type": "text_delta",
+      "text": "use Name` over the head comm"
+    },
+    {
+      "type": "text_delta",
+      "text": "it returned compl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ete coverage with zero h"
+    },
+    {
+      "type": "text_delta",
+      "text": "its, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " src/lib.rs now"
+    },
+    {
+      "type": "text_delta",
+      "text": " declares only `pub mod"
+    },
+    {
+      "type": "text_delta",
+      "text": " name;`"
+    },
+    {
+      "type": "text_delta",
+      "text": " (e1). No rem"
+    },
+    {
+      "type": "text_delta",
+      "text": "aining references"
+    },
+    {
+      "type": "text_delta",
+      "text": " to the old cap"
+    },
+    {
+      "type": "text_delta",
+      "text": "italised path were"
+    },
+    {
+      "type": "text_delta",
+      "text": " found.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5739,
+      "output_tokens": 308,
+      "cost_usd": 0.0007279
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

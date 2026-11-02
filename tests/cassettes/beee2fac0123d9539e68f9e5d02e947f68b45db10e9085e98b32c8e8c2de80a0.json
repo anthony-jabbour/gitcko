@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "key": "beee2fac0123d9539e68f9e5d02e947f68b45db10e9085e98b32c8e8c2de80a0",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/App."
+    },
+    {
+      "type": "text_delta",
+      "text": "java\"],\"reason\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change adds a single sim"
+    },
+    {
+      "type": "text_delta",
+      "text": "ple sub"
+    },
+    {
+      "type": "text_delta",
+      "text": "traction method to one"
+    },
+    {
+      "type": "text_delta",
+      "text": " file with no ap"
+    },
+    {
+      "type": "text_delta",
+      "text": "parent def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ects"
+    },
+    {
+      "type": "text_delta",
+      "text": " or ris"
+    },
+    {
+      "type": "text_delta",
+      "text": "ky"
+    },
+    {
+      "type": "text_delta",
+      "text": " log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 804,
+      "output_tokens": 56,
+      "cost_usd": 0.0001084
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

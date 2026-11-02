@@ -1,0 +1,540 @@
+{
+  "v": 1,
+  "key": "8ef2db9b0046f78a7a60d577866bae9f74a8ccda22a9aea36c5e7b7a89527aca",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"data"
+    },
+    {
+      "type": "text_delta",
+      "text": "_integrity\",\"cause\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " new header"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " `vec![body.len()"
+    },
+    {
+      "type": "text_delta",
+      "text": " as u8]`."
+    },
+    {
+      "type": "text_delta",
+      "text": " The `as u8` cast"
+    },
+    {
+      "type": "text_delta",
+      "text": " ke"
+    },
+    {
+      "type": "text_delta",
+      "text": "eps only"
+    },
+    {
+      "type": "text_delta",
+      "text": " the low 8 bits of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the length, so any"
+    },
+    {
+      "type": "text_delta",
+      "text": " body of"
+    },
+    {
+      "type": "text_delta",
+      "text": " 256 or more bytes"
+    },
+    {
+      "type": "text_delta",
+      "text": " g"
+    },
+    {
+      "type": "text_delta",
+      "text": "ets a length by"
+    },
+    {
+      "type": "text_delta",
+      "text": "te that does"
+    },
+    {
+      "type": "text_delta",
+      "text": " not match its"
+    },
+    {
+      "type": "text_delta",
+      "text": " real"
+    },
+    {
+      "type": "text_delta",
+      "text": " size"
+    },
+    {
+      "type": "text_delta",
+      "text": " ("
+    },
+    {
+      "type": "text_delta",
+      "text": "for example,"
+    },
+    {
+      "type": "text_delta",
+      "text": " 256 bytes yields"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0). The old"
+    },
+    {
+      "type": "text_delta",
+      "text": " 4-byte u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 header did"
+    },
+    {
+      "type": "text_delta",
+      "text": " not have"
+    },
+    {
+      "type": "text_delta",
+      "text": " this lim"
+    },
+    {
+      "type": "text_delta",
+      "text": "it.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.85,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":2,\"evid"
+    },
+    {
+      "type": "text_delta",
+      "text": "ence\":[\"e1\"],\""
+    },
+    {
+      "type": "text_delta",
+      "text": "impact\":\"Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " fr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ames a body long"
+    },
+    {
+      "type": "text_delta",
+      "text": "er than 255 bytes"
+    },
+    {
+      "type": "text_delta",
+      "text": " produ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ces a cor"
+    },
+    {
+      "type": "text_delta",
+      "text": "rupt frame with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " error or"
+    },
+    {
+      "type": "text_delta",
+      "text": " panic. A"
+    },
+    {
+      "type": "text_delta",
+      "text": " decoder reading the length"
+    },
+    {
+      "type": "text_delta",
+      "text": " byte g"
+    },
+    {
+      "type": "text_delta",
+      "text": "ets the wrong length"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " misparses the body and"
+    },
+    {
+      "type": "text_delta",
+      "text": " everything after it. Callers"
+    },
+    {
+      "type": "text_delta",
+      "text": " have"
+    },
+    {
+      "type": "text_delta",
+      "text": " no way"
+    },
+    {
+      "type": "text_delta",
+      "text": " to det"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect this from the return"
+    },
+    {
+      "type": "text_delta",
+      "text": " value.\",\"path\":\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Either return an error ("
+    },
+    {
+      "type": "text_delta",
+      "text": "or use"
+    },
+    {
+      "type": "text_delta",
+      "text": " Result"
+    },
+    {
+      "type": "text_delta",
+      "text": ") when body"
+    },
+    {
+      "type": "text_delta",
+      "text": ".len() > u"
+    },
+    {
+      "type": "text_delta",
+      "text": "8::MAX, or ke"
+    },
+    {
+      "type": "text_delta",
+      "text": "ep a"
+    },
+    {
+      "type": "text_delta",
+      "text": " wider"
+    },
+    {
+      "type": "text_delta",
+      "text": " length"
+    },
+    {
+      "type": "text_delta",
+      "text": " prefix such"
+    },
+    {
+      "type": "text_delta",
+      "text": " as the original"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 big"
+    },
+    {
+      "type": "text_delta",
+      "text": "-endian header"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"title"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"Length"
+    },
+    {
+      "type": "text_delta",
+      "text": " by"
+    },
+    {
+      "type": "text_delta",
+      "text": "te sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently truncates bodies over"
+    },
+    {
+      "type": "text_delta",
+      "text": " 255 bytes\",\"tr"
+    },
+    {
+      "type": "text_delta",
+      "text": "igger\":\"Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling frame() with a body of"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "256 or more bytes,"
+    },
+    {
+      "type": "text_delta",
+      "text": " such as any"
+    },
+    {
+      "type": "text_delta",
+      "text": " norm"
+    },
+    {
+      "type": "text_delta",
+      "text": "al-"
+    },
+    {
+      "type": "text_delta",
+      "text": "sized payload."
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The tru"
+    },
+    {
+      "type": "text_delta",
+      "text": "ncation def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect is direct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ly visible in the"
+    },
+    {
+      "type": "text_delta",
+      "text": " changed line (e1) and"
+    },
+    {
+      "type": "text_delta",
+      "text": " is a real regression that"
+    },
+    {
+      "type": "text_delta",
+      "text": " does"
+    },
+    {
+      "type": "text_delta",
+      "text": " not depend on out"
+    },
+    {
+      "type": "text_delta",
+      "text": "side consumers. The hyp"
+    },
+    {
+      "type": "text_delta",
+      "text": "othesis"
+    },
+    {
+      "type": "text_delta",
+      "text": " about"
+    },
+    {
+      "type": "text_delta",
+      "text": " un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32-prefix consumers"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " not conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "irmed: the repo has"
+    },
+    {
+      "type": "text_delta",
+      "text": " only one"
+    },
+    {
+      "type": "text_delta",
+      "text": " sym"
+    },
+    {
+      "type": "text_delta",
+      "text": "bol,"
+    },
+    {
+      "type": "text_delta",
+      "text": " no references to frame()"
+    },
+    {
+      "type": "text_delta",
+      "text": " beyond its definition ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e2), and no to"
+    },
+    {
+      "type": "text_delta",
+      "text": "_be_bytes or other"
+    },
+    {
+      "type": "text_delta",
+      "text": " dec"
+    },
+    {
+      "type": "text_delta",
+      "text": "oder or protocol code"
+    },
+    {
+      "type": "text_delta",
+      "text": " ("
+    },
+    {
+      "type": "text_delta",
+      "text": "emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty search), so there"
+    },
+    {
+      "type": "text_delta",
+      "text": " is no in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-repo reader that"
+    },
+    {
+      "type": "text_delta",
+      "text": " bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 6054,
+      "output_tokens": 938,
+      "cost_usd": 0.0010744
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

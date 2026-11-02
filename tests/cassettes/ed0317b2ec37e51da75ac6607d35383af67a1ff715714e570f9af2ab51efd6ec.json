@@ -1,0 +1,196 @@
+{
+  "v": 1,
+  "key": "ed0317b2ec37e51da75ac6607d35383af67a1ff715714e570f9af2ab51efd6ec",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change removes the default of"
+    },
+    {
+      "type": "text_delta",
+      "text": " 8080 and"
+    },
+    {
+      "type": "text_delta",
+      "text": " replaces opt"
+    },
+    {
+      "type": "text_delta",
+      "text": "ional parsing with unwr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ap()."
+    },
+    {
+      "type": "text_delta",
+      "text": " If the "
+    },
+    {
+      "type": "text_delta",
+      "text": "'port' key is missing from"
+    },
+    {
+      "type": "text_delta",
+      "text": " config, get"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " returns None and un"
+    },
+    {
+      "type": "text_delta",
+      "text": "wrap() panics; if"
+    },
+    {
+      "type": "text_delta",
+      "text": " the value is not"
+    },
+    {
+      "type": "text_delta",
+      "text": " a valid u"
+    },
+    {
+      "type": "text_delta",
+      "text": "16, parse() panics."
+    },
+    {
+      "type": "text_delta",
+      "text": " Call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers that"
+    },
+    {
+      "type": "text_delta",
+      "text": " rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ied on the f"
+    },
+    {
+      "type": "text_delta",
+      "text": "allback will"
+    },
+    {
+      "type": "text_delta",
+      "text": " now crash at startup or"
+    },
+    {
+      "type": "text_delta",
+      "text": " on"
+    },
+    {
+      "type": "text_delta",
+      "text": " config"
+    },
+    {
+      "type": "text_delta",
+      "text": " load. Ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify by fin"
+    },
+    {
+      "type": "text_delta",
+      "text": "ding callers of port() and wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ether config"
+    },
+    {
+      "type": "text_delta",
+      "text": " can"
+    },
+    {
+      "type": "text_delta",
+      "text": " lack the"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "'port' key.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":4,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Missing or"
+    },
+    {
+      "type": "text_delta",
+      "text": " invalid port config"
+    },
+    {
+      "type": "text_delta",
+      "text": " now panics instead of falling"
+    },
+    {
+      "type": "text_delta",
+      "text": " back to 8080\"}]"
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1459,
+      "output_tokens": 198,
+      "cost_usd": 0.0002449
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

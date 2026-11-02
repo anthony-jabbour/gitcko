@@ -1,0 +1,96 @@
+{
+  "v": 1,
+  "key": "2224f1410820c7f3b648a6982036ea53b1ca1168cb9d83887e63f419b2fd4fd8",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"high\",\"priorities\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[\"src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"],\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed, so average"
+    },
+    {
+      "type": "text_delta",
+      "text": "("
+    },
+    {
+      "type": "text_delta",
+      "text": "&[]) now div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics, contradicting the"
+    },
+    {
+      "type": "text_delta",
+      "text": " doc comment that prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0; the u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um can"
+    },
+    {
+      "type": "text_delta",
+      "text": " also overflow.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 938,
+      "output_tokens": 259,
+      "cost_usd": 0.0002233
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

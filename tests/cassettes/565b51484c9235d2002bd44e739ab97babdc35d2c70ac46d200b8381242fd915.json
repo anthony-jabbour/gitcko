@@ -1,0 +1,160 @@
+{
+  "v": 1,
+  "key": "565b51484c9235d2002bd44e739ab97babdc35d2c70ac46d200b8381242fd915",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":[{\"category\":\"corre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ctness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff replaces the closing"
+    },
+    {
+      "type": "text_delta",
+      "text": " brace of `add` with `"
+    },
+    {
+      "type": "text_delta",
+      "text": "}}`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", le"
+    },
+    {
+      "type": "text_delta",
+      "text": "aving a stray un"
+    },
+    {
+      "type": "text_delta",
+      "text": "m"
+    },
+    {
+      "type": "text_delta",
+      "text": "atched br"
+    },
+    {
+      "type": "text_delta",
+      "text": "ace after"
+    },
+    {
+      "type": "text_delta",
+      "text": " the function."
+    },
+    {
+      "type": "text_delta",
+      "text": " If"
+    },
+    {
+      "type": "text_delta",
+      "text": " the res"
+    },
+    {
+      "type": "text_delta",
+      "text": "ulting src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs is comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "iled, the build should"
+    },
+    {
+      "type": "text_delta",
+      "text": " fail with a syntax error"
+    },
+    {
+      "type": "text_delta",
+      "text": ". Ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify"
+    },
+    {
+      "type": "text_delta",
+      "text": " by reading the post"
+    },
+    {
+      "type": "text_delta",
+      "text": "-change"
+    },
+    {
+      "type": "text_delta",
+      "text": " file around"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 3.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":3,\"path\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"start_line\":3,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\"Stray ext"
+    },
+    {
+      "type": "text_delta",
+      "text": "ra clos"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing brace in src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ilation\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1397,
+      "output_tokens": 365,
+      "cost_usd": 0.0003222
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

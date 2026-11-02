@@ -1,0 +1,156 @@
+{
+  "v": 1,
+  "key": "bfa269cd81113f463693589c74d3695b35dfb748b7c612b8d0533cdca6a7ac95",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hyp"
+    },
+    {
+      "type": "text_delta",
+      "text": "otheses\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"claim"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The remov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-slice guard means"
+    },
+    {
+      "type": "text_delta",
+      "text": " average"
+    },
+    {
+      "type": "text_delta",
+      "text": "(&["
+    },
+    {
+      "type": "text_delta",
+      "text": "]) now ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "aluates total / "
+    },
+    {
+      "type": "text_delta",
+      "text": "0 and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero, although"
+    },
+    {
+      "type": "text_delta",
+      "text": " the doc com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment promises 0 for"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples. Show"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing this need"
+    },
+    {
+      "type": "text_delta",
+      "text": "s a"
+    },
+    {
+      "type": "text_delta",
+      "text": " ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " can"
+    },
+    {
+      "type": "text_delta",
+      "text": " pass an empty slice."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":5"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":4,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " now panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1528,
+      "output_tokens": 451,
+      "cost_usd": 0.0003783
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

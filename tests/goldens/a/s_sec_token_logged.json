@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The change now interpolates an authentication token into a log-style string, which likely leaks credentials into output.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s). 1 hypothesis(es) could not be settled either way.",
+  "target": {
+    "base_sha": "fa064102d3d9167b18248d252c370e2f4c3c9b92",
+    "head_sha": "4a544829f68e30e7baf4133b026849dddbe4a5eb",
+    "local_changes": false,
+    "merge_base": "fa064102d3d9167b18248d252c370e2f4c3c9b92"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "eefcf610f0c6568ee65ee865975215bcea3b38ebf2ac1691171cbf23f22e8f6e",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"src/name."
+    },
+    {
+      "type": "text_delta",
+      "text": "rs\"],\"reason\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " only"
+    },
+    {
+      "type": "text_delta",
+      "text": " renames the"
+    },
+    {
+      "type": "text_delta",
+      "text": " module declaration from"
+    },
+    {
+      "type": "text_delta",
+      "text": " Name to name to"
+    },
+    {
+      "type": "text_delta",
+      "text": " match the l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ower-case file,"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " mechanical f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ix with little"
+    },
+    {
+      "type": "text_delta",
+      "text": " def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect risk.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 788,
+      "output_tokens": 74,
+      "cost_usd": 0.0001158
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

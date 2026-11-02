@@ -1,0 +1,196 @@
+{
+  "v": 1,
+  "key": "c3a27ad09cb71e63875f4ac7429e744c86a06466525cd12d70f18577ad8048f3",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":[{\"category\":\"data"
+    },
+    {
+      "type": "text_delta",
+      "text": "_integrity\",\"claim\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " `?` on write"
+    },
+    {
+      "type": "text_delta",
+      "text": "_all was replaced by `"
+    },
+    {
+      "type": "text_delta",
+      "text": "let _ ="
+    },
+    {
+      "type": "text_delta",
+      "text": "`, so a failed write"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " discarded. save"
+    },
+    {
+      "type": "text_delta",
+      "text": "() then"
+    },
+    {
+      "type": "text_delta",
+      "text": " returns the"
+    },
+    {
+      "type": "text_delta",
+      "text": " result"
+    },
+    {
+      "type": "text_delta",
+      "text": " of flush()"
+    },
+    {
+      "type": "text_delta",
+      "text": " alone, which can be"
+    },
+    {
+      "type": "text_delta",
+      "text": " Ok when"
+    },
+    {
+      "type": "text_delta",
+      "text": " the record was never"
+    },
+    {
+      "type": "text_delta",
+      "text": " written. Callers would"
+    },
+    {
+      "type": "text_delta",
+      "text": " see success"
+    },
+    {
+      "type": "text_delta",
+      "text": " and the record"
+    },
+    {
+      "type": "text_delta",
+      "text": " would be sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently lost. Verify by"
+    },
+    {
+      "type": "text_delta",
+      "text": " chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "king whether any caller rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ies on save"
+    },
+    {
+      "type": "text_delta",
+      "text": "() returning an error"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " a fail"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed write, and whether a"
+    },
+    {
+      "type": "text_delta",
+      "text": " writ"
+    },
+    {
+      "type": "text_delta",
+      "text": "er that fails on write"
+    },
+    {
+      "type": "text_delta",
+      "text": "_all but"
+    },
+    {
+      "type": "text_delta",
+      "text": " succeeds on flush ex"
+    },
+    {
+      "type": "text_delta",
+      "text": "ists.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4,\"path\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"start_line\":4,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\"Write"
+    },
+    {
+      "type": "text_delta",
+      "text": " err"
+    },
+    {
+      "type": "text_delta",
+      "text": "ors sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently ignored in save()\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1458,
+      "output_tokens": 365,
+      "cost_usd": 0.0003283
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

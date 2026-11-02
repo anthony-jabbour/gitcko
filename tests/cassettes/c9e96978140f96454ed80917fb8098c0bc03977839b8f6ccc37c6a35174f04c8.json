@@ -1,0 +1,100 @@
+{
+  "v": 1,
+  "key": "c9e96978140f96454ed80917fb8098c0bc03977839b8f6ccc37c6a35174f04c8",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The only"
+    },
+    {
+      "type": "text_delta",
+      "text": " chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed file ad"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds a small struct decl"
+    },
+    {
+      "type": "text_delta",
+      "text": "aration that"
+    },
+    {
+      "type": "text_delta",
+      "text": " appears truncated and unf"
+    },
+    {
+      "type": "text_delta",
+      "text": "inished, with no log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic change"
+    },
+    {
+      "type": "text_delta",
+      "text": " to"
+    },
+    {
+      "type": "text_delta",
+      "text": " exist"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing code"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " so def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect risk loo"
+    },
+    {
+      "type": "text_delta",
+      "text": "ks low.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 820,
+      "output_tokens": 74,
+      "cost_usd": 0.000119
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

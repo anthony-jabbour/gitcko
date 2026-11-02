@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "medium",
+    "reason": "Reordering the Status variants shifts their implicit discriminants (Busy changes from 1 to 2 and Failed from 2 to 1), which breaks any code that depends on those integer values, such as serialization, FFI, or casts.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "0e013e5db9e55c4e7dcd6fe28ac9b26eb32e02ee",
+    "head_sha": "e051859dd397b5ffbc2d9f49ddeafb0bdefcf59b",
+    "local_changes": false,
+    "merge_base": "0e013e5db9e55c4e7dcd6fe28ac9b26eb32e02ee"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

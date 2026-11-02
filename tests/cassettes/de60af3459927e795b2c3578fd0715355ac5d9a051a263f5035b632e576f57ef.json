@@ -1,0 +1,40 @@
+{
+  "v": 1,
+  "key": "de60af3459927e795b2c3578fd0715355ac5d9a051a263f5035b632e576f57ef",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "tool_call",
+      "id": "toolu_01BecpfRmnCLt31dXiTZT3NQ",
+      "name": "find_callers",
+      "arguments": "{\"symbol\": \"s0\"}"
+    },
+    {
+      "type": "tool_call",
+      "id": "toolu_01F9ps8PAPcuKRvg7PHBJcFJ",
+      "name": "find_references",
+      "arguments": "{\"symbol\": \"s0\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5603,
+      "output_tokens": 98,
+      "cost_usd": 0.0006093
+    },
+    {
+      "type": "finish",
+      "reason": "tool_calls"
+    }
+  ]
+}

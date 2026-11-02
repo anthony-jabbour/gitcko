@@ -1,0 +1,148 @@
+{
+  "v": 1,
+  "key": "6cf859da60382db60ebe66ead502336fa3d884810f08002cc792cbf8b7cac686",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"refuted\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"A compl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ete literal search of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the head commit for `old_"
+    },
+    {
+      "type": "text_delta",
+      "text": "name` returned z"
+    },
+    {
+      "type": "text_delta",
+      "text": "ero hits, so no un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed code in this"
+    },
+    {
+      "type": "text_delta",
+      "text": " repository still references"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " old module. The head `"
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs`"
+    },
+    {
+      "type": "text_delta",
+      "text": " is a"
+    },
+    {
+      "type": "text_delta",
+      "text": " single line"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " `pub mod new_name"
+    },
+    {
+      "type": "text_delta",
+      "text": ";`."
+    },
+    {
+      "type": "text_delta",
+      "text": " The only"
+    },
+    {
+      "type": "text_delta",
+      "text": " remaining ris"
+    },
+    {
+      "type": "text_delta",
+      "text": "k is out"
+    },
+    {
+      "type": "text_delta",
+      "text": "-of-rep"
+    },
+    {
+      "type": "text_delta",
+      "text": "o dependents, which these"
+    },
+    {
+      "type": "text_delta",
+      "text": " tools c"
+    },
+    {
+      "type": "text_delta",
+      "text": "annot see,"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " that"
+    },
+    {
+      "type": "text_delta",
+      "text": " is spe"
+    },
+    {
+      "type": "text_delta",
+      "text": "culation rather than evidence"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5395,
+      "output_tokens": 272,
+      "cost_usd": 0.0006755
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

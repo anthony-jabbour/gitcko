@@ -1,0 +1,164 @@
+{
+  "v": 1,
+  "key": "b891c15abe7d7b273994677148d889c4fd440b68ace9a3d8c55581c3a365bed4",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":[{\"category\":\"corre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ctness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " new"
+    },
+    {
+      "type": "text_delta",
+      "text": " src/lib.rs content"
+    },
+    {
+      "type": "text_delta",
+      "text": " is malformed"
+    },
+    {
+      "type": "text_delta",
+      "text": " Rust: the"
+    },
+    {
+      "type": "text_delta",
+      "text": " add"
+    },
+    {
+      "type": "text_delta",
+      "text": " sign"
+    },
+    {
+      "type": "text_delta",
+      "text": "ature is miss"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing a comma and has"
+    },
+    {
+      "type": "text_delta",
+      "text": " an"
+    },
+    {
+      "type": "text_delta",
+      "text": " invalid return"
+    },
+    {
+      "type": "text_delta",
+      "text": " ar"
+    },
+    {
+      "type": "text_delta",
+      "text": "row and"
+    },
+    {
+      "type": "text_delta",
+      "text": " bra"
+    },
+    {
+      "type": "text_delta",
+      "text": "ces, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the body"
+    },
+    {
+      "type": "text_delta",
+      "text": " is tru"
+    },
+    {
+      "type": "text_delta",
+      "text": "ncated. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate will f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ail to compile, bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aking the build. Verify"
+    },
+    {
+      "type": "text_delta",
+      "text": " by par"
+    },
+    {
+      "type": "text_delta",
+      "text": "sing l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":2,\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"start_line\":1,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"title\":\"Mal"
+    },
+    {
+      "type": "text_delta",
+      "text": "formed add function will"
+    },
+    {
+      "type": "text_delta",
+      "text": " not compile\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1421,
+      "output_tokens": 268,
+      "cost_usd": 0.0002761
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "v": 1,
+  "key": "263debbfd6e74a87202172ef82bf4856adea50c04c0f36b723519cc29a52a92f",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":[{\"category\":\"data"
+    },
+    {
+      "type": "text_delta",
+      "text": "_integrity\",\"claim\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Reordering the vari"
+    },
+    {
+      "type": "text_delta",
+      "text": "ants changes the implicit disc"
+    },
+    {
+      "type": "text_delta",
+      "text": "riminants (Ok="
+    },
+    {
+      "type": "text_delta",
+      "text": "0, Failed=1,"
+    },
+    {
+      "type": "text_delta",
+      "text": " Busy=2 inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of Ok=0,"
+    },
+    {
+      "type": "text_delta",
+      "text": " Busy=1, Fail"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed=2). Any code"
+    },
+    {
+      "type": "text_delta",
+      "text": " that casts"
+    },
+    {
+      "type": "text_delta",
+      "text": " Status to an"
+    },
+    {
+      "type": "text_delta",
+      "text": " integer with"
+    },
+    {
+      "type": "text_delta",
+      "text": " `as`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", ser"
+    },
+    {
+      "type": "text_delta",
+      "text": "ializes it by"
+    },
+    {
+      "type": "text_delta",
+      "text": " disc"
+    },
+    {
+      "type": "text_delta",
+      "text": "riminant, pers"
+    },
+    {
+      "type": "text_delta",
+      "text": "ists it,"
+    },
+    {
+      "type": "text_delta",
+      "text": " or s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends it over F"
+    },
+    {
+      "type": "text_delta",
+      "text": "FI or a w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ire protocol will now read"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " write different values for Busy and"
+    },
+    {
+      "type": "text_delta",
+      "text": " Failed. Ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ether any such"
+    },
+    {
+      "type": "text_delta",
+      "text": " use exists in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the repository"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":7,\"path\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"start_line\":5"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"title\":\"En"
+    },
+    {
+      "type": "text_delta",
+      "text": "um variant reor"
+    },
+    {
+      "type": "text_delta",
+      "text": "der sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently changes discriminant values"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1424,
+      "output_tokens": 417,
+      "cost_usd": 0.0003509
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

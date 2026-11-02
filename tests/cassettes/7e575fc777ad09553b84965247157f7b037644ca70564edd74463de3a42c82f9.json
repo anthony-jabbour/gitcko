@@ -1,0 +1,100 @@
+{
+  "v": 1,
+  "key": "7e575fc777ad09553b84965247157f7b037644ca70564edd74463de3a42c82f9",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"A"
+    },
+    {
+      "type": "text_delta",
+      "text": " small,"
+    },
+    {
+      "type": "text_delta",
+      "text": " beh"
+    },
+    {
+      "type": "text_delta",
+      "text": "avior-preserving refact"
+    },
+    {
+      "type": "text_delta",
+      "text": "or repl"
+    },
+    {
+      "type": "text_delta",
+      "text": "acing a loop with an i"
+    },
+    {
+      "type": "text_delta",
+      "text": "terator map"
+    },
+    {
+      "type": "text_delta",
+      "text": "-"
+    },
+    {
+      "type": "text_delta",
+      "text": "collect that"
+    },
+    {
+      "type": "text_delta",
+      "text": " comput"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the same squares, with no"
+    },
+    {
+      "type": "text_delta",
+      "text": " new bran"
+    },
+    {
+      "type": "text_delta",
+      "text": "ches"
+    },
+    {
+      "type": "text_delta",
+      "text": " or error pa"
+    },
+    {
+      "type": "text_delta",
+      "text": "ths.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 874,
+      "output_tokens": 75,
+      "cost_usd": 0.0001249
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

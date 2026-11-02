@@ -1,0 +1,42 @@
+{
+  "cleared_risks": [
+    {
+      "description": "A complete literal search of the head commit finds no remaining references to old_name anywhere in the repository, and src/lib.rs now only declares `pub mod new_name;`. No unchanged caller is left referencing the old module, so the build break the hypothesis describes is not supported.",
+      "name": "Module rename may break unchanged callers of old_name"
+    }
+  ],
+  "coverage": {
+    "changed_files": 2,
+    "held_back": [],
+    "investigated_files": 2,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The change is a module rename plus one trivial additive function, so the main risk is a broken module reference from the rename rather than logic defects.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 2 investigated file(s).",
+  "target": {
+    "base_sha": "7e896ccccce2b56e7545200e252b081305f1281d",
+    "head_sha": "ab0718519d61a56c29712de13578967e862cfb84",
+    "local_changes": false,
+    "merge_base": "7e896ccccce2b56e7545200e252b081305f1281d"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

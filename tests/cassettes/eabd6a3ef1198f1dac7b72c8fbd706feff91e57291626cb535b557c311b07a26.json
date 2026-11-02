@@ -1,0 +1,200 @@
+{
+  "v": 1,
+  "key": "eabd6a3ef1198f1dac7b72c8fbd706feff91e57291626cb535b557c311b07a26",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"is"
+    },
+    {
+      "type": "text_delta",
+      "text": "_expired chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed from `now"
+    },
+    {
+      "type": "text_delta",
+      "text": " >= exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ires_at` to `now <"
+    },
+    {
+      "type": "text_delta",
+      "text": "= expires_at`, in"
+    },
+    {
+      "type": "text_delta",
+      "text": "verting the exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "iry bo"
+    },
+    {
+      "type": "text_delta",
+      "text": "undary: s"
+    },
+    {
+      "type": "text_delta",
+      "text": "essions are"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported expired while"
+    },
+    {
+      "type": "text_delta",
+      "text": " still"
+    },
+    {
+      "type": "text_delta",
+      "text": " valid and live"
+    },
+    {
+      "type": "text_delta",
+      "text": " s"
+    },
+    {
+      "type": "text_delta",
+      "text": "essions ("
+    },
+    {
+      "type": "text_delta",
+      "text": "now >"
+    },
+    {
+      "type": "text_delta",
+      "text": " expires_at) are reported"
+    },
+    {
+      "type": "text_delta",
+      "text": " unexpired. Tr"
+    },
+    {
+      "type": "text_delta",
+      "text": "igger: any"
+    },
+    {
+      "type": "text_delta",
+      "text": " call with"
+    },
+    {
+      "type": "text_delta",
+      "text": " now after expires_at, or"
+    },
+    {
+      "type": "text_delta",
+      "text": " now before"
+    },
+    {
+      "type": "text_delta",
+      "text": " it"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " Check the"
+    },
+    {
+      "type": "text_delta",
+      "text": " one"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller el"
+    },
+    {
+      "type": "text_delta",
+      "text": "sewhere for"
+    },
+    {
+      "type": "text_delta",
+      "text": " how the"
+    },
+    {
+      "type": "text_delta",
+      "text": " result g"
+    },
+    {
+      "type": "text_delta",
+      "text": "ates access"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":7"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":7,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Inverted expiry compar"
+    },
+    {
+      "type": "text_delta",
+      "text": "ison in"
+    },
+    {
+      "type": "text_delta",
+      "text": " Session::is_expired\"}"
+    },
+    {
+      "type": "text_delta",
+      "text": "]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1528,
+      "output_tokens": 185,
+      "cost_usd": 0.0002453
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

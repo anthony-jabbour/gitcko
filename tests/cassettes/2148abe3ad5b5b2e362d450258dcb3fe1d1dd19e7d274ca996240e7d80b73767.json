@@ -1,0 +1,76 @@
+{
+  "v": 1,
+  "key": "2148abe3ad5b5b2e362d450258dcb3fe1d1dd19e7d274ca996240e7d80b73767",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change only adds a doc com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment to cl"
+    },
+    {
+      "type": "text_delta",
+      "text": "amp01, with no beh"
+    },
+    {
+      "type": "text_delta",
+      "text": "avioral"
+    },
+    {
+      "type": "text_delta",
+      "text": " code"
+    },
+    {
+      "type": "text_delta",
+      "text": " mod"
+    },
+    {
+      "type": "text_delta",
+      "text": "ified"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 830,
+      "output_tokens": 55,
+      "cost_usd": 0.0001105
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "key": "7d2b17fc1bc9d052348ab3397dc9ea93245b9fae57a5fc7a75faff9d48e3a729",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change now inter"
+    },
+    {
+      "type": "text_delta",
+      "text": "p"
+    },
+    {
+      "type": "text_delta",
+      "text": "olates an"
+    },
+    {
+      "type": "text_delta",
+      "text": " authentication token into a log-"
+    },
+    {
+      "type": "text_delta",
+      "text": "style"
+    },
+    {
+      "type": "text_delta",
+      "text": " string"
+    },
+    {
+      "type": "text_delta",
+      "text": ", which lik"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely le"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks credentials into output.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 915,
+      "output_tokens": 60,
+      "cost_usd": 0.0001215
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

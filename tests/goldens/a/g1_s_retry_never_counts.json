@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The diff changes `tries` to an immutable `let tries = 0;` and makes the Err arm `continue` with no increment. The guard `Err(()) if tries + 1 >= max` therefore always compares 0 + 1 >= max, which is false for any max > 1. Every failing attempt falls through to `continue`, so the loop never exits.\n\nTrigger: Any call with max > 1 where the attempt closure keeps returning Err.\n\nImpact: When `attempt` keeps returning Err and max > 1, with_retries never returns and spins forever instead of returning Err after max attempts. Callers that rely on bounded retries will hang, which can freeze a thread or service.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.95,
+      "end_line": 10,
+      "evidence": [
+        {
+          "end_line": 10,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_b6c0908ce59788d3",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 2,
+      "suggestion": "Restore the mutable counter and increment it on failure: `let mut tries = 0;` and `Err(()) => tries += 1,`, or equivalently track attempts with a loop over 0..max.",
+      "title": "Retry counter never increments, so persistent failures loop forever",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The `tries` counter is now immutable and the error arm just does `continue`, so `with_retries` never returns `Err` and loops forever when every attempt fails.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "e0d79a0e106279f12d8f631e14e90ff2bb2846e5",
+    "head_sha": "7b4f830f47f5877d39521cdc46aeb5553f028e73",
+    "local_changes": false,
+    "merge_base": "e0d79a0e106279f12d8f631e14e90ff2bb2846e5"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

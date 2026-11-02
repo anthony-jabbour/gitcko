@@ -1,0 +1,112 @@
+{
+  "v": 1,
+  "key": "371e2695394f3de3f30a2b00e97c4e77310a3bf28d654f71a8b7f0647f7e6847",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"high\",\"priorities\":[\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "\\"
+    },
+    {
+      "type": "text_delta",
+      "text": "\\.gitcko/config"
+    },
+    {
+      "type": "text_delta",
+      "text": ".toml\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so average"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " divides by zero when samples"
+    },
+    {
+      "type": "text_delta",
+      "text": " is empty, contrad"
+    },
+    {
+      "type": "text_delta",
+      "text": "icting its"
+    },
+    {
+      "type": "text_delta",
+      "text": " docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented return of"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0 and causing a pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 970,
+      "output_tokens": 197,
+      "cost_usd": 0.0001955
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

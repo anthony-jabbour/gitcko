@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "bump() takes `let mut v = self.value.lock().unwrap()` at line 13 and keeps that guard alive until the function returns, since MutexGuard has a Drop impl and is not released early. At line 15 it calls self.get(), which at line 9 calls `self.value.lock()` on the same non-reentrant std::sync::Mutex. The thread tries to lock a mutex it already holds, so it blocks forever (or panics, depending on the platform). This happens on every bump() call.\n\nTrigger: Any call to Counter::bump().\n\nImpact: Every call to bump() hangs the calling thread permanently (or panics on platforms that detect re-entry). Any caller of bump() is affected, and the thread that holds the lock cannot recover.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.95,
+      "end_line": 15,
+      "evidence": [
+        {
+          "end_line": 17,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_4b4baee5a4a58774",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 13,
+      "suggestion": "Drop the guard before calling get(), or return the value from the guard directly: `let mut v = self.value.lock().unwrap(); *v += 1; *v`.",
+      "title": "bump() self-deadlocks by calling get() while holding the mutex guard",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "bump() still holds the mutex guard `v` while calling self.get(), which likely locks the same non-reentrant Mutex again and would deadlock.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "e63cf6b045f656942a7569aea72fcc0b5957bfca",
+    "head_sha": "0748c8866d9856eeaef33b670a8cbf8138b164ba",
+    "local_changes": false,
+    "merge_base": "e63cf6b045f656942a7569aea72fcc0b5957bfca"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

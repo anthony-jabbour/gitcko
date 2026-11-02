@@ -1,0 +1,428 @@
+{
+  "v": 1,
+  "key": "4c76ce3957ae30415341185d967733385c5de3f210f08793eed66f20fe66b207",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"conc"
+    },
+    {
+      "type": "text_delta",
+      "text": "urrency\",\"cause\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "bump() tak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es `"
+    },
+    {
+      "type": "text_delta",
+      "text": "let mut v = self.value"
+    },
+    {
+      "type": "text_delta",
+      "text": ".lock().unwrap"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": "` at line 13 "
+    },
+    {
+      "type": "text_delta",
+      "text": "and keeps that"
+    },
+    {
+      "type": "text_delta",
+      "text": " guard alive until the"
+    },
+    {
+      "type": "text_delta",
+      "text": " function returns,"
+    },
+    {
+      "type": "text_delta",
+      "text": " since"
+    },
+    {
+      "type": "text_delta",
+      "text": " MutexGuard has a"
+    },
+    {
+      "type": "text_delta",
+      "text": " Drop imp"
+    },
+    {
+      "type": "text_delta",
+      "text": "l and is"
+    },
+    {
+      "type": "text_delta",
+      "text": " not released"
+    },
+    {
+      "type": "text_delta",
+      "text": " early. At"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 15 it cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ls self"
+    },
+    {
+      "type": "text_delta",
+      "text": ".get(), which at"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 9 calls `self"
+    },
+    {
+      "type": "text_delta",
+      "text": ".value.lock()` on"
+    },
+    {
+      "type": "text_delta",
+      "text": " the same non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-reentrant std::s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ync::Mutex. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " th"
+    },
+    {
+      "type": "text_delta",
+      "text": "read t"
+    },
+    {
+      "type": "text_delta",
+      "text": "ries to lock a"
+    },
+    {
+      "type": "text_delta",
+      "text": " mutex it already"
+    },
+    {
+      "type": "text_delta",
+      "text": " holds, so it bl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ocks forever ("
+    },
+    {
+      "type": "text_delta",
+      "text": "or"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics,"
+    },
+    {
+      "type": "text_delta",
+      "text": " depending on the platform). This"
+    },
+    {
+      "type": "text_delta",
+      "text": " happens on every b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ump() call.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.95,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":15,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"evidence\":[\"e1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"],\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Every call to bump() h"
+    },
+    {
+      "type": "text_delta",
+      "text": "angs the"
+    },
+    {
+      "type": "text_delta",
+      "text": " calling thread permanently ("
+    },
+    {
+      "type": "text_delta",
+      "text": "or panics on"
+    },
+    {
+      "type": "text_delta",
+      "text": " platforms that det"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect re"
+    },
+    {
+      "type": "text_delta",
+      "text": "-entry"
+    },
+    {
+      "type": "text_delta",
+      "text": ")."
+    },
+    {
+      "type": "text_delta",
+      "text": " Any ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller of bump() is"
+    },
+    {
+      "type": "text_delta",
+      "text": " aff"
+    },
+    {
+      "type": "text_delta",
+      "text": "ected, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the th"
+    },
+    {
+      "type": "text_delta",
+      "text": "read that"
+    },
+    {
+      "type": "text_delta",
+      "text": " holds the lock cannot"
+    },
+    {
+      "type": "text_delta",
+      "text": " rec"
+    },
+    {
+      "type": "text_delta",
+      "text": "over.\",\"path\":\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P0\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":13"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Drop the guard before"
+    },
+    {
+      "type": "text_delta",
+      "text": " calling get"
+    },
+    {
+      "type": "text_delta",
+      "text": "(), or return"
+    },
+    {
+      "type": "text_delta",
+      "text": " the value from"
+    },
+    {
+      "type": "text_delta",
+      "text": " the guard directly: `let"
+    },
+    {
+      "type": "text_delta",
+      "text": " mut v = self"
+    },
+    {
+      "type": "text_delta",
+      "text": ".value.lock().unw"
+    },
+    {
+      "type": "text_delta",
+      "text": "rap(); *v += "
+    },
+    {
+      "type": "text_delta",
+      "text": "1; *v`"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"title\":\"bump() self"
+    },
+    {
+      "type": "text_delta",
+      "text": "-deadlocks by"
+    },
+    {
+      "type": "text_delta",
+      "text": " calling get"
+    },
+    {
+      "type": "text_delta",
+      "text": "() while holding the m"
+    },
+    {
+      "type": "text_delta",
+      "text": "utex guard\",\"trigger"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " call to"
+    },
+    {
+      "type": "text_delta",
+      "text": " Counter::bump()."
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"outcome\":\"sup"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported\",\"reason\":\"get"
+    },
+    {
+      "type": "text_delta",
+      "text": "() at"
+    },
+    {
+      "type": "text_delta",
+      "text": " lines 8-10 loc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ks self.value, and bump"
+    },
+    {
+      "type": "text_delta",
+      "text": "() at l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ines 13"
+    },
+    {
+      "type": "text_delta",
+      "text": "-15 still holds the gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard from line 13 when"
+    },
+    {
+      "type": "text_delta",
+      "text": " it calls self.get()."
+    },
+    {
+      "type": "text_delta",
+      "text": " The std"
+    },
+    {
+      "type": "text_delta",
+      "text": " Mutex is"
+    },
+    {
+      "type": "text_delta",
+      "text": " not reentrant, so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " call deadlocks on every"
+    },
+    {
+      "type": "text_delta",
+      "text": " inv"
+    },
+    {
+      "type": "text_delta",
+      "text": "ocation.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5454,
+      "output_tokens": 682,
+      "cost_usd": 0.0008864
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

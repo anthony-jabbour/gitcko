@@ -1,0 +1,72 @@
+{
+  "v": 1,
+  "key": "62781963beda14e77972655a96fbcca35288ad36af4a5ea77ef2f52af110633d",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The new take"
+    },
+    {
+      "type": "text_delta",
+      "text": "("
+    },
+    {
+      "type": "text_delta",
+      "text": "len"
+    },
+    {
+      "type": "text_delta",
+      "text": "-1) dr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ops the last element"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " so join([\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 887,
+      "output_tokens": 204,
+      "cost_usd": 0.0001907
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

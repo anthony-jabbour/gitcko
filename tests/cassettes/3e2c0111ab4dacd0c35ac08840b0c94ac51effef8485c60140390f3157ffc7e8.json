@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "3e2c0111ab4dacd0c35ac08840b0c94ac51effef8485c60140390f3157ffc7e8",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " flips an authorization check from"
+    },
+    {
+      "type": "text_delta",
+      "text": " requ"
+    },
+    {
+      "type": "text_delta",
+      "text": "iring both active and admin to"
+    },
+    {
+      "type": "text_delta",
+      "text": " either"
+    },
+    {
+      "type": "text_delta",
+      "text": " one"
+    },
+    {
+      "type": "text_delta",
+      "text": ", which widens who"
+    },
+    {
+      "type": "text_delta",
+      "text": " can delete and is"
+    },
+    {
+      "type": "text_delta",
+      "text": " a lik"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely security defect desp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ite the commit message cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling it a rewrite.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 824,
+      "output_tokens": 81,
+      "cost_usd": 0.0001229
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

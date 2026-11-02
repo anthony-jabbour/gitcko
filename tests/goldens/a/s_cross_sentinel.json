@@ -1,0 +1,122 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "In src/lib.rs line 4, `xs.iter().position(...)` is wrapped in `unwrap_or(0)` and then `Some(...)`, so a missing element yields `Some(0)` instead of `None`. The caller `contains` in src/use_it.rs line 4 is `position(xs, x).is_some()`, so it now returns true for every absent value, including on an empty slice.\n\nTrigger: Any call to position or contains where x is not in xs, including an empty slice.”\n\nImpact: `position` returns `Some(0)` for any value not in the slice, and `use_it::contains` reports true for absent values. Any consumer relying on `None` for not-found gets false positives.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.95,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 5,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 5,
+          "kind": "source",
+          "path": "src/use_it.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 4,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 4
+        },
+        {
+          "end_line": 4,
+          "kind": "source",
+          "path": "src/use_it.rs",
+          "start_line": 4
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_c4bee4033b38b9af",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 4,
+      "suggestion": "Remove the `Some(...unwrap_or(0))` wrapper and return `xs.iter().position(|v| *v == x)` as before.",
+      "title": "position returns Some(0) for absent elements, so contains reports false matches",
+      "verification": "not_run",
+      "verified_evidence": null
+    },
+    {
+      "body": "position() now returns Some(0) when x is absent, because unwrap_or(0) replaces the None case. The caller contains() in use_it.rs tests position(xs, x).is_some(), so it now returns true for every input, including values missing from xs.\n\nTrigger: Calling contains(xs, x) or position(xs, x) with an x that is not present in xs.\n\nImpact: util::contains (public via use_it) reports true for absent values, so any caller relying on it for membership checks gets wrong answers. position() callers that expect None for not-found also break.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.93,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 5,
+          "kind": "source",
+          "path": "src/use_it.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 4,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 4
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_61d20c11df3d6af6",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 4,
+      "suggestion": "Revert to returning xs.iter().position(|v| *v == x) so None still means not found, or update the callers and the signature together.",
+      "title": "position() returns Some(0) for missing values, so contains() is always true",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The change silently alters the public position function so a missing element returns Some(0) instead of None, a semantic break that callers relying on None will misread as a found match at index 0.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 2 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "2199c7e7921442a72d871a814084eb68cce63de7",
+    "head_sha": "edb834184487128a518ce5e7acc1dc6dd65a535b",
+    "local_changes": false,
+    "merge_base": "2199c7e7921442a72d871a814084eb68cce63de7"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

@@ -1,0 +1,72 @@
+{
+  "v": 1,
+  "key": "ebd8dd1fca04f79e5cde4990a2d7bc3f3c2d1661ba9809f1ed9adb36800e6c0b",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"svc/main"
+    },
+    {
+      "type": "text_delta",
+      "text": ".go\"],\"reason\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change adds a single small"
+    },
+    {
+      "type": "text_delta",
+      "text": " pure function s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ub and tou"
+    },
+    {
+      "type": "text_delta",
+      "text": "ches only"
+    },
+    {
+      "type": "text_delta",
+      "text": " one file, with no ob"
+    },
+    {
+      "type": "text_delta",
+      "text": "vious def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect risk.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 807,
+      "output_tokens": 57,
+      "cost_usd": 0.0001092
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

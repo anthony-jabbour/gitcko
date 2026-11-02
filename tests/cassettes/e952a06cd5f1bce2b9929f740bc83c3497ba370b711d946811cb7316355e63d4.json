@@ -1,0 +1,512 @@
+{
+  "v": 1,
+  "key": "e952a06cd5f1bce2b9929f740bc83c3497ba370b711d946811cb7316355e63d4",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"security"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"cause\":\"find"
+    },
+    {
+      "type": "text_delta",
+      "text": "_user now"
+    },
+    {
+      "type": "text_delta",
+      "text": " builds the"
+    },
+    {
+      "type": "text_delta",
+      "text": " SQL text"
+    },
+    {
+      "type": "text_delta",
+      "text": " with format!, inserting the"
+    },
+    {
+      "type": "text_delta",
+      "text": " raw `name` between"
+    },
+    {
+      "type": "text_delta",
+      "text": " single quotes ("
+    },
+    {
+      "type": "text_delta",
+      "text": "line 8)"
+    },
+    {
+      "type": "text_delta",
+      "text": " inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of ke"
+    },
+    {
+      "type": "text_delta",
+      "text": "eping the `"
+    },
+    {
+      "type": "text_delta",
+      "text": "?` placeholder. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ound par"
+    },
+    {
+      "type": "text_delta",
+      "text": "ameter list is"
+    },
+    {
+      "type": "text_delta",
+      "text": " now empty (line 9),"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " name is never sent as"
+    },
+    {
+      "type": "text_delta",
+      "text": " a b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ound value."
+    },
+    {
+      "type": "text_delta",
+      "text": " Any caller that execut"
+    },
+    {
+      "type": "text_delta",
+      "text": "es `"
+    },
+    {
+      "type": "text_delta",
+      "text": "Query.text` as"
+    },
+    {
+      "type": "text_delta",
+      "text": " S"
+    },
+    {
+      "type": "text_delta",
+      "text": "QL gets the"
+    },
+    {
+      "type": "text_delta",
+      "text": " user"
+    },
+    {
+      "type": "text_delta",
+      "text": " input"
+    },
+    {
+      "type": "text_delta",
+      "text": " as"
+    },
+    {
+      "type": "text_delta",
+      "text": " part of the stat"
+    },
+    {
+      "type": "text_delta",
+      "text": "ement, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " a qu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ote in"
+    },
+    {
+      "type": "text_delta",
+      "text": " `name` "
+    },
+    {
+      "type": "text_delta",
+      "text": "ends the liter"
+    },
+    {
+      "type": "text_delta",
+      "text": "al and chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the query.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "comment_type\":\"log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic\",\"conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":0.85,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "counterevidence\":[],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"end_line\":8"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"evidence\":[\"e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1\"],\"imp"
+    },
+    {
+      "type": "text_delta",
+      "text": "act\":\"SQL injection"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " any caller of find_user that"
+    },
+    {
+      "type": "text_delta",
+      "text": " passes untrusted input and"
+    },
+    {
+      "type": "text_delta",
+      "text": " run"
+    },
+    {
+      "type": "text_delta",
+      "text": "s the"
+    },
+    {
+      "type": "text_delta",
+      "text": " retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ned query. An"
+    },
+    {
+      "type": "text_delta",
+      "text": " attacker could read or"
+    },
+    {
+      "type": "text_delta",
+      "text": " mod"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify other r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ows or"
+    },
+    {
+      "type": "text_delta",
+      "text": " tables, or b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ypass the"
+    },
+    {
+      "type": "text_delta",
+      "text": " name"
+    },
+    {
+      "type": "text_delta",
+      "text": " filter.\",\"path\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":8"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the parameterized"
+    },
+    {
+      "type": "text_delta",
+      "text": " form: text: \\\"SEL"
+    },
+    {
+      "type": "text_delta",
+      "text": "ECT id FROM users W"
+    },
+    {
+      "type": "text_delta",
+      "text": "HERE name = ?\\"
+    },
+    {
+      "type": "text_delta",
+      "text": "\".to_string(), params:"
+    },
+    {
+      "type": "text_delta",
+      "text": " vec![name.to_string"
+    },
+    {
+      "type": "text_delta",
+      "text": "()].\",\"title\":\"find"
+    },
+    {
+      "type": "text_delta",
+      "text": "_user inter"
+    },
+    {
+      "type": "text_delta",
+      "text": "polates name into SQL"
+    },
+    {
+      "type": "text_delta",
+      "text": " text"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " en"
+    },
+    {
+      "type": "text_delta",
+      "text": "abling inj"
+    },
+    {
+      "type": "text_delta",
+      "text": "ection\",\"trigger\":\"A"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "es a"
+    },
+    {
+      "type": "text_delta",
+      "text": " name containing a single quote or"
+    },
+    {
+      "type": "text_delta",
+      "text": " SQL sy"
+    },
+    {
+      "type": "text_delta",
+      "text": "ntax, for example `x"
+    },
+    {
+      "type": "text_delta",
+      "text": "' OR '1'='"
+    },
+    {
+      "type": "text_delta",
+      "text": "1`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", and execut"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the returned"
+    },
+    {
+      "type": "text_delta",
+      "text": " Query.text."
+    },
+    {
+      "type": "text_delta",
+      "text": "=\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The new"
+    },
+    {
+      "type": "text_delta",
+      "text": " code"
+    },
+    {
+      "type": "text_delta",
+      "text": " at"
+    },
+    {
+      "type": "text_delta",
+      "text": " lines 8-"
+    },
+    {
+      "type": "text_delta",
+      "text": "9 of"
+    },
+    {
+      "type": "text_delta",
+      "text": " src/lib.rs pu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ts the ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller-supplied name direct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ly into the"
+    },
+    {
+      "type": "text_delta",
+      "text": " SQL text and drops the"
+    },
+    {
+      "type": "text_delta",
+      "text": " b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ound parameter, so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " inj"
+    },
+    {
+      "type": "text_delta",
+      "text": "ection path"
+    },
+    {
+      "type": "text_delta",
+      "text": " is real."
+    },
+    {
+      "type": "text_delta",
+      "text": " Severity is P1 r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ather than P0 because this"
+    },
+    {
+      "type": "text_delta",
+      "text": " rep"
+    },
+    {
+      "type": "text_delta",
+      "text": "o only buil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds the"
+    },
+    {
+      "type": "text_delta",
+      "text": " Query and"
+    },
+    {
+      "type": "text_delta",
+      "text": " I could"
+    },
+    {
+      "type": "text_delta",
+      "text": " not see an"
+    },
+    {
+      "type": "text_delta",
+      "text": " executor or"
+    },
+    {
+      "type": "text_delta",
+      "text": " the callers that"
+    },
+    {
+      "type": "text_delta",
+      "text": " pass untrusted input.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5425,
+      "output_tokens": 811,
+      "cost_usd": 0.000948
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

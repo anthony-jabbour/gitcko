@@ -1,0 +1,236 @@
+{
+  "v": 1,
+  "key": "a2074707b1128e4026aacaabfd0520888f64e137efc876413158a0721bd404aa",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hyp"
+    },
+    {
+      "type": "text_delta",
+      "text": "otheses\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"claim"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return for empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " was removed. With an empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice, sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() is 0,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the integer division by zero"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics. Show"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing this need"
+    },
+    {
+      "type": "text_delta",
+      "text": "s a call to average("
+    },
+    {
+      "type": "text_delta",
+      "text": "&[]) and"
+    },
+    {
+      "type": "text_delta",
+      "text": " a check"
+    },
+    {
+      "type": "text_delta",
+      "text": " that no"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ards against emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input before calling it.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3,\"title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics on empty slice\""
+    },
+    {
+      "type": "text_delta",
+      "text": "},{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um is acc"
+    },
+    {
+      "type": "text_delta",
+      "text": "umulated in u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no overflow hand"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling. Large samples can over"
+    },
+    {
+      "type": "text_delta",
+      "text": "flow:"
+    },
+    {
+      "type": "text_delta",
+      "text": " deb"
+    },
+    {
+      "type": "text_delta",
+      "text": "ug buil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds panic and"
+    },
+    {
+      "type": "text_delta",
+      "text": " release"
+    },
+    {
+      "type": "text_delta",
+      "text": " builds wrap,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ned mean is wrong."
+    },
+    {
+      "type": "text_delta",
+      "text": " Showing this needs sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples whose total"
+    },
+    {
+      "type": "text_delta",
+      "text": " exceeds u32::M"
+    },
+    {
+      "type": "text_delta",
+      "text": "AX."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end_line\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3,\"title\":\"u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 sum can"
+    },
+    {
+      "type": "text_delta",
+      "text": " overflow before"
+    },
+    {
+      "type": "text_delta",
+      "text": " division\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1569,
+      "output_tokens": 458,
+      "cost_usd": 0.0003859
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "v": 1,
+  "key": "b1001d9b160360887e93513d45ce864654c0fc6853a01310e0b787b5a28cebe3",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "priorities\":[\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\"],\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff reverses the transfer"
+    },
+    {
+      "type": "text_delta",
+      "text": " direction: the"
+    },
+    {
+      "type": "text_delta",
+      "text": " amount is"
+    },
+    {
+      "type": "text_delta",
+      "text": " now sub"
+    },
+    {
+      "type": "text_delta",
+      "text": "tracted from the"
+    },
+    {
+      "type": "text_delta",
+      "text": " rec"
+    },
+    {
+      "type": "text_delta",
+      "text": "ipient and added to the sender"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so every"
+    },
+    {
+      "type": "text_delta",
+      "text": " transfer moves money the w"
+    },
+    {
+      "type": "text_delta",
+      "text": "rong way while"
+    },
+    {
+      "type": "text_delta",
+      "text": " the commit message only"
+    },
+    {
+      "type": "text_delta",
+      "text": " says"
+    },
+    {
+      "type": "text_delta",
+      "text": " 'Reorder transf"
+    },
+    {
+      "type": "text_delta",
+      "text": "er updates'.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 866,
+      "output_tokens": 146,
+      "cost_usd": 0.0001596
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

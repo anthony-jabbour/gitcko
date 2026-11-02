@@ -1,0 +1,104 @@
+{
+  "v": 1,
+  "key": "3516c051c4458f40e5489aaa7c003ccda8eb9f263b4ca187ff60f4dcf1f5e7b5",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"med"
+    },
+    {
+      "type": "text_delta",
+      "text": "ium\",\"priorities\":[\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"reason\":\"The only"
+    },
+    {
+      "type": "text_delta",
+      "text": " changed file is src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs, where"
+    },
+    {
+      "type": "text_delta",
+      "text": " the public add"
+    },
+    {
+      "type": "text_delta",
+      "text": " function's"
+    },
+    {
+      "type": "text_delta",
+      "text": " signature and"
+    },
+    {
+      "type": "text_delta",
+      "text": " body were repl"
+    },
+    {
+      "type": "text_delta",
+      "text": "aced by an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty st"
+    },
+    {
+      "type": "text_delta",
+      "text": "ub, a"
+    },
+    {
+      "type": "text_delta",
+      "text": " breaking API"
+    },
+    {
+      "type": "text_delta",
+      "text": " change with a stray mal"
+    },
+    {
+      "type": "text_delta",
+      "text": "formed line"
+    },
+    {
+      "type": "text_delta",
+      "text": ", though"
+    },
+    {
+      "type": "text_delta",
+      "text": " the diff is t"
+    },
+    {
+      "type": "text_delta",
+      "text": "iny.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 807,
+      "output_tokens": 89,
+      "cost_usd": 0.0001252
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

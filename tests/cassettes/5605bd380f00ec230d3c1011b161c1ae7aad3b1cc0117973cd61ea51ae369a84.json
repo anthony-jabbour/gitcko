@@ -1,0 +1,68 @@
+{
+  "v": 1,
+  "key": "5605bd380f00ec230d3c1011b161c1ae7aad3b1cc0117973cd61ea51ae369a84",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/add."
+    },
+    {
+      "type": "text_delta",
+      "text": "c\"],\"reason\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change adds a single"
+    },
+    {
+      "type": "text_delta",
+      "text": " simple sub"
+    },
+    {
+      "type": "text_delta",
+      "text": "traction function to one"
+    },
+    {
+      "type": "text_delta",
+      "text": " file with no ap"
+    },
+    {
+      "type": "text_delta",
+      "text": "parent def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect risk.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 801,
+      "output_tokens": 53,
+      "cost_usd": 0.0001066
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

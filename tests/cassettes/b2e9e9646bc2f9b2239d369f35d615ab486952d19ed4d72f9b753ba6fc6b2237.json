@@ -1,0 +1,384 @@
+{
+  "v": 1,
+  "key": "b2e9e9646bc2f9b2239d369f35d615ab486952d19ed4d72f9b753ba6fc6b2237",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the"
+    },
+    {
+      "type": "text_delta",
+      "text": " filter in pending() from `"
+    },
+    {
+      "type": "text_delta",
+      "text": "!t.done` to `t"
+    },
+    {
+      "type": "text_delta",
+      "text": ".done`, so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " function now"
+    },
+    {
+      "type": "text_delta",
+      "text": " keeps t"
+    },
+    {
+      "type": "text_delta",
+      "text": "asks already"
+    },
+    {
+      "type": "text_delta",
+      "text": " marked done. The current file at"
+    },
+    {
+      "type": "text_delta",
+      "text": " src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs line "
+    },
+    {
+      "type": "text_delta",
+      "text": "6 confirms the"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": "verted pred"
+    },
+    {
+      "type": "text_delta",
+      "text": "icate, and the diff sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ows the removed line was"
+    },
+    {
+      "type": "text_delta",
+      "text": " the original `!t.done`"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.9,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":6,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"evidence\":[\"e1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"e3\"],\"impact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"Any ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller of the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public pending() function that"
+    },
+    {
+      "type": "text_delta",
+      "text": " exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ects unfinished t"
+    },
+    {
+      "type": "text_delta",
+      "text": "asks gets completed tas"
+    },
+    {
+      "type": "text_delta",
+      "text": "ks back"
+    },
+    {
+      "type": "text_delta",
+      "text": " and mis"
+    },
+    {
+      "type": "text_delta",
+      "text": "ses the open ones. The search"
+    },
+    {
+      "type": "text_delta",
+      "text": " found"
+    },
+    {
+      "type": "text_delta",
+      "text": " no in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-repo callers,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " impact fal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ls on external users"
+    },
+    {
+      "type": "text_delta",
+      "text": " of this library function"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":6"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the pred"
+    },
+    {
+      "type": "text_delta",
+      "text": "icate to"
+    },
+    {
+      "type": "text_delta",
+      "text": " `fil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ter(|t| !t."
+    },
+    {
+      "type": "text_delta",
+      "text": "done)`.\",\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "pending() returns completed t"
+    },
+    {
+      "type": "text_delta",
+      "text": "asks because"
+    },
+    {
+      "type": "text_delta",
+      "text": " the filter is inverted\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any call"
+    },
+    {
+      "type": "text_delta",
+      "text": " to pending() with a"
+    },
+    {
+      "type": "text_delta",
+      "text": " mix of done"
+    },
+    {
+      "type": "text_delta",
+      "text": " and not"
+    },
+    {
+      "type": "text_delta",
+      "text": "-done tasks.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"outcome\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "supported\",\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " head"
+    },
+    {
+      "type": "text_delta",
+      "text": " file"
+    },
+    {
+      "type": "text_delta",
+      "text": " sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ows p"
+    },
+    {
+      "type": "text_delta",
+      "text": "ending() filt"
+    },
+    {
+      "type": "text_delta",
+      "text": "ering on"
+    },
+    {
+      "type": "text_delta",
+      "text": " t"
+    },
+    {
+      "type": "text_delta",
+      "text": ".done, the"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff shows the original"
+    },
+    {
+      "type": "text_delta",
+      "text": " was"
+    },
+    {
+      "type": "text_delta",
+      "text": " !t.done, and the"
+    },
+    {
+      "type": "text_delta",
+      "text": " Task.done field"
+    },
+    {
+      "type": "text_delta",
+      "text": " is a"
+    },
+    {
+      "type": "text_delta",
+      "text": " pl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ain bool me"
+    },
+    {
+      "type": "text_delta",
+      "text": "aning completion"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so the inversion is real"
+    },
+    {
+      "type": "text_delta",
+      "text": ". No in-repo callers"
+    },
+    {
+      "type": "text_delta",
+      "text": " were found, so the impact is"
+    },
+    {
+      "type": "text_delta",
+      "text": " lim"
+    },
+    {
+      "type": "text_delta",
+      "text": "ited to the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public API"
+    },
+    {
+      "type": "text_delta",
+      "text": " cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ract.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5982,
+      "output_tokens": 632,
+      "cost_usd": 0.0009142
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

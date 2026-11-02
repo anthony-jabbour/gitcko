@@ -1,0 +1,184 @@
+{
+  "v": 1,
+  "key": "a9d61706ff839be28c1c9fecf71b20d7afe3cd15668c13e4a2d4f60e938f72ae",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"corre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ctness\",\"claim\":\"tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout() chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed from seconds ("
+    },
+    {
+      "type": "text_delta",
+      "text": "30) to milliseconds"
+    },
+    {
+      "type": "text_delta",
+      "text": " (30_000)"
+    },
+    {
+      "type": "text_delta",
+      "text": " while"
+    },
+    {
+      "type": "text_delta",
+      "text": " its"
+    },
+    {
+      "type": "text_delta",
+      "text": " public"
+    },
+    {
+      "type": "text_delta",
+      "text": " return type"
+    },
+    {
+      "type": "text_delta",
+      "text": " st"
+    },
+    {
+      "type": "text_delta",
+      "text": "ays u64;"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " one"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller el"
+    },
+    {
+      "type": "text_delta",
+      "text": "sewhere in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the repo lik"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely still tre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ats the"
+    },
+    {
+      "type": "text_delta",
+      "text": " value"
+    },
+    {
+      "type": "text_delta",
+      "text": " as seconds, so it would"
+    },
+    {
+      "type": "text_delta",
+      "text": " wait 1"
+    },
+    {
+      "type": "text_delta",
+      "text": "000x longer than int"
+    },
+    {
+      "type": "text_delta",
+      "text": "ended (30"
+    },
+    {
+      "type": "text_delta",
+      "text": "000"
+    },
+    {
+      "type": "text_delta",
+      "text": " se"
+    },
+    {
+      "type": "text_delta",
+      "text": "conds) on"
+    },
+    {
+      "type": "text_delta",
+      "text": " requ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ests.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":6"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Unit change breaks exist"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller of timeout()\"}"
+    },
+    {
+      "type": "text_delta",
+      "text": "]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1545,
+      "output_tokens": 158,
+      "cost_usd": 0.0002335
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

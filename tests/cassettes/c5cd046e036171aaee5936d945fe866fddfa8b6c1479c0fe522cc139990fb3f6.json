@@ -1,0 +1,120 @@
+{
+  "v": 1,
+  "key": "c5cd046e036171aaee5936d945fe866fddfa8b6c1479c0fe522cc139990fb3f6",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"med"
+    },
+    {
+      "type": "text_delta",
+      "text": "ium\",\"priorities\":[\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change reor"
+    },
+    {
+      "type": "text_delta",
+      "text": "ders m"
+    },
+    {
+      "type": "text_delta",
+      "text": "utex loc"
+    },
+    {
+      "type": "text_delta",
+      "text": "king in"
+    },
+    {
+      "type": "text_delta",
+      "text": " bump; it"
+    },
+    {
+      "type": "text_delta",
+      "text": " rele"
+    },
+    {
+      "type": "text_delta",
+      "text": "ases the lock before re"
+    },
+    {
+      "type": "text_delta",
+      "text": "-ac"
+    },
+    {
+      "type": "text_delta",
+      "text": "quiring it"
+    },
+    {
+      "type": "text_delta",
+      "text": " to read the"
+    },
+    {
+      "type": "text_delta",
+      "text": " value, which is a small but conc"
+    },
+    {
+      "type": "text_delta",
+      "text": "urrency-sensitive"
+    },
+    {
+      "type": "text_delta",
+      "text": " ed"
+    },
+    {
+      "type": "text_delta",
+      "text": "it with"
+    },
+    {
+      "type": "text_delta",
+      "text": " a poss"
+    },
+    {
+      "type": "text_delta",
+      "text": "ible race window"
+    },
+    {
+      "type": "text_delta",
+      "text": " between"
+    },
+    {
+      "type": "text_delta",
+      "text": " incre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment and read-back.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 968,
+      "output_tokens": 93,
+      "cost_usd": 0.0001433
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

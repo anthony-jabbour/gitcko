@@ -1,0 +1,74 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "Line 4 now discards the result of write_all with `let _ =`. save() then returns only the result of flush() on line 5. For writers whose flush is a no-op, such as std::fs::File and TcpStream, flush returns Ok even when write_all failed, so a failed write (for example ENOSPC on a full disk or a reset connection) is reported as success.\n\nTrigger: Calling save() with a writer whose write_all fails but whose flush succeeds, such as a File on a full disk or a socket that errors on write.)\n\nImpact: Any caller that relies on save() returning Err for a failed write now gets Ok(()) with the record missing. The change silently breaks the io::Result contract and causes silent data loss.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 6,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 3,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 3
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_e1a1badd918ea1c5",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 4,
+      "suggestion": "Restore `out.write_all(record)?;` before `out.flush()`.",
+      "title": "write_all error discarded in save(), so failed writes report success",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The change discards the error from write_all with `let _ =`, so a failed or partial write is silently ignored and save() still reports success via flush, risking silent data loss.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "907d827c21a818f711dd1434fba2301dff4e85e5",
+    "head_sha": "7021129c1712939249f46efe4d3ec63089969330",
+    "local_changes": false,
+    "merge_base": "907d827c21a818f711dd1434fba2301dff4e85e5"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

@@ -1,0 +1,464 @@
+{
+  "v": 1,
+  "key": "db8dfc025f9c2f53643f014f876926ae56e238dde1c9888f7d2941fdfb470045",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"security\",\"cause\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " replaces the par"
+    },
+    {
+      "type": "text_delta",
+      "text": "ameterized query"
+    },
+    {
+      "type": "text_delta",
+      "text": " (plac"
+    },
+    {
+      "type": "text_delta",
+      "text": "eholder `?`"
+    },
+    {
+      "type": "text_delta",
+      "text": " with"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "params: vec![name]"
+    },
+    {
+      "type": "text_delta",
+      "text": "`) with `"
+    },
+    {
+      "type": "text_delta",
+      "text": "format!` that"
+    },
+    {
+      "type": "text_delta",
+      "text": " interpolates `name` direct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ly into the"
+    },
+    {
+      "type": "text_delta",
+      "text": " SQL text"
+    },
+    {
+      "type": "text_delta",
+      "text": " inside single quotes,"
+    },
+    {
+      "type": "text_delta",
+      "text": " and sets `params`"
+    },
+    {
+      "type": "text_delta",
+      "text": " to `"
+    },
+    {
+      "type": "text_delta",
+      "text": "Vec::new()`."
+    },
+    {
+      "type": "text_delta",
+      "text": " A `"
+    },
+    {
+      "type": "text_delta",
+      "text": "name` containing `'` chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the S"
+    },
+    {
+      "type": "text_delta",
+      "text": "QL structure, and n"
+    },
+    {
+      "type": "text_delta",
+      "text": "othing esc"
+    },
+    {
+      "type": "text_delta",
+      "text": "apes or"
+    },
+    {
+      "type": "text_delta",
+      "text": " binds it.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "comment_type\":\"logic"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"confidence\":0.9"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"counterevidence\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[],\"end_line\":9"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":[\"e1\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing unt"
+    },
+    {
+      "type": "text_delta",
+      "text": "rusted input to"
+    },
+    {
+      "type": "text_delta",
+      "text": " find_user gets SQL"
+    },
+    {
+      "type": "text_delta",
+      "text": " injection:"
+    },
+    {
+      "type": "text_delta",
+      "text": " att"
+    },
+    {
+      "type": "text_delta",
+      "text": "ackers can read other"
+    },
+    {
+      "type": "text_delta",
+      "text": " r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ows or"
+    },
+    {
+      "type": "text_delta",
+      "text": " other tables, or al"
+    },
+    {
+      "type": "text_delta",
+      "text": "ter the stat"
+    },
+    {
+      "type": "text_delta",
+      "text": "ement."
+    },
+    {
+      "type": "text_delta",
+      "text": " Names"
+    },
+    {
+      "type": "text_delta",
+      "text": " with quotes also"
+    },
+    {
+      "type": "text_delta",
+      "text": " produ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ce malformed S"
+    },
+    {
+      "type": "text_delta",
+      "text": "QL err"
+    },
+    {
+      "type": "text_delta",
+      "text": "ors for"
+    },
+    {
+      "type": "text_delta",
+      "text": " ordinary users.\",\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"new\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "8,\"suggestion\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Restore the plac"
+    },
+    {
+      "type": "text_delta",
+      "text": "eholder form"
+    },
+    {
+      "type": "text_delta",
+      "text": ": text:"
+    },
+    {
+      "type": "text_delta",
+      "text": " \\\"SELECT id F"
+    },
+    {
+      "type": "text_delta",
+      "text": "ROM users WHERE name"
+    },
+    {
+      "type": "text_delta",
+      "text": " = ?\\\"."
+    },
+    {
+      "type": "text_delta",
+      "text": "to_string("
+    },
+    {
+      "type": "text_delta",
+      "text": "), params: vec![name."
+    },
+    {
+      "type": "text_delta",
+      "text": "to_string()]."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"title\":\"User"
+    },
+    {
+      "type": "text_delta",
+      "text": " input"
+    },
+    {
+      "type": "text_delta",
+      "text": " interpolated into SQL"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " byp"
+    },
+    {
+      "type": "text_delta",
+      "text": "assing bound parameters\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "trigger\":\"find"
+    },
+    {
+      "type": "text_delta",
+      "text": "_user is called with a name contain"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing a"
+    },
+    {
+      "type": "text_delta",
+      "text": " single quote or other"
+    },
+    {
+      "type": "text_delta",
+      "text": " SQL sy"
+    },
+    {
+      "type": "text_delta",
+      "text": "ntax, for example O"
+    },
+    {
+      "type": "text_delta",
+      "text": "'Brien or "
+    },
+    {
+      "type": "text_delta",
+      "text": "' OR '"
+    },
+    {
+      "type": "text_delta",
+      "text": "1'='1.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"sup"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported\",\"reason\":\"The new"
+    },
+    {
+      "type": "text_delta",
+      "text": " code"
+    },
+    {
+      "type": "text_delta",
+      "text": " at"
+    },
+    {
+      "type": "text_delta",
+      "text": " lines 8-9 buil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds S"
+    },
+    {
+      "type": "text_delta",
+      "text": "QL by"
+    },
+    {
+      "type": "text_delta",
+      "text": " string interpolation and lea"
+    },
+    {
+      "type": "text_delta",
+      "text": "ves params empty, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " the hypothesis hol"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds:"
+    },
+    {
+      "type": "text_delta",
+      "text": " a name with"
+    },
+    {
+      "type": "text_delta",
+      "text": " quotes breaks the query"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " The def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect is more ser"
+    },
+    {
+      "type": "text_delta",
+      "text": "ious than the hypothesis"
+    },
+    {
+      "type": "text_delta",
+      "text": " states"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " since it is S"
+    },
+    {
+      "type": "text_delta",
+      "text": "QL injection. Ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller reachability was"
+    },
+    {
+      "type": "text_delta",
+      "text": " not checked, so severity is"
+    },
+    {
+      "type": "text_delta",
+      "text": " P1 "
+    },
+    {
+      "type": "text_delta",
+      "text": "rather than P0.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5415,
+      "output_tokens": 761,
+      "cost_usd": 0.000922
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The early return `if samples.is_empty() { return 0; }` was removed. For an empty slice, `total` is 0 and `samples.len() as u32` is 0, so the integer division `total / 0` executes and Rust panics with divide-by-zero. The doc comment on line 1 still promises 0 for empty input.\n\nTrigger: Calling `average(&[])` or any empty `&[u32]`.\n\nImpact: Any caller of the public `average` function that passes an empty slice panics instead of receiving the documented 0. Within this repository, the only hit for `average(` is its definition, so no internal caller was found. External callers are unknown, so the crash depends on them passing empty input.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 5,
+      "evidence": [
+        {
+          "end_line": 6,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 2,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 2
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_0e9aae0d0337f6d8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 4,
+      "suggestion": "Restore the early return: `if samples.is_empty() { return 0; }` before the division.",
+      "title": "average() panics with divide-by-zero on empty input",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The change removes the empty-slice guard, so average(&[]) now divides by zero and panics, and the sum can also overflow u32 without a check.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "54ab9798a685f74ee339778477518ce42f52cbc1",
+    "head_sha": "7fd99b9ad0252d115180a21f4764b53072fd7c84",
+    "local_changes": false,
+    "merge_base": "54ab9798a685f74ee339778477518ce42f52cbc1"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

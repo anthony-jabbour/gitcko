@@ -1,0 +1,148 @@
+{
+  "v": 1,
+  "key": "d0ca0d60bb0e0ee6befb6b8ec95d90c1d8f73262b05a0b12ee3abce7c04ce642",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"refuted\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The diff shows"
+    },
+    {
+      "type": "text_delta",
+      "text": " both"
+    },
+    {
+      "type": "text_delta",
+      "text": " vari"
+    },
+    {
+      "type": "text_delta",
+      "text": "ants still"
+    },
+    {
+      "type": "text_delta",
+      "text": " produce exactly \\"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"SELECT count(*"
+    },
+    {
+      "type": "text_delta",
+      "text": ") FROM users\\\" and"
+    },
+    {
+      "type": "text_delta",
+      "text": " \\\"SELECT count("
+    },
+    {
+      "type": "text_delta",
+      "text": "*) FROM orders\\"
+    },
+    {
+      "type": "text_delta",
+      "text": "\", with"
+    },
+    {
+      "type": "text_delta",
+      "text": " the same spacing and"
+    },
+    {
+      "type": "text_delta",
+      "text": " casing, because"
+    },
+    {
+      "type": "text_delta",
+      "text": " format"
+    },
+    {
+      "type": "text_delta",
+      "text": "! with"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " const"
+    },
+    {
+      "type": "text_delta",
+      "text": "ant name"
+    },
+    {
+      "type": "text_delta",
+      "text": " y"
+    },
+    {
+      "type": "text_delta",
+      "text": "ields the same string. Since the"
+    },
+    {
+      "type": "text_delta",
+      "text": " emitted S"
+    },
+    {
+      "type": "text_delta",
+      "text": "QL is unchanged,"
+    },
+    {
+      "type": "text_delta",
+      "text": " no caller can"
+    },
+    {
+      "type": "text_delta",
+      "text": " see a different format, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " I"
+    },
+    {
+      "type": "text_delta",
+      "text": " found"
+    },
+    {
+      "type": "text_delta",
+      "text": " no defect to"
+    },
+    {
+      "type": "text_delta",
+      "text": " report.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5159,
+      "output_tokens": 321,
+      "cost_usd": 0.0006764
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

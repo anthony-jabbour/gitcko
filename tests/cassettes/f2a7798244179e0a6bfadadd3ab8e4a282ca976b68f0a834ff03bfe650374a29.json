@@ -1,0 +1,212 @@
+{
+  "v": 1,
+  "key": "f2a7798244179e0a6bfadadd3ab8e4a282ca976b68f0a834ff03bfe650374a29",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"refuted\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The over"
+    },
+    {
+      "type": "text_delta",
+      "text": "flow is"
+    },
+    {
+      "type": "text_delta",
+      "text": " not intro"
+    },
+    {
+      "type": "text_delta",
+      "text": "duced by this change: the old"
+    },
+    {
+      "type": "text_delta",
+      "text": " code also summ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed with"
+    },
+    {
+      "type": "text_delta",
+      "text": " `samples.iter().s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um::<u32>()`"
+    },
+    {
+      "type": "text_delta",
+      "text": " (e4"
+    },
+    {
+      "type": "text_delta",
+      "text": "), so the u32 acc"
+    },
+    {
+      "type": "text_delta",
+      "text": "umulator"
+    },
+    {
+      "type": "text_delta",
+      "text": " is unchanged ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e1). The real regression is"
+    },
+    {
+      "type": "text_delta",
+      "text": " separ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate: removing the `"
+    },
+    {
+      "type": "text_delta",
+      "text": "is_empty`"
+    },
+    {
+      "type": "text_delta",
+      "text": " early return ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e4"
+    },
+    {
+      "type": "text_delta",
+      "text": ") means `average"
+    },
+    {
+      "type": "text_delta",
+      "text": "(&[])` now"
+    },
+    {
+      "type": "text_delta",
+      "text": " computes `0"
+    },
+    {
+      "type": "text_delta",
+      "text": " / 0` as"
+    },
+    {
+      "type": "text_delta",
+      "text": " u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ide-"
+    },
+    {
+      "type": "text_delta",
+      "text": "by-zero in"
+    },
+    {
+      "type": "text_delta",
+      "text": " both debug and release ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e1), and `report(&"
+    },
+    {
+      "type": "text_delta",
+      "text": "[])` cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ls it,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so this"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " a P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1 def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect a"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "viewer should"
+    },
+    {
+      "type": "text_delta",
+      "text": " raise under"
+    },
+    {
+      "type": "text_delta",
+      "text": " a different hypothesis.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5897,
+      "output_tokens": 724,
+      "cost_usd": 0.0009517
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

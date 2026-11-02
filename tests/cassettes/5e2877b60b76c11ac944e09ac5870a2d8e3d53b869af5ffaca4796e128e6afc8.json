@@ -1,0 +1,96 @@
+{
+  "v": 1,
+  "key": "5e2877b60b76c11ac944e09ac5870a2d8e3d53b869af5ffaca4796e128e6afc8",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "repair",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"inconclusive"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff shows the emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-slice guard removed"
+    },
+    {
+      "type": "text_delta",
+      "text": ", but no tool results with"
+    },
+    {
+      "type": "text_delta",
+      "text": " evidence ids were available"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic path"
+    },
+    {
+      "type": "text_delta",
+      "text": " and the other"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller's d"
+    },
+    {
+      "type": "text_delta",
+      "text": "ependence on the "
+    },
+    {
+      "type": "text_delta",
+      "text": "0 return could"
+    },
+    {
+      "type": "text_delta",
+      "text": " not be verified.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 2480,
+      "output_tokens": 477,
+      "cost_usd": 0.0004865
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "v": 1,
+  "key": "8db18745604985cbf116e8b6e0754cf05b42fae69e2e20a8874302ace08b74b2",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ub uses sa"
+    },
+    {
+      "type": "text_delta",
+      "text": "turating_sub,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so a"
+    },
+    {
+      "type": "text_delta",
+      "text": " <"
+    },
+    {
+      "type": "text_delta",
+      "text": " b silently retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ns 0 instead of sign"
+    },
+    {
+      "type": "text_delta",
+      "text": "alling under"
+    },
+    {
+      "type": "text_delta",
+      "text": "flow; call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ecting a"
+    },
+    {
+      "type": "text_delta",
+      "text": " wrap"
+    },
+    {
+      "type": "text_delta",
+      "text": "ped or"
+    },
+    {
+      "type": "text_delta",
+      "text": " error result"
+    },
+    {
+      "type": "text_delta",
+      "text": " would"
+    },
+    {
+      "type": "text_delta",
+      "text": " get wrong values. Check"
+    },
+    {
+      "type": "text_delta",
+      "text": " whether callers of"
+    },
+    {
+      "type": "text_delta",
+      "text": " sub rely on dist"
+    },
+    {
+      "type": "text_delta",
+      "text": "ingu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ishing under"
+    },
+    {
+      "type": "text_delta",
+      "text": "flow.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":7"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":5,\"title\":\"s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ub cl"
+    },
+    {
+      "type": "text_delta",
+      "text": "amps to"
+    },
+    {
+      "type": "text_delta",
+      "text": " zero on underflow\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1499,
+      "output_tokens": 142,
+      "cost_usd": 0.0002209
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

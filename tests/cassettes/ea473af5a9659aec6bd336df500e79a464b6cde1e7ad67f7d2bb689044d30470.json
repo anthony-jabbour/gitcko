@@ -1,0 +1,88 @@
+{
+  "v": 1,
+  "key": "ea473af5a9659aec6bd336df500e79a464b6cde1e7ad67f7d2bb689044d30470",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"high\",\"priorities\":[\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"reason\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " discards the error"
+    },
+    {
+      "type": "text_delta",
+      "text": " from write"
+    },
+    {
+      "type": "text_delta",
+      "text": "_all with"
+    },
+    {
+      "type": "text_delta",
+      "text": " `let _ =`, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " a failed or"
+    },
+    {
+      "type": "text_delta",
+      "text": " partial write is"
+    },
+    {
+      "type": "text_delta",
+      "text": " silently ignored and save()"
+    },
+    {
+      "type": "text_delta",
+      "text": " still re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ports success via"
+    },
+    {
+      "type": "text_delta",
+      "text": " flush, ris"
+    },
+    {
+      "type": "text_delta",
+      "text": "king silent data loss.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 859,
+      "output_tokens": 213,
+      "cost_usd": 0.0001924
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

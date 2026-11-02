@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "key": "a70d082a377865efb00701f402ab2f3416bb848fb9093bb918b05816941afa62",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Removing the empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard mak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es average"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero on emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input, contradicting the"
+    },
+    {
+      "type": "text_delta",
+      "text": " docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented return"
+    },
+    {
+      "type": "text_delta",
+      "text": " of 0.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 926,
+      "output_tokens": 199,
+      "cost_usd": 0.0001921
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

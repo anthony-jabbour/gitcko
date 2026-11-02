@@ -1,0 +1,96 @@
+{
+  "v": 1,
+  "key": "536d9772327ee910389c44b4392d999e500096c3a63f0b9b31db71c4802a9c9b",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The diff changes the"
+    },
+    {
+      "type": "text_delta",
+      "text": " pagination offset to"
+    },
+    {
+      "type": "text_delta",
+      "text": " ("
+    },
+    {
+      "type": "text_delta",
+      "text": "page - 1) *"
+    },
+    {
+      "type": "text_delta",
+      "text": " size while the doc com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment says page starts at 0"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so page 0 under"
+    },
+    {
+      "type": "text_delta",
+      "text": "flows (panic in"
+    },
+    {
+      "type": "text_delta",
+      "text": " debug,"
+    },
+    {
+      "type": "text_delta",
+      "text": " wraps in release) and every"
+    },
+    {
+      "type": "text_delta",
+      "text": " page is sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ifted by"
+    },
+    {
+      "type": "text_delta",
+      "text": " one.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 887,
+      "output_tokens": 94,
+      "cost_usd": 0.0001357
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,396 @@
+{
+  "v": 1,
+  "key": "6d41deb4e7f241053b43f55f665da655173fb87b4123dd772bcd76e23d8354f0",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed."
+    },
+    {
+      "type": "text_delta",
+      "text": " For"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice, `"
+    },
+    {
+      "type": "text_delta",
+      "text": "samples.iter().sum"
+    },
+    {
+      "type": "text_delta",
+      "text": "()` is 0 and `"
+    },
+    {
+      "type": "text_delta",
+      "text": "samples.len() as u32"
+    },
+    {
+      "type": "text_delta",
+      "text": "` is 0, so `"
+    },
+    {
+      "type": "text_delta",
+      "text": "total / 0` is ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "aluated."
+    },
+    {
+      "type": "text_delta",
+      "text": " Integer division by zero pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics in every"
+    },
+    {
+      "type": "text_delta",
+      "text": " build prof"
+    },
+    {
+      "type": "text_delta",
+      "text": "ile,"
+    },
+    {
+      "type": "text_delta",
+      "text": " while"
+    },
+    {
+      "type": "text_delta",
+      "text": " the doc comment on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1 promises 0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " `report`"
+    },
+    {
+      "type": "text_delta",
+      "text": " calls `average`"
+    },
+    {
+      "type": "text_delta",
+      "text": " directly, so an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "aches the panic.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.92"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"counterevidence\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[],\"end_line\":5"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"evidence\":[\"e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1\"],\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller passing an empty sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice, including"
+    },
+    {
+      "type": "text_delta",
+      "text": " `report(&[])"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics with a division-by-z"
+    },
+    {
+      "type": "text_delta",
+      "text": "ero inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of returning 0. This"
+    },
+    {
+      "type": "text_delta",
+      "text": " bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks the"
+    },
+    {
+      "type": "text_delta",
+      "text": " documented contract and can"
+    },
+    {
+      "type": "text_delta",
+      "text": " crash the ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller.\",\"path\":\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the `if"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples.is_empty()"
+    },
+    {
+      "type": "text_delta",
+      "text": " { return 0; }` gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard before the division."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero on empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling `average(&[])`"
+    },
+    {
+      "type": "text_delta",
+      "text": " or `report(&[])`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", for example a report over zero"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The current"
+    },
+    {
+      "type": "text_delta",
+      "text": " file"
+    },
+    {
+      "type": "text_delta",
+      "text": " at"
+    },
+    {
+      "type": "text_delta",
+      "text": " head ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1) shows the gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard is"
+    },
+    {
+      "type": "text_delta",
+      "text": " gone and the"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "samples.len()"
+    },
+    {
+      "type": "text_delta",
+      "text": " as u32` runs un"
+    },
+    {
+      "type": "text_delta",
+      "text": "con"
+    },
+    {
+      "type": "text_delta",
+      "text": "ditionally, so an empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero. The doc"
+    },
+    {
+      "type": "text_delta",
+      "text": " comment says the result"
+    },
+    {
+      "type": "text_delta",
+      "text": " should"
+    },
+    {
+      "type": "text_delta",
+      "text": " be 0 "
+    },
+    {
+      "type": "text_delta",
+      "text": "for no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5553,
+      "output_tokens": 782,
+      "cost_usd": 0.0009463
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

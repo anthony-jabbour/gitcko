@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "e66ec96e7a24c2e3243cc87a7a3b2ab07bb8a3bf40eab1c50e64fed40b61f10c",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"priorities\":[\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\"],\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason\":\"The diff repl"
+    },
+    {
+      "type": "text_delta",
+      "text": "aces the add"
+    },
+    {
+      "type": "text_delta",
+      "text": " function with mal"
+    },
+    {
+      "type": "text_delta",
+      "text": "formed"
+    },
+    {
+      "type": "text_delta",
+      "text": " Rust syntax ("
+    },
+    {
+      "type": "text_delta",
+      "text": "missing comma, un"
+    },
+    {
+      "type": "text_delta",
+      "text": "balanced braces and"
+    },
+    {
+      "type": "text_delta",
+      "text": " parentheses), so the file"
+    },
+    {
+      "type": "text_delta",
+      "text": " will"
+    },
+    {
+      "type": "text_delta",
+      "text": " not compile and the change loo"
+    },
+    {
+      "type": "text_delta",
+      "text": "ks broken or"
+    },
+    {
+      "type": "text_delta",
+      "text": " acc"
+    },
+    {
+      "type": "text_delta",
+      "text": "idental.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 822,
+      "output_tokens": 86,
+      "cost_usd": 0.0001252
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "v": 1,
+  "key": "ac4b840cc265cde35696b788b4d04e488deae2e0d42df84b01cef5f1cec079a4",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The table"
+    },
+    {
+      "type": "text_delta",
+      "text": " name is sel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ected from a clos"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed enum via"
+    },
+    {
+      "type": "text_delta",
+      "text": " static"
+    },
+    {
+      "type": "text_delta",
+      "text": " string"
+    },
+    {
+      "type": "text_delta",
+      "text": " literals, so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " format!"
+    },
+    {
+      "type": "text_delta",
+      "text": " intro"
+    },
+    {
+      "type": "text_delta",
+      "text": "duces no inj"
+    },
+    {
+      "type": "text_delta",
+      "text": "ection sur"
+    },
+    {
+      "type": "text_delta",
+      "text": "face, though the query is now"
+    },
+    {
+      "type": "text_delta",
+      "text": " built with format"
+    },
+    {
+      "type": "text_delta",
+      "text": "! r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ather than a f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixed liter"
+    },
+    {
+      "type": "text_delta",
+      "text": "al.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1010,
+      "output_tokens": 79,
+      "cost_usd": 0.0001405
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

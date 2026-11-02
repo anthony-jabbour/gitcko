@@ -1,0 +1,292 @@
+{
+  "v": 1,
+  "key": "c4aadb2ff798fa3fa0af0afbe74a92c285419ec4f3cdf7e460a0fdeb4c9b790c",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"hypotheses\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "{\"category\":\"correctness"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"claim\":\"The public sign"
+    },
+    {
+      "type": "text_delta",
+      "text": "ature of"
+    },
+    {
+      "type": "text_delta",
+      "text": " add"
+    },
+    {
+      "type": "text_delta",
+      "text": " chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es"
+    },
+    {
+      "type": "text_delta",
+      "text": " from add(a:"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32, b: u32)"
+    },
+    {
+      "type": "text_delta",
+      "text": " -> u32 retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ning a +"
+    },
+    {
+      "type": "text_delta",
+      "text": " b to add()"
+    },
+    {
+      "type": "text_delta",
+      "text": " with no arguments and"
+    },
+    {
+      "type": "text_delta",
+      "text": " no return value. Any caller"
+    },
+    {
+      "type": "text_delta",
+      "text": " that pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "es two u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 ar"
+    },
+    {
+      "type": "text_delta",
+      "text": "guments or u"
+    },
+    {
+      "type": "text_delta",
+      "text": "ses the result will"
+    },
+    {
+      "type": "text_delta",
+      "text": " fail to compile or"
+    },
+    {
+      "type": "text_delta",
+      "text": " break, so a"
+    },
+    {
+      "type": "text_delta",
+      "text": " gr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ep for"
+    },
+    {
+      "type": "text_delta",
+      "text": " callers of add"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate and"
+    },
+    {
+      "type": "text_delta",
+      "text": " d"
+    },
+    {
+      "type": "text_delta",
+      "text": "ependents is"
+    },
+    {
+      "type": "text_delta",
+      "text": " need"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed to"
+    },
+    {
+      "type": "text_delta",
+      "text": " confirm.\",\"end_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":1,\"path\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\",\"start"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":1,\"title\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Public add"
+    },
+    {
+      "type": "text_delta",
+      "text": "() signature repl"
+    },
+    {
+      "type": "text_delta",
+      "text": "aced,"
+    },
+    {
+      "type": "text_delta",
+      "text": " breaking callers\"},{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"category\":\"correctness\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "claim\":\"The added second"
+    },
+    {
+      "type": "text_delta",
+      "text": " line cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ains a non-"
+    },
+    {
+      "type": "text_delta",
+      "text": "ASCII or mal"
+    },
+    {
+      "type": "text_delta",
+      "text": "formed byte sequence in"
+    },
+    {
+      "type": "text_delta",
+      "text": " a comment, which"
+    },
+    {
+      "type": "text_delta",
+      "text": " may not be val"
+    },
+    {
+      "type": "text_delta",
+      "text": "id UTF-8 or"
+    },
+    {
+      "type": "text_delta",
+      "text": " may"
+    },
+    {
+      "type": "text_delta",
+      "text": " not"
+    },
+    {
+      "type": "text_delta",
+      "text": " parse."
+    },
+    {
+      "type": "text_delta",
+      "text": " Reading the ra"
+    },
+    {
+      "type": "text_delta",
+      "text": "w file"
+    },
+    {
+      "type": "text_delta",
+      "text": " bytes would"
+    },
+    {
+      "type": "text_delta",
+      "text": " confirm whether the cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate still"
+    },
+    {
+      "type": "text_delta",
+      "text": " compiles.\",\"end_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":2,\"path\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\",\"start"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":2,\"title\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Possib"
+    },
+    {
+      "type": "text_delta",
+      "text": "ly malformed b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ytes in added line\"}]"
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1406,
+      "output_tokens": 564,
+      "cost_usd": 0.0004226
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

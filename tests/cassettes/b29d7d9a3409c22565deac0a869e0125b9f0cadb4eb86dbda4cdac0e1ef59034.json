@@ -1,0 +1,104 @@
+{
+  "v": 1,
+  "key": "b29d7d9a3409c22565deac0a869e0125b9f0cadb4eb86dbda4cdac0e1ef59034",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"priorities\":[\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "big.rs\"],\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " only"
+    },
+    {
+      "type": "text_delta",
+      "text": " app"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends gener"
+    },
+    {
+      "type": "text_delta",
+      "text": "ated constant"
+    },
+    {
+      "type": "text_delta",
+      "text": " declarations to a"
+    },
+    {
+      "type": "text_delta",
+      "text": " single file, with no logic chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es,"
+    },
+    {
+      "type": "text_delta",
+      "text": " though the diff is ext"
+    },
+    {
+      "type": "text_delta",
+      "text": "remely large and may be"
+    },
+    {
+      "type": "text_delta",
+      "text": " wor"
+    },
+    {
+      "type": "text_delta",
+      "text": "th a"
+    },
+    {
+      "type": "text_delta",
+      "text": " sanity check of"
+    },
+    {
+      "type": "text_delta",
+      "text": " its"
+    },
+    {
+      "type": "text_delta",
+      "text": " generation step"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 29249,
+      "output_tokens": 77,
+      "cost_usd": 0.0029634
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

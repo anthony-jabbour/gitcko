@@ -1,0 +1,160 @@
+{
+  "v": 1,
+  "key": "2f39e7633049fbd70236e553f37fc7af4707a9bd167955a0ea157e5b3f827db4",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The fil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ter was"
+    },
+    {
+      "type": "text_delta",
+      "text": " inverted: pending() now"
+    },
+    {
+      "type": "text_delta",
+      "text": " ke"
+    },
+    {
+      "type": "text_delta",
+      "text": "eps only done tasks ("
+    },
+    {
+      "type": "text_delta",
+      "text": "t.done) instead of inc"
+    },
+    {
+      "type": "text_delta",
+      "text": "omplete ones ("
+    },
+    {
+      "type": "text_delta",
+      "text": "!t.done). Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ying on pending() to"
+    },
+    {
+      "type": "text_delta",
+      "text": " list"
+    },
+    {
+      "type": "text_delta",
+      "text": " un"
+    },
+    {
+      "type": "text_delta",
+      "text": "finished work"
+    },
+    {
+      "type": "text_delta",
+      "text": " will rece"
+    },
+    {
+      "type": "text_delta",
+      "text": "ive complet"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed tasks and"
+    },
+    {
+      "type": "text_delta",
+      "text": " om"
+    },
+    {
+      "type": "text_delta",
+      "text": "it the open ones."
+    },
+    {
+      "type": "text_delta",
+      "text": " Verify by"
+    },
+    {
+      "type": "text_delta",
+      "text": " chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "king callers of pending() and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the Task."
+    },
+    {
+      "type": "text_delta",
+      "text": "done sem"
+    },
+    {
+      "type": "text_delta",
+      "text": "antics.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":6"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":6,\"title\":\"p"
+    },
+    {
+      "type": "text_delta",
+      "text": "ending() returns completed tas"
+    },
+    {
+      "type": "text_delta",
+      "text": "ks instead of pending "
+    },
+    {
+      "type": "text_delta",
+      "text": "ones\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1455,
+      "output_tokens": 169,
+      "cost_usd": 0.00023
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

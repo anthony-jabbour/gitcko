@@ -1,0 +1,348 @@
+{
+  "v": 1,
+  "key": "c1980650452f3303fbaafa29405440a156b05ebf9e0c11d8254e077a89b766e8",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"h"
+    },
+    {
+      "type": "text_delta",
+      "text": "ypotheses\":[{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "category\":\"data"
+    },
+    {
+      "type": "text_delta",
+      "text": "_integrity\",\"claim\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " length pr"
+    },
+    {
+      "type": "text_delta",
+      "text": "efix is now `"
+    },
+    {
+      "type": "text_delta",
+      "text": "body.len() as u8`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", which"
+    },
+    {
+      "type": "text_delta",
+      "text": " silently truncates l"
+    },
+    {
+      "type": "text_delta",
+      "text": "engths above"
+    },
+    {
+      "type": "text_delta",
+      "text": " 255. A"
+    },
+    {
+      "type": "text_delta",
+      "text": " body"
+    },
+    {
+      "type": "text_delta",
+      "text": " of 256 bytes g"
+    },
+    {
+      "type": "text_delta",
+      "text": "ets a header"
+    },
+    {
+      "type": "text_delta",
+      "text": " of 0, so any"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ader dec"
+    },
+    {
+      "type": "text_delta",
+      "text": "o"
+    },
+    {
+      "type": "text_delta",
+      "text": "ding the frame will mis"
+    },
+    {
+      "type": "text_delta",
+      "text": "fram"
+    },
+    {
+      "type": "text_delta",
+      "text": "e the pay"
+    },
+    {
+      "type": "text_delta",
+      "text": "load. Ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify by"
+    },
+    {
+      "type": "text_delta",
+      "text": " chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "king whether any caller can"
+    },
+    {
+      "type": "text_delta",
+      "text": " p"
+    },
+    {
+      "type": "text_delta",
+      "text": "ass a body longer than 255"
+    },
+    {
+      "type": "text_delta",
+      "text": " bytes and"
+    },
+    {
+      "type": "text_delta",
+      "text": " whether a"
+    },
+    {
+      "type": "text_delta",
+      "text": " mat"
+    },
+    {
+      "type": "text_delta",
+      "text": "ching dec"
+    },
+    {
+      "type": "text_delta",
+      "text": "oder re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ads one"
+    },
+    {
+      "type": "text_delta",
+      "text": " length"
+    },
+    {
+      "type": "text_delta",
+      "text": " byte.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":2,\"path\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"start_line\":2,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\"Single"
+    },
+    {
+      "type": "text_delta",
+      "text": "-byte length header"
+    },
+    {
+      "type": "text_delta",
+      "text": " truncates b"
+    },
+    {
+      "type": "text_delta",
+      "text": "odies over 255 byt"
+    },
+    {
+      "type": "text_delta",
+      "text": "es\"},{\"category\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "correctness\",\"claim\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " header sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "rinks from 4 b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ytes to 1,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so any"
+    },
+    {
+      "type": "text_delta",
+      "text": " un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed dec"
+    },
+    {
+      "type": "text_delta",
+      "text": "oder or pe"
+    },
+    {
+      "type": "text_delta",
+      "text": "er that still"
+    },
+    {
+      "type": "text_delta",
+      "text": " expects a big"
+    },
+    {
+      "type": "text_delta",
+      "text": "-endian u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 prefix will read"
+    },
+    {
+      "type": "text_delta",
+      "text": " the wrong length and mispar"
+    },
+    {
+      "type": "text_delta",
+      "text": "se every"
+    },
+    {
+      "type": "text_delta",
+      "text": " frame. Ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify by searching for read"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers of"
+    },
+    {
+      "type": "text_delta",
+      "text": " frame output"
+    },
+    {
+      "type": "text_delta",
+      "text": " and any"
+    },
+    {
+      "type": "text_delta",
+      "text": " w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ire-"
+    },
+    {
+      "type": "text_delta",
+      "text": "format or protocol contract that"
+    },
+    {
+      "type": "text_delta",
+      "text": " ass"
+    },
+    {
+      "type": "text_delta",
+      "text": "umes the"
+    },
+    {
+      "type": "text_delta",
+      "text": " 4-byte header.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "end_line\":2,\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"start_line\":1,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"title\":\"Wire format"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " breaks existing u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32-prefix"
+    },
+    {
+      "type": "text_delta",
+      "text": " cons"
+    },
+    {
+      "type": "text_delta",
+      "text": "umers"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1460,
+      "output_tokens": 468,
+      "cost_usd": 0.00038
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

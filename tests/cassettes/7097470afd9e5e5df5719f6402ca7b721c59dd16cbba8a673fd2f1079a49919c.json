@@ -1,0 +1,316 @@
+{
+  "v": 1,
+  "key": "7097470afd9e5e5df5719f6402ca7b721c59dd16cbba8a673fd2f1079a49919c",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The h"
+    },
+    {
+      "type": "text_delta",
+      "text": "unk removes the closing `"
+    },
+    {
+      "type": "text_delta",
+      "text": "}` of `add`"
+    },
+    {
+      "type": "text_delta",
+      "text": " (old"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 3)."
+    },
+    {
+      "type": "text_delta",
+      "text": " The head"
+    },
+    {
+      "type": "text_delta",
+      "text": " file"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "ends at line 2 with"
+    },
+    {
+      "type": "text_delta",
+      "text": " `    "
+    },
+    {
+      "type": "text_delta",
+      "text": "a + b` and"
+    },
+    {
+      "type": "text_delta",
+      "text": " no clos"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing brace, so the function body"
+    },
+    {
+      "type": "text_delta",
+      "text": " is unterminated and the cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate fails to par"
+    },
+    {
+      "type": "text_delta",
+      "text": "se.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"syntax"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"confidence\":0.97"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"counterevidence\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[],\"end_line\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"evidence\":[\"e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1\",\"e2\"],\"imp"
+    },
+    {
+      "type": "text_delta",
+      "text": "act\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs does"
+    },
+    {
+      "type": "text_delta",
+      "text": " not compile,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate and"
+    },
+    {
+      "type": "text_delta",
+      "text": " any build or"
+    },
+    {
+      "type": "text_delta",
+      "text": " test dep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ending on it fail"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P0\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":1"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the clos"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing brace: add"
+    },
+    {
+      "type": "text_delta",
+      "text": " a line"
+    },
+    {
+      "type": "text_delta",
+      "text": " `}` after `"
+    },
+    {
+      "type": "text_delta",
+      "text": "    a + b`"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"title\":\"Clos"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing brace of add() removed"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " leaving unterminated function"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any build of the"
+    },
+    {
+      "type": "text_delta",
+      "text": " crate (c"
+    },
+    {
+      "type": "text_delta",
+      "text": "argo build or c"
+    },
+    {
+      "type": "text_delta",
+      "text": "argo test) after this change."
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"outcome\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "supported\",\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " head file src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs has "
+    },
+    {
+      "type": "text_delta",
+      "text": "2 lines, "
+    },
+    {
+      "type": "text_delta",
+      "text": "ending at"
+    },
+    {
+      "type": "text_delta",
+      "text": " `a"
+    },
+    {
+      "type": "text_delta",
+      "text": " + b` with no clos"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing brace, and the diff"
+    },
+    {
+      "type": "text_delta",
+      "text": " shows the `"
+    },
+    {
+      "type": "text_delta",
+      "text": "}` on"
+    },
+    {
+      "type": "text_delta",
+      "text": " old"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 3 was deleted"
+    },
+    {
+      "type": "text_delta",
+      "text": ". The function"
+    },
+    {
+      "type": "text_delta",
+      "text": " is unterminated,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the file fails to comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ile.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5542,
+      "output_tokens": 366,
+      "cost_usd": 0.0007372
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

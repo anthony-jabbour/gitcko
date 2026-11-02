@@ -1,0 +1,100 @@
+{
+  "v": 1,
+  "key": "96ae46e2d186879d3fa85037c3e43485b660bab1bd81857d4c55eaf3f7e9c172",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The comparison in"
+    },
+    {
+      "type": "text_delta",
+      "text": " is_"
+    },
+    {
+      "type": "text_delta",
+      "text": "expired was in"
+    },
+    {
+      "type": "text_delta",
+      "text": "verted from"
+    },
+    {
+      "type": "text_delta",
+      "text": " >= to <=, so s"
+    },
+    {
+      "type": "text_delta",
+      "text": "essions are now tre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ated as expired while"
+    },
+    {
+      "type": "text_delta",
+      "text": " still"
+    },
+    {
+      "type": "text_delta",
+      "text": " valid and not expired at exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "iry, a"
+    },
+    {
+      "type": "text_delta",
+      "text": " public API"
+    },
+    {
+      "type": "text_delta",
+      "text": " with"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller elsewhere.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 929,
+      "output_tokens": 86,
+      "cost_usd": 0.0001359
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

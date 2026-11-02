@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "7bbc385578046c69ef5f2591919bb5b3ef89ea095d507064de87301a18d259ad",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "priorities\":[\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\"],\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The `tries`"
+    },
+    {
+      "type": "text_delta",
+      "text": " counter is now"
+    },
+    {
+      "type": "text_delta",
+      "text": " immutable and the error"
+    },
+    {
+      "type": "text_delta",
+      "text": " ar"
+    },
+    {
+      "type": "text_delta",
+      "text": "m just does"
+    },
+    {
+      "type": "text_delta",
+      "text": " `continue`, so `"
+    },
+    {
+      "type": "text_delta",
+      "text": "with_retries` never retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ns `"
+    },
+    {
+      "type": "text_delta",
+      "text": "Err` and"
+    },
+    {
+      "type": "text_delta",
+      "text": " lo"
+    },
+    {
+      "type": "text_delta",
+      "text": "ops forever when"
+    },
+    {
+      "type": "text_delta",
+      "text": " every"
+    },
+    {
+      "type": "text_delta",
+      "text": " attempt fails.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 947,
+      "output_tokens": 131,
+      "cost_usd": 0.0001602
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

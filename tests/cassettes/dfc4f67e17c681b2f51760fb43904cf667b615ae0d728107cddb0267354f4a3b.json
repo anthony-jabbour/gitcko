@@ -1,0 +1,180 @@
+{
+  "v": 1,
+  "key": "dfc4f67e17c681b2f51760fb43904cf667b615ae0d728107cddb0267354f4a3b",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The ref"
+    },
+    {
+      "type": "text_delta",
+      "text": "actored count"
+    },
+    {
+      "type": "text_delta",
+      "text": " function"
+    },
+    {
+      "type": "text_delta",
+      "text": " builds SQL via"
+    },
+    {
+      "type": "text_delta",
+      "text": " format!"
+    },
+    {
+      "type": "text_delta",
+      "text": " from"
+    },
+    {
+      "type": "text_delta",
+      "text": " a f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixed en"
+    },
+    {
+      "type": "text_delta",
+      "text": "um-"
+    },
+    {
+      "type": "text_delta",
+      "text": "to-string mapping; the"
+    },
+    {
+      "type": "text_delta",
+      "text": " table names"
+    },
+    {
+      "type": "text_delta",
+      "text": " are const"
+    },
+    {
+      "type": "text_delta",
+      "text": "ants, so output"
+    },
+    {
+      "type": "text_delta",
+      "text": " should"
+    },
+    {
+      "type": "text_delta",
+      "text": " equal the pr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ior liter"
+    },
+    {
+      "type": "text_delta",
+      "text": "als"
+    },
+    {
+      "type": "text_delta",
+      "text": ". Verify the em"
+    },
+    {
+      "type": "text_delta",
+      "text": "itted string is exactly the"
+    },
+    {
+      "type": "text_delta",
+      "text": " same as"
+    },
+    {
+      "type": "text_delta",
+      "text": " before for both"
+    },
+    {
+      "type": "text_delta",
+      "text": " vari"
+    },
+    {
+      "type": "text_delta",
+      "text": "ants, including sp"
+    },
+    {
+      "type": "text_delta",
+      "text": "acing and cas"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing, and that"
+    },
+    {
+      "type": "text_delta",
+      "text": " no caller depends on a"
+    },
+    {
+      "type": "text_delta",
+      "text": " different format"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":12"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":8,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Count"
+    },
+    {
+      "type": "text_delta",
+      "text": " query string changed sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ape for existing callers\"}"
+    },
+    {
+      "type": "text_delta",
+      "text": "]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1609,
+      "output_tokens": 158,
+      "cost_usd": 0.0002399
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

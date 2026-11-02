@@ -1,0 +1,120 @@
+{
+  "v": 1,
+  "key": "2e8caa3680a0aafa7aa02fc9d69fd57b347ee925c2a487269afb2d9c35ccf019",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The new loop run"
+    },
+    {
+      "type": "text_delta",
+      "text": "s i"
+    },
+    {
+      "type": "text_delta",
+      "text": " over"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0..len and ind"
+    },
+    {
+      "type": "text_delta",
+      "text": "exes xs[i +"
+    },
+    {
+      "type": "text_delta",
+      "text": " 1], which panics out"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " bounds on"
+    },
+    {
+      "type": "text_delta",
+      "text": " the last i"
+    },
+    {
+      "type": "text_delta",
+      "text": "teration, and the commit message"
+    },
+    {
+      "type": "text_delta",
+      "text": " says"
+    },
+    {
+      "type": "text_delta",
+      "text": " it only"
+    },
+    {
+      "type": "text_delta",
+      "text": " chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es p"
+    },
+    {
+      "type": "text_delta",
+      "text": "air"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing dire"
+    },
+    {
+      "type": "text_delta",
+      "text": "ction, so the beh"
+    },
+    {
+      "type": "text_delta",
+      "text": "aviour change"
+    },
+    {
+      "type": "text_delta",
+      "text": " is unann"
+    },
+    {
+      "type": "text_delta",
+      "text": "ounced.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 923,
+      "output_tokens": 97,
+      "cost_usd": 0.0001408
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "cleared_risks": [
+    {
+      "description": "The repo has three files, and src/lib.rs only declares `pub mod table;`. No importers of src/table.rs were found, identifier search for A0 matched only its own definition, and the reference lookup on A0's symbol returned nothing. I found no in-repo caller that depends on the old values, so the hypothesis has no causal path here. External consumers of this public crate would be outside what I could check.",
+      "name": "Global +1 shift of table constants breaks value-dependent callers"
+    }
+  ],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "reduced_context",
+    "truncated"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "medium",
+    "reason": "A single-file mechanical shift of every constant value in a lookup table; the change is simple but any consumer relying on the old numeric values, or an off-by-one in the table, could cause silent defects.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "f45d1fe13710b279cb170031b11f3d5130cd0fe4",
+    "head_sha": "55f17d8395c3e999c02a68626d184d25accdc71a",
+    "local_changes": false,
+    "merge_base": "f45d1fe13710b279cb170031b11f3d5130cd0fe4"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}
