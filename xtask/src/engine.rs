@@ -334,6 +334,11 @@ mod tests {
             let mut reasons = got.review.reason_codes.clone();
             reasons.sort();
             let mut want = case.expect.reason_codes.clone();
+            // An invalid plan still runs the graph-seeded hypotheses (`report` calls the
+            // changed function); here the fake answers nothing, so that call fails too.
+            if name == "invalid_repair_plan" {
+                want.extend(["provider_failure".into(), "review_failed".into()]);
+            }
             want.sort();
             assert_eq!(reasons, want, "{name}");
             // Positive control: with nothing injected the run is the baseline failure, so
