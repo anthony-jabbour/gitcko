@@ -164,25 +164,32 @@ async fn prose_about_authorization_is_recorded() {
     only_file(dir.path());
 }
 
-/// A header in tool-call arguments is refused too, though decoding drops its colon.
+/// A header in tool-call arguments is refused too: as a key, and split into a name field
+/// and a value field, where no separator follows the name.
 #[tokio::test]
 async fn a_header_in_tool_arguments_is_not_written() {
-    let dir = tempfile::tempdir().unwrap();
-    let events = vec![
-        Ok(Event::ToolCall(ToolCall {
-            id: "call_1".into(),
-            name: "fetch".into(),
-            arguments: r#"{"Authorization": "Zm9v"}"#.into(),
-        })),
-        Ok(Event::Finish {
-            reason: FinishReason::Stop,
-        }),
-    ];
-    let inner = Arc::new(FakeProvider::new(vec![events]));
-    let recorder = Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
-    let got = run(&recorder, request("x")).await;
-    assert!(got.last().unwrap().is_err());
-    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
+    for arguments in [
+        r#"{"Authorization": "Zm9v"}"#,
+        r#"{"header": "Authorization", "value": "Zm9v"}"#,
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let events = vec![
+            Ok(Event::ToolCall(ToolCall {
+                id: "call_1".into(),
+                name: "fetch".into(),
+                arguments: arguments.into(),
+            })),
+            Ok(Event::Finish {
+                reason: FinishReason::Stop,
+            }),
+        ];
+        let inner = Arc::new(FakeProvider::new(vec![events]));
+        let recorder =
+            Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
+        let got = run(&recorder, request("x")).await;
+        assert!(got.last().unwrap().is_err(), "{arguments}");
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
+    }
 }
 
 #[tokio::test]

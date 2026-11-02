@@ -257,7 +257,9 @@ fn record(inner: EventStream, mut file: File, path: PathBuf, redactor: Redactor)
         // path's backslashes), and the deltas joined, since a key can span chunks.
         // The redactor's shapes cover `Bearer <token>`; a header name is refused alone.
         let meaning = plain_text(&file);
-        let leaks = redactor.redact(&meaning) != meaning || names_auth_header(&meaning);
+        let leaks = redactor.redact(&meaning) != meaning
+            || names_auth_header(&meaning)
+            || file.events.iter().any(tool_argument_names_auth);
         let written = !leaks
             && path.parent().is_some_and(|dir| std::fs::create_dir_all(dir).is_ok())
             && std::fs::write(&path, text).is_ok();
@@ -285,6 +287,25 @@ fn names_auth_header(text: &str) -> bool {
             .trim_start_matches(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '\\'))
             .starts_with([':', '='])
     })
+}
+
+/// A tool call whose decoded arguments hold the header name as a whole key or value, as
+/// in `{"header": "Authorization", "value": ...}`, where no separator follows the name.
+/// Arguments are structure, not prose, so the whole-string match refuses no review text.
+fn tool_argument_names_auth(event: &Event) -> bool {
+    fn names(value: &serde_json::Value) -> bool {
+        let is_name = |s: &str| s.trim().eq_ignore_ascii_case("authorization");
+        match value {
+            serde_json::Value::String(s) => is_name(s),
+            serde_json::Value::Array(items) => items.iter().any(names),
+            serde_json::Value::Object(map) => map.iter().any(|(k, v)| is_name(k) || names(v)),
+            _ => false,
+        }
+    }
+    let Event::ToolCall(call) = event else {
+        return false;
+    };
+    serde_json::from_str(&call.arguments).is_ok_and(|args| names(&args))
 }
 
 /// Every string and key in the file and in tool-call arguments, decoded, one per line,
