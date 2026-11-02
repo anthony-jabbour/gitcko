@@ -11,19 +11,25 @@
 //! the prompt fence, the second is parsed into closed types. And a result is `complete`
 //! only when nothing was left out; every gap is a reason code ([`complete`]).
 //!
-//! This is the first half. Candidates are published as findings after only an evidence
-//! check, so **no surface may ship on this** until validation, the judge and the gates
-//! land (Phase 4, batch B4b). The score stays `null` regardless.
+//! A candidate becomes a finding only after deterministic validation against the
+//! snapshot, deduplication, suppression, an independent judge and the publication gates
+//! ([`validate`], [`dedup`], [`suppress`], [`judge`], [`gates`]). The score stays `null`.
 
 mod complete;
+mod dedup;
 mod events;
+mod gates;
+mod identity;
 mod investigate;
+mod judge;
 mod plan;
 mod providers;
 mod result;
 mod risk;
 mod snapshot;
+mod suppress;
 mod symbols;
+mod validate;
 
 use gitcko_git::{CommitId, Repo};
 use gitcko_model::{BudgetLimits, CallRecord, Router, Run, RunBudget};
@@ -40,6 +46,7 @@ pub use providers::{
     RepoKnowledge, RiskSignalProvider, Signal,
 };
 pub use snapshot::{Disposition, FileDisposition};
+pub use validate::Dropped;
 
 /// Base's bounds (REVIEW_ENGINE §9). Versioned as `review_policy@2`, recorded in the
 /// result, and not user config.
@@ -72,11 +79,13 @@ pub fn base_budget() -> BudgetLimits {
     }
 }
 
-/// A fresh run under Base's bounds. Only `review` is required until the judge lands; a
-/// remote run gets the deadline, and a replay runs without one so it never races a clock.
+/// A fresh run under Base's bounds. `review` and `judge` are required: a candidate the
+/// judge never answered for is never published, so losing it must fail the run, not hide
+/// it. A remote run gets the deadline, and a replay runs without one so it never races a
+/// clock.
 pub fn base_run(id: String, remote: bool) -> Run {
     let mut run = Run::new(id, RunBudget::new(base_budget()));
-    run.required = vec![ModelRole::Review];
+    run.required = vec![ModelRole::Review, ModelRole::Judge];
     if remote {
         run.deadline = Some(Instant::now() + REMOTE_DEADLINE);
     }
@@ -93,16 +102,39 @@ pub struct ReviewInput<'a> {
     pub now: &'a dyn Fn() -> String,
 }
 
+fn counts(events: &mut events::Events<'_>, step: &str, candidates: usize, dropped: usize) {
+    events.completed(
+        step,
+        "ok",
+        &[
+            ("candidates", candidates as u64),
+            ("dropped", dropped as u64),
+        ],
+    );
+}
+
 /// A finished run: the result, plus what each model attempt and step did.
 pub struct Outcome {
     pub review: Review,
+    /// Candidates that left the pipeline, in order, with the stage and why. Codes only.
+    pub dropped: Vec<Dropped>,
     pub records: Vec<CallRecord>,
     pub events: Vec<RunEvent>,
 }
 
 /// Runs the review. Never panics on repository content or model output; every failure
 /// is in the returned result's status and reason codes.
-pub async fn review(input: ReviewInput<'_>, router: &Router, mut run: Run) -> Outcome {
+pub async fn review(input: ReviewInput<'_>, router: &Router, run: Run) -> Outcome {
+    review_with(input, router, run, &NoFeedback).await
+}
+
+/// [`review`] with a feedback source for suppression (REVIEW_RULES §7).
+pub async fn review_with(
+    input: ReviewInput<'_>,
+    router: &Router,
+    mut run: Run,
+    feedback: &dyn FeedbackProvider,
+) -> Outcome {
     let mut events = events::Events::new(&run.id, input.now);
     let mut ledger = complete::Completeness::default();
     // Reserve a share of the deadline; the token share is checked against spend.
@@ -182,6 +214,49 @@ pub async fn review(input: ReviewInput<'_>, router: &Router, mut run: Run) -> Ou
         }
     }
 
+    let (items, mut dropped) = {
+        calls.events.started("validate");
+        let found = std::mem::take(&mut investigation.candidates);
+        let (items, dropped) = validate::run(&snap, &investigation.ledger, found);
+        counts(calls.events, "validate", items.len(), dropped.len());
+        (items, dropped)
+    };
+
+    calls.events.started("dedup");
+    let before = items.len();
+    let items = dedup::run(items);
+    counts(calls.events, "dedup", items.len(), before - items.len());
+
+    calls.events.started("suppress");
+    let (items, gone) = suppress::run(items, &snap, feedback);
+    counts(calls.events, "suppress", items.len(), gone.len());
+    dropped.extend(gone);
+
+    calls.events.started("adjudicate");
+    let asked = items.len();
+    // A stopped run asks nothing more: what is left stays unjudged, so unpublished.
+    let (judged, gone) = if ledger.stopped() {
+        (Vec::new(), judge::all_unjudged(&items))
+    } else {
+        judge::run(&mut calls, items, &investigation.ledger, &mut ledger).await
+    };
+    counts(calls.events, "adjudicate", asked, gone.len());
+    dropped.extend(gone);
+
+    calls.events.started("gates");
+    let gated = gates::run(judged, &|path| gates::policy(&snap, path));
+    calls.events.completed(
+        "gates",
+        "ok",
+        &[
+            ("findings", gated.findings.len() as u64),
+            ("questions", gated.questions.len() as u64),
+            ("dropped", gated.dropped.len() as u64),
+        ],
+    );
+    dropped.extend(gated.dropped);
+
+    calls.events.started("finalize");
     let records = std::mem::take(&mut calls.records);
     drop(calls);
     result::assemble(
@@ -190,6 +265,8 @@ pub async fn review(input: ReviewInput<'_>, router: &Router, mut run: Run) -> Ou
         &snap,
         risk,
         investigation,
+        (gated.findings, gated.questions),
+        dropped,
         ledger,
         events,
         records,

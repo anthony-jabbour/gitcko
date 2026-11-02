@@ -212,7 +212,7 @@ pub async fn run_all(
         )
         .await
         {
-            Ended::Reported(output) => record(output, task, &tools, snapshot, &mut found, ledger),
+            Ended::Reported(output) => record(output, task, &tools, &mut found, ledger),
             // A bound stopped it, not the model's judgment: the review saw less.
             Ended::Inconclusive => {
                 found.inconclusive += 1;
@@ -233,19 +233,16 @@ fn record(
     output: InvestigationOutput,
     task: Task,
     tools: &Tools<'_>,
-    snapshot: &Snapshot<'_>,
     found: &mut Findings,
     ledger: &mut Completeness,
 ) {
-    let allowed = snapshot.investigated();
     match output.outcome {
         Outcome::Supported => {
             found.supported += 1;
             for candidate in output.candidates {
-                // A claim must rest on lines a tool actually returned in this run, and be
-                // about a file this review may speak of: never a held-back one.
-                let grounded = allowed.iter().any(|a| a.as_str() == candidate.path)
-                    && !candidate.evidence.is_empty()
+                // A claim must rest on lines a tool actually returned in this run. Which
+                // file it may speak of is validation's to decide (outside-diff findings).
+                let grounded = !candidate.evidence.is_empty()
                     && candidate
                         .evidence
                         .iter()
@@ -372,7 +369,7 @@ async fn investigate_one(
     }
 }
 
-fn refuse(ledger: &mut Completeness) {
+pub(crate) fn refuse(ledger: &mut Completeness) {
     let refused = gitcko_model::ProviderError::new(ErrorKind::ContentPolicy);
     ledger.call_failed(
         ModelRole::Review,
