@@ -24,6 +24,12 @@ model = "anthropic/claude-haiku-5.5"
 provider = "openrouter"
 model = "deepseek/deepseek-v4.1-flash"
 
+# Sonnet is the escalation model for high-risk areas and the Plus tier; recording it on G1
+# (`--model review-sonnet`) gives the quality ceiling the cheap bindings are measured against.
+[models.bindings.review-sonnet]
+provider = "openrouter"
+model = "anthropic/claude-sonnet-5.5"
+
 [models.bindings.judge]
 provider = "openrouter"
 model = "openai/gpt-6-luna"

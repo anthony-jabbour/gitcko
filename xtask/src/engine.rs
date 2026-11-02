@@ -220,18 +220,16 @@ mod tests {
     }
 
     #[test]
-    fn the_open_weight_candidate_can_serve_the_review_roles() {
-        let config = models_config(&committed(), Some("review-deepseek")).unwrap();
-        let resolved = resolve(&config, &fake_env()).unwrap();
-        assert!(
-            providers(
-                &resolved,
-                &Models::Record("review-deepseek".into()),
-                &fake_env(),
-                None
-            )
-            .is_ok()
-        );
+    fn every_candidate_can_serve_the_review_roles() {
+        for binding in ["review", "review-deepseek", "review-sonnet"] {
+            let config = models_config(&committed(), Some(binding)).unwrap();
+            let resolved = resolve(&config, &fake_env()).unwrap();
+            let record = Models::Record(binding.into());
+            assert!(
+                providers(&resolved, &record, &fake_env(), None).is_ok(),
+                "{binding}"
+            );
+        }
     }
 
     #[test]
