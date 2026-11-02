@@ -94,10 +94,14 @@ fn router(models: &Models) -> Result<Router> {
         Models::Record(binding) | Models::Live(binding) => Some(binding.as_str()),
     };
     let config = models_config(&text, binding)?;
-    let mut env: BTreeMap<String, String> = std::env::vars().collect();
-    if *models == Models::Replay {
+    // Replay never looks for a key, not even in `.env`.
+    let env = if *models == Models::Replay {
+        let mut env: BTreeMap<String, String> = std::env::vars().collect();
         env.insert(API_KEY.to_string(), "replay-needs-no-key".to_string());
-    }
+        env
+    } else {
+        crate::dotenv::load(&root())?
+    };
     let resolved = resolve(&config, &env).map_err(|e| e.to_string())?;
     let providers = providers(&resolved, models, &env)?;
     Ok(Router::new(resolved, providers))
