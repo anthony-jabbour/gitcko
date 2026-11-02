@@ -1,0 +1,20 @@
+# The bindings `cargo xtask cassettes record` and `cargo xtask eval --live-model` run.
+# Pinned model ids only: a cassette is keyed by the exact model, and a moving alias would
+# make a recording mean nothing. `--model <binding>` serves `review` and `risk-classifier`;
+# the judge keeps its own binding, from another family (MODEL_ROUTING §5).
+#
+# Set the two `model` values below before recording. The key comes from
+# OPENROUTER_API_KEY in your environment and never goes in this file.
+
+[models.bindings.review]
+provider = "openrouter"
+model = "choose/a-pinned-review-model"
+
+[models.bindings.judge]
+provider = "openrouter"
+model = "choose/a-pinned-judge-model"
+
+[models.roles]
+review = "review"
+risk-classifier = "review"
+judge = "judge"

@@ -47,6 +47,8 @@ pub struct CallRecord {
     pub role: ModelRole,
     /// The routing policy as `id@version`.
     pub policy: String,
+    /// The `[models]` binding this attempt used.
+    pub binding: String,
     pub provider: ModelProvider,
     pub model: String,
     pub family: ModelFamily,

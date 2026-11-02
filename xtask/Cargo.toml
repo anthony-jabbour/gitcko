@@ -7,11 +7,17 @@ license.workspace = true
 publish = false
 
 [dependencies]
+gitcko-cassette = { path = "../crates/gitcko-cassette" }
+gitcko-git = { path = "../crates/gitcko-git" }
+gitcko-model = { path = "../crates/gitcko-model" }
+gitcko-model-openai = { path = "../crates/gitcko-model-openai" }
 gitcko-protocol.workspace = true
 gitcko-redact = { path = "../crates/gitcko-redact" }
+gitcko-review = { path = "../crates/gitcko-review" }
 gitcko-test-support = { path = "../crates/gitcko-test-support" }
 serde.workspace = true
 serde_json.workspace = true
+tokio.workspace = true
 toml.workspace = true
 
 [lints]

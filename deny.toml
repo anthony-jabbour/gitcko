@@ -54,6 +54,7 @@ exceptions = [
     { crate = "gitcko-model-openai", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-prompts", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-redact", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-review", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-search", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-syntax", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-tools", allow = ["AGPL-3.0-or-later"] },

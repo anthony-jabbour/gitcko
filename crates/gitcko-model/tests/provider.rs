@@ -106,6 +106,7 @@ fn call_record_shape() {
         run_id: "rv_example".into(),
         role: ModelRole::Judge,
         policy: "default@1".into(),
+        binding: "smart".into(),
         provider: Provider::Openrouter,
         model: "openai/example-2".into(),
         family: ModelFamily::Openai,

@@ -72,6 +72,11 @@ impl RunBudget {
         }
     }
 
+    /// The ceilings this budget was made with.
+    pub fn limits(&self) -> &BudgetLimits {
+        &self.limits
+    }
+
     /// Reserves a prompt of `prompt_bytes` and up to `wanted_output` tokens of output,
     /// trimmed to what's left. Refuses before anything is sent if the prompt doesn't
     /// fit, no output is left, or the cost ceiling is already reached.
