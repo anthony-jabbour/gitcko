@@ -1,3 +1,13 @@
-kind = "clean"
+kind = "seeded"
 status = "partial"
 reason_codes = ["reduced_context", "parse_failed"]
+
+# The parse failure is the pipeline's to report (partial, parse_failed); the broken build
+# is a real finding too, a P0 by the review's own scale.
+[[finding]]
+path = "src/lib.rs"
+start_line = 1
+end_line = 2
+severity = "P0"
+comment_type = "syntax"
+root_cause = "The function's closing brace is gone, so the crate no longer compiles"
