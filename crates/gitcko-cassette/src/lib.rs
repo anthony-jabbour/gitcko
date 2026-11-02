@@ -273,13 +273,21 @@ fn record(inner: EventStream, mut file: File, path: PathBuf, redactor: Redactor)
     .boxed()
 }
 
-/// An auth header by name: a line that is only the name (a JSON key, as `plain_text`
-/// lists them) or the name followed by a colon, quoted or not. Not the bare word: a
+/// An auth header by name: the name alone on a line (a JSON key, as `plain_text` lists
+/// them), or followed by `:` or `=` past any spaces and quotes. Not the bare word: a
 /// review of an auth bug says "authorization" in prose, and refusing that would leave
 /// exactly those cases unrecorded.
 fn names_auth_header(meaning: &str) -> bool {
-    let lower = meaning.to_ascii_lowercase().replace(['"', '\''], "");
-    lower.contains("authorization:") || lower.lines().any(|l| l.trim() == "authorization")
+    const NAME: &str = "authorization";
+    let lower = meaning.to_ascii_lowercase();
+    lower
+        .lines()
+        .any(|l| l.trim().trim_matches(['"', '\'']) == NAME)
+        || lower.match_indices(NAME).any(|(at, _)| {
+            lower[at + NAME.len()..]
+                .trim_start_matches(|c: char| c.is_whitespace() || c == '"' || c == '\'')
+                .starts_with([':', '='])
+        })
 }
 
 /// Every string and key in the file and in tool-call arguments, decoded, one per line,
