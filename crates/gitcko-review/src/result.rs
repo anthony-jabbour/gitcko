@@ -3,26 +3,28 @@
 //! The final `gitcko.review/1`. The score is `null` throughout Base: `gate_closed` when
 //! complete, otherwise the reason it's incomplete, so a gap never reads as a number.
 
-use gitcko_domain::ContentHash;
+use std::collections::HashSet;
+
 use gitcko_git::CommitId;
 use gitcko_model::{CallRecord, POLICY as ROUTING_POLICY, Run};
 use gitcko_prompts::{
-    BUNDLE_VERSION, Candidate, Category, CommentType as ModelType, Severity as ModelSeverity,
-    SideOut,
+    BUNDLE_VERSION, Category, CommentType as ModelType, Severity as ModelSeverity, SideOut,
 };
 use gitcko_protocol::review::{
     CalibrationStatus, ClearedRisk, CommentType, Coverage, Evidence, EvidenceKind, Finding,
-    Lifecycle, Review, ReviewSchemaVersion, ReviewStatus, RiskAssessment, RiskLevel, RiskSource,
-    ScoreAvailabilityReason, Severity, Side, Target, Tier, Usage, Verification, Versions,
+    Lifecycle, Question, Review, ReviewSchemaVersion, ReviewStatus, RiskAssessment, RiskLevel,
+    RiskSource, ScoreAvailabilityReason, Severity, Side, Target, Tier, Usage, Verification,
+    Versions,
 };
 use gitcko_tools::Ledger;
 
 use crate::complete::Completeness;
 use crate::events::Events;
+use crate::gates::Final;
 use crate::investigate::Findings;
-use crate::plan::Task;
 use crate::risk::Risk;
 use crate::snapshot::{Disposition, Snapshot};
+use crate::validate::Dropped;
 use crate::{Outcome, POLICY, ReviewInput};
 
 fn availability(status: ReviewStatus) -> ScoreAvailabilityReason {
@@ -66,18 +68,16 @@ fn target(base: CommitId, head: CommitId, merge_base: Option<CommitId>) -> Targe
     }
 }
 
-/// Stable under moved lines and reworded titles' case and spacing (REVIEW_ENGINE §16).
-fn finding_id(path: &str, category: Category, title: &str) -> String {
-    let words: Vec<String> = title.split_whitespace().map(str::to_lowercase).collect();
-    let text = format!("{path}\u{0}{category:?}\u{0}{}", words.join(" "));
-    let hash = ContentHash::of(text.as_bytes()).to_string();
-    let hex = hash.rsplit(':').next().unwrap_or(&hash);
-    format!("f_{}", &hex[..16])
-}
-
-fn finding(task: &Task, candidate: Candidate, ledger: &Ledger) -> Finding {
-    let _ = task;
-    let evidence = candidate
+fn finding(done: Final, ledger: &Ledger) -> Finding {
+    let Final {
+        item,
+        id,
+        severity,
+        confidence,
+    } = done;
+    let candidate = item.candidate;
+    // What the candidate cited, then the other places the same cause was reported.
+    let mut evidence: Vec<Evidence> = candidate
         .evidence
         .iter()
         .filter_map(|id| ledger.get(id))
@@ -87,9 +87,12 @@ fn finding(task: &Task, candidate: Candidate, ledger: &Ledger) -> Finding {
             start_line: e.range.start(),
             end_line: e.range.end(),
         })
+        .chain(item.also)
         .collect();
+    let mut seen = HashSet::new();
+    evidence.retain(|e| seen.insert((e.path.clone(), e.start_line, e.end_line)));
     Finding {
-        id: finding_id(&candidate.path, candidate.category, &candidate.title),
+        id,
         path: candidate.path,
         start_line: candidate.start_line,
         end_line: candidate.end_line,
@@ -97,7 +100,7 @@ fn finding(task: &Task, candidate: Candidate, ledger: &Ledger) -> Finding {
             SideOut::Old => Side::Old,
             SideOut::New => Side::New,
         },
-        severity: match candidate.severity {
+        severity: match severity {
             ModelSeverity::P0 => Severity::P0,
             ModelSeverity::P1 => Severity::P1,
             ModelSeverity::P2 => Severity::P2,
@@ -108,8 +111,8 @@ fn finding(task: &Task, candidate: Candidate, ledger: &Ledger) -> Finding {
             ModelType::Style => CommentType::Style,
         },
         security_issue: candidate.category == Category::Security,
-        linked_rule: None,
-        confidence: candidate.confidence,
+        linked_rule: item.rule,
+        confidence,
         calibration_status: CalibrationStatus::Uncalibrated,
         title: candidate.title,
         body: format!(
@@ -121,7 +124,7 @@ fn finding(task: &Task, candidate: Candidate, ledger: &Ledger) -> Finding {
         verified_evidence: None,
         suggestion: candidate.suggestion,
         hunk: None,
-        outside_diff: None,
+        outside_diff: item.outside,
         lifecycle: Lifecycle::New,
         fix_package: None,
     }
@@ -186,6 +189,7 @@ pub fn failed(
     };
     Outcome {
         review,
+        dropped: Vec::new(),
         records: Vec::new(),
         events: events.into_vec(),
     }
@@ -198,8 +202,10 @@ pub fn assemble(
     snapshot: &Snapshot<'_>,
     risk: Risk,
     found: Findings,
+    gated: (Vec<Final>, Vec<Question>),
+    dropped: Vec<Dropped>,
     ledger: Completeness,
-    events: Events<'_>,
+    mut events: Events<'_>,
     records: Vec<CallRecord>,
 ) -> Outcome {
     let status = ledger.status();
@@ -212,19 +218,20 @@ pub fn assemble(
             .collect::<Vec<_>>()
     };
     let investigated = snapshot.investigated().len() as u32;
-    let mut findings: Vec<Finding> = found
-        .candidates
+    let (finals, questions) = gated;
+    // Already in order: most severe, then most confident.
+    let findings: Vec<Finding> = finals
         .into_iter()
-        .map(|(task, candidate)| finding(&task, candidate, &found.ledger))
+        .map(|done| finding(done, &found.ledger))
         .collect();
-    findings.sort_by(|a, b| {
-        (a.severity, a.path.as_str(), a.start_line, a.id.as_str()).cmp(&(
-            b.severity,
-            b.path.as_str(),
-            b.start_line,
-            b.id.as_str(),
-        ))
-    });
+    events.completed(
+        "finalize",
+        "ok",
+        &[
+            ("findings", findings.len() as u64),
+            ("questions", questions.len() as u64),
+        ],
+    );
     let review = Review {
         schema_version: ReviewSchemaVersion::V1,
         review_id: run.id.clone(),
@@ -255,7 +262,7 @@ pub fn assemble(
             .collect(),
         file_summaries: Vec::new(),
         findings,
-        questions: Vec::new(),
+        questions,
         coverage: Coverage {
             changed_files: snapshot.dispositions.len() as u32,
             investigated_files: investigated,
@@ -268,6 +275,7 @@ pub fn assemble(
     };
     Outcome {
         review,
+        dropped,
         records,
         events: events.into_vec(),
     }

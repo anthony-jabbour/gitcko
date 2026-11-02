@@ -61,6 +61,9 @@ pub struct Snapshot<'a> {
     /// Folders below the root holding a `.gitcko/`.
     config_folders: Vec<String>,
     pub config_invalid: bool,
+    /// The base's `ignore`, for unchanged files a finding might land on; `None` when the
+    /// config couldn't be read.
+    pub ignore: Option<gitcko_config::IgnoreRules>,
     pub commit_messages: Vec<String>,
     /// An unchanged file the review may lean on is over an index limit.
     pub repo_index_gap: bool,
@@ -204,6 +207,7 @@ pub fn take<'a>(input: &ReviewInput<'a>) -> Result<Snapshot<'a>, &'static str> {
         configs,
         config_folders,
         config_invalid,
+        ignore,
         commit_messages,
         repo_index_gap,
     })
@@ -211,7 +215,7 @@ pub fn take<'a>(input: &ReviewInput<'a>) -> Result<Snapshot<'a>, &'static str> {
 
 /// Text with credential-shaped strings replaced. Commit subjects and rules go straight
 /// into prompts, with no tool between them and the model.
-fn scrubbed(text: &str) -> String {
+pub(crate) fn scrubbed(text: &str) -> String {
     Redactor::new().redact(text).into_owned()
 }
 
