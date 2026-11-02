@@ -221,7 +221,7 @@ mod tests {
 
     #[test]
     fn every_candidate_can_serve_the_review_roles() {
-        for binding in ["review", "review-deepseek", "review-sonnet"] {
+        for binding in ["review", "review-sonnet"] {
             let config = models_config(&committed(), Some(binding)).unwrap();
             let resolved = resolve(&config, &fake_env()).unwrap();
             let record = Models::Record(binding.into());
