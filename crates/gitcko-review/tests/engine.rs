@@ -3297,3 +3297,32 @@ async fn canary_a_key_in_rules_md_never_reaches_the_judge() {
         assert!(!told.contains(&key));
     }
 }
+
+#[tokio::test]
+async fn a_p0_report_of_a_bug_is_kept_though_its_comment_type_is_off() {
+    let dir = with_base_files("schema_version = 1\ncomment_types = [\"logic\"]", None);
+    let provider = reporting(
+        "src/lib.rs",
+        vec![("read_file", json!({"path": "src/lib.rs"}))],
+        |results| {
+            let id = evidence_of(&results[0]);
+            let mut critical = candidate("src/lib.rs", &[id]);
+            critical["comment_type"] = json!("syntax");
+            critical["severity"] = json!("P0");
+            critical["confidence"] = json!(0.8);
+            critical["start_line"] = json!(1);
+            critical["end_line"] = json!(1);
+            let mut allowed = critical.clone();
+            allowed["comment_type"] = json!("logic");
+            allowed["severity"] = json!("P1");
+            vec![critical, allowed]
+        },
+        |_| text(&verdict("accept", 0.9)),
+    );
+    let outcome = review_repo(dir.path(), provider, run_with_budget(base_budget())).await;
+    let [finding] = outcome.review.findings.as_slice() else {
+        panic!("{:?}", reasons(&outcome))
+    };
+    // The never-suppressed report stands for the issue, as it would alone.
+    assert_eq!(finding.severity, Severity::P0);
+}
