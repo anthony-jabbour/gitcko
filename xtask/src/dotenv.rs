@@ -103,7 +103,7 @@ pub fn load(root: &Path) -> Result<BTreeMap<String, String>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use gitcko_test_support::{TempDir, empty_repo, git};
+    use gitcko_test_support::{TempDir, empty_repo};
 
     fn fake_key() -> String {
         format!("{}-{}", "canary", "c4f3-dotenv")
@@ -161,6 +161,7 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn canary_a_tracked_env_is_refused_without_echoing_it() {
+        use gitcko_test_support::git;
         let dir = empty_repo("dotenv-tracked");
         write_env(&dir, &format!("OPENROUTER_API_KEY={}\n", fake_key()));
         // Positive control: untracked, it loads.

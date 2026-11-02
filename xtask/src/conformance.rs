@@ -82,13 +82,13 @@ pub fn run(provider: &str, live: bool) -> Result {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
-    use super::{args, plan};
+    use super::args;
 
     #[cfg(unix)]
     #[test]
     fn a_live_run_takes_keys_from_dotenv_and_an_offline_one_never_reads_it() {
+        use super::plan;
+        use std::collections::BTreeMap;
         use std::os::unix::fs::PermissionsExt;
         let dir = gitcko_test_support::empty_repo("conformance-dotenv");
         let key = format!("{}-{}", "canary", "c4f3-conformance");
