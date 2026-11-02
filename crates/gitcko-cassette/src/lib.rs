@@ -273,21 +273,18 @@ fn record(inner: EventStream, mut file: File, path: PathBuf, redactor: Redactor)
     .boxed()
 }
 
-/// An auth header by name: the name alone on a line (a JSON key, as `plain_text` lists
-/// them), or followed by `:` or `=` past any spaces and quotes. Not the bare word: a
-/// review of an auth bug says "authorization" in prose, and refusing that would leave
-/// exactly those cases unrecorded.
-fn names_auth_header(meaning: &str) -> bool {
+/// An auth header by name: the name followed by `:` or `=` past any spaces, quotes and
+/// escapes (`plain_text` keeps tool-call arguments whole too, so a header there keeps its
+/// colon). Not the bare word: a review of an auth bug says "authorization" in prose, and
+/// refusing that would leave exactly those cases unrecorded.
+fn names_auth_header(text: &str) -> bool {
     const NAME: &str = "authorization";
-    let lower = meaning.to_ascii_lowercase();
-    lower
-        .lines()
-        .any(|l| l.trim().trim_matches(['"', '\'']) == NAME)
-        || lower.match_indices(NAME).any(|(at, _)| {
-            lower[at + NAME.len()..]
-                .trim_start_matches(|c: char| c.is_whitespace() || c == '"' || c == '\'')
-                .starts_with([':', '='])
-        })
+    let lower = text.to_ascii_lowercase();
+    lower.match_indices(NAME).any(|(at, _)| {
+        lower[at + NAME.len()..]
+            .trim_start_matches(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '\\'))
+            .starts_with([':', '='])
+    })
 }
 
 /// Every string and key in the file and in tool-call arguments, decoded, one per line,

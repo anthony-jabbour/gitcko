@@ -137,15 +137,52 @@ async fn recording_a_call_it_already_holds_replays_it() {
     assert_eq!(only_file(dir.path()), first);
 }
 
-/// A review of an auth bug names authorization in prose; only a header is refused.
+/// A review of an auth bug names authorization in prose, even in a streamed piece of its
+/// own; only a header is refused.
 #[tokio::test]
 async fn prose_about_authorization_is_recorded() {
     let dir = tempfile::tempdir().unwrap();
-    let text = "Expired sessions now pass the authorization check in allow().";
-    let inner = Arc::new(FakeProvider::new(vec![response(text)]));
+    let pieces = [
+        "Expired sessions now pass the",
+        " authorization",
+        "-logic check.",
+    ];
+    let mut events: Vec<_> = pieces
+        .iter()
+        .map(|p| {
+            Ok(Event::TextDelta {
+                text: p.to_string(),
+            })
+        })
+        .collect();
+    events.push(Ok(Event::Finish {
+        reason: FinishReason::Stop,
+    }));
+    let inner = Arc::new(FakeProvider::new(vec![events.clone()]));
     let recorder = Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
-    assert_eq!(run(&recorder, request("x")).await, response(text));
+    assert_eq!(run(&recorder, request("x")).await, events);
     only_file(dir.path());
+}
+
+/// A header in tool-call arguments is refused too, though decoding drops its colon.
+#[tokio::test]
+async fn a_header_in_tool_arguments_is_not_written() {
+    let dir = tempfile::tempdir().unwrap();
+    let events = vec![
+        Ok(Event::ToolCall(ToolCall {
+            id: "call_1".into(),
+            name: "fetch".into(),
+            arguments: r#"{"Authorization": "Zm9v"}"#.into(),
+        })),
+        Ok(Event::Finish {
+            reason: FinishReason::Stop,
+        }),
+    ];
+    let inner = Arc::new(FakeProvider::new(vec![events]));
+    let recorder = Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
+    let got = run(&recorder, request("x")).await;
+    assert!(got.last().unwrap().is_err());
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
 }
 
 #[tokio::test]
