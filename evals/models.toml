@@ -16,6 +16,14 @@
 provider = "openrouter"
 model = "anthropic/claude-haiku-5.5"
 
+# The open-weight candidate for the same Base slot, recorded side by side on G1
+# (`--model review-deepseek`); the better of the two takes `review`. The id is the open
+# weights release (deepseek-v4.1-flash-20260910) served by many hosts, not DeepSeek's own
+# dated API snapshot.
+[models.bindings.review-deepseek]
+provider = "openrouter"
+model = "deepseek/deepseek-v4.1-flash"
+
 [models.bindings.judge]
 provider = "openrouter"
 model = "openai/gpt-6-luna"
