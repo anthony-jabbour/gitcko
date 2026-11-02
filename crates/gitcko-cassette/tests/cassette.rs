@@ -122,6 +122,21 @@ async fn record_then_replay_is_exact_for_events_and_file() {
     assert!(first.ends_with(b"}\n"));
 }
 
+/// Two cases that send the same request must replay the same answer, so the second
+/// never reaches the model and never overwrites the first.
+#[tokio::test]
+async fn recording_a_call_it_already_holds_replays_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let inner = Arc::new(FakeProvider::new(vec![response("first")]));
+    let recorder = Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
+    let _ = run(&recorder, request("fn main() {}")).await;
+    let first = only_file(dir.path());
+    // The fake holds one answer; a second live call would get none.
+    let again = run(&recorder, request("fn main() {}")).await;
+    assert_eq!(again, response("first"));
+    assert_eq!(only_file(dir.path()), first);
+}
+
 #[tokio::test]
 async fn a_failed_call_is_passed_through_and_not_recorded() {
     let dir = tempfile::tempdir().unwrap();

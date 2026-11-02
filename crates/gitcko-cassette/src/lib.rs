@@ -6,7 +6,10 @@
 //!
 //! Replay is the default and the only mode CI allows. Recording wraps a real provider,
 //! is refused when `CI` is set, and refuses to write a file holding the binding's key,
-//! an auth header, a credential-shaped string or a local absolute path.
+//! an auth header, a credential-shaped string or a local absolute path. A recording
+//! replays a call it already holds rather than asking again: cases that share a request
+//! must share its answer, or replay would follow one case's answer down another's path.
+//! To record a call afresh, delete its file first.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -166,6 +169,7 @@ impl ModelProvider for Cassette {
         let path = self.path(&key);
         match &self.recorder {
             None => replay(&path, &key, &self.binding, cancel),
+            Some(_) if path.exists() => replay(&path, &key, &self.binding, cancel),
             Some(recorder) => {
                 let file = File {
                     v: VERSION,
