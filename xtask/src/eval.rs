@@ -247,10 +247,19 @@ fn check_expect(expect: &Expect) -> Result {
 pub enum Models {
     /// `tests/cassettes/`; a missing one fails with its key and the record command.
     Replay,
+    /// Replay offline as one binding, as `cassettes record` checks what it just wrote.
+    ReplayAs(String),
     /// A live binding, writing cassettes through the leak scan.
     Record(String),
     /// A live binding, writing nothing.
     Live(String),
+}
+
+impl Models {
+    /// Offline: the answers come from cassettes, never a provider.
+    pub fn is_replay(&self) -> bool {
+        matches!(self, Models::Replay | Models::ReplayAs(_))
+    }
 }
 
 /// One finished run of the engine on a case.
@@ -708,7 +717,7 @@ fn measure(
             // take as long as they take (fault.rs). Replay measures these exactly on a
             // paused clock; a live run names them instead of counting a case that tested
             // nothing.
-            if *models != Models::Replay
+            if !models.is_replay()
                 && case
                     .expect
                     .fault

@@ -79,7 +79,7 @@ pub fn run(engine: &dyn Engine, args: &[&str], env: &dyn Fn(&str) -> Option<Stri
         let outcome = eval::run_case(engine, &case, &models)?;
         spent += outcome.cost_usd.unwrap_or(0.0);
         ended_as_expected(&case.id(), &case.expect, &outcome.review)?;
-        replays(engine, &case)?;
+        replays(engine, &case, &models)?;
 
         println!("recorded {} (${spent:.2} so far)", case.id());
     }
@@ -106,9 +106,14 @@ fn ended_as_expected(id: &str, expect: &eval::Expect, review: &Review) -> Result
 /// check falls back to rules) leaves no cassette and needn't change how the run ends, so
 /// only a replay proves every call is held. A missing one panics in replay by design;
 /// that becomes "record it again" while the key is at hand.
-fn replays(engine: &dyn Engine, case: &eval::Case) -> Result {
+fn replays(engine: &dyn Engine, case: &eval::Case, recorded: &Models) -> Result {
+    // The binding just recorded, not the default one: its cassettes are the ones to check.
+    let Models::Record(binding) = recorded else {
+        return Err("only a recording is replayed to check it".into());
+    };
+    let as_recorded = Models::ReplayAs(binding.clone());
     let replayed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        eval::run_case(engine, case, &Models::Replay)
+        eval::run_case(engine, case, &as_recorded)
     }));
     match replayed {
         Ok(Ok(outcome)) => ended_as_expected(&case.id(), &case.expect, &outcome.review),
@@ -150,7 +155,7 @@ mod tests {
         assert!(ended_as_expected("a/x", &clean_expect(), &review()).is_ok());
     }
 
-    /// Records fine live; on replay, a call it made isn't held.
+    /// Records fine live; replayed as the binding it recorded, a call isn't held.
     struct LosesACall;
 
     impl Engine for LosesACall {
@@ -160,7 +165,8 @@ mod tests {
             _repo: &Path,
             models: &Models,
         ) -> Result<eval::Outcome> {
-            if *models == Models::Replay {
+            // The default binding's cassettes are all there; the recorded one's aren't.
+            if *models == Models::ReplayAs("sonnet".into()) {
                 panic!("no cassette for this model call");
             }
             Ok(eval::Outcome {
@@ -176,7 +182,7 @@ mod tests {
         let case = eval::selected(&root, Suite::P, Some("rename_pure"))
             .unwrap()
             .remove(0);
-        let err = replays(&LosesACall, &case).unwrap_err();
+        let err = replays(&LosesACall, &case, &Models::Record("sonnet".into())).unwrap_err();
         assert!(
             err.contains("p/rename_pure") && err.contains("record it again"),
             "{err}"

@@ -67,7 +67,9 @@ fn providers(
     let mut out: BTreeMap<String, Arc<dyn ModelProvider>> = BTreeMap::new();
     for (name, binding) in &resolved.bindings {
         let provider: Arc<dyn ModelProvider> = match models {
-            Models::Replay => Arc::new(Cassette::replay(root().join(CASSETTES), binding)),
+            Models::Replay | Models::ReplayAs(_) => {
+                Arc::new(Cassette::replay(root().join(CASSETTES), binding))
+            }
             Models::Record(_) | Models::Live(_) => {
                 if binding.provider != Provider::Openrouter {
                     return Err(format!("{name}: evals run OpenRouter bindings"));
@@ -99,11 +101,13 @@ fn router(models: &Models, fault: Option<&Injector>) -> Result<Router> {
         .map_err(|_| format!("{MODELS} can't be read"))?;
     let binding = match models {
         Models::Replay => None,
-        Models::Record(binding) | Models::Live(binding) => Some(binding.as_str()),
+        Models::ReplayAs(binding) | Models::Record(binding) | Models::Live(binding) => {
+            Some(binding.as_str())
+        }
     };
     let config = models_config(&text, binding)?;
     // Replay never looks for a key, not even in `.env`.
-    let env = if *models == Models::Replay {
+    let env = if models.is_replay() {
         let mut env: BTreeMap<String, String> = std::env::vars().collect();
         env.insert(API_KEY.to_string(), "replay-needs-no-key".to_string());
         env
@@ -163,13 +167,7 @@ impl Engine for ReviewEngine {
     fn review(&self, case: &Case, repo: &Path, models: &Models) -> Result<Outcome> {
         let injector = case.expect.fault.as_ref().map(Injector::new);
         let router = router(models, injector.as_ref())?;
-        execute(
-            case,
-            repo,
-            &router,
-            injector.as_ref(),
-            *models != Models::Replay,
-        )
+        execute(case, repo, &router, injector.as_ref(), !models.is_replay())
     }
 }
 
