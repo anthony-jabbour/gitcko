@@ -699,9 +699,25 @@ fn measure(
     let mut spent = 0.0;
     // A stop keeps what was already measured: that spend shouldn't go unreported.
     let mut stopped = None;
+    let mut replay_only = Vec::new();
     for &suite in suites {
         let mut runs = Vec::new();
         'cases: for case in selected(root, suite, only)? {
+            // A deadline fault needs the run's fixed deadline to fall within 30 s (the
+            // first-token timeout) after the faulted call starts, and live calls before it
+            // take as long as they take (fault.rs). Replay measures these exactly on a
+            // paused clock; a live run names them instead of counting a case that tested
+            // nothing.
+            if *models != Models::Replay
+                && case
+                    .expect
+                    .fault
+                    .as_ref()
+                    .is_some_and(|f| f.kind == FaultKind::Deadline)
+            {
+                replay_only.push(case.id());
+                continue;
+            }
             for _ in 0..runs_per_case {
                 if let Some(cap) = spend_cap
                     && spent >= cap
@@ -736,6 +752,12 @@ fn measure(
         if stopped.is_some() {
             break;
         }
+    }
+    if !replay_only.is_empty() {
+        report.push_str(&format!(
+            "\nMeasured on replay only (a deadline can't be timed against live calls): {}\n",
+            replay_only.join(", ")
+        ));
     }
     if let Some(reason) = stopped {
         report.push_str(&format!("\nStopped early: {reason}\n"));
@@ -1335,6 +1357,38 @@ pub(crate) mod tests {
                 .unwrap_err()
                 .contains("no make.sh")
         );
+    }
+
+    #[test]
+    fn a_live_run_names_deadline_cases_instead_of_running_them() {
+        let dir = suite_dir(2);
+        std::fs::write(
+            dir.path().join("p/case1/expect.toml"),
+            "kind = \"clean\"\nstatus = \"complete\"\n\n[fault]\nkind = \"deadline\"\nrole = \"review\"\nat_call = 1\n",
+        )
+        .unwrap();
+        let engine = Fake(Default::default(), 0.0);
+        let live = Models::Live("m".into());
+        let Measured { report, .. } =
+            measure(&engine, dir.path(), &[Suite::P], &live, 1, None, None).unwrap();
+        assert_eq!(engine.0.get(), 1, "only the case without a deadline ran");
+        assert!(
+            report.contains("replay only") && report.contains("p/case1"),
+            "{report}"
+        );
+        // Control: replay runs it.
+        let engine = Fake(Default::default(), 0.0);
+        measure(
+            &engine,
+            dir.path(),
+            &[Suite::P],
+            &Models::Replay,
+            1,
+            None,
+            None,
+        )
+        .unwrap();
+        assert_eq!(engine.0.get(), 2);
     }
 
     #[test]
