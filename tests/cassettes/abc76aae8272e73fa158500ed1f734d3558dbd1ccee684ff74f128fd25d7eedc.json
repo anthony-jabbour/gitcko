@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "key": "5f55b1e4572636d0357112f34b7731a23353e1677b1b920e89241a4823c10d33",
+  "key": "abc76aae8272e73fa158500ed1f734d3558dbd1ccee684ff74f128fd25d7eedc",
   "role": "review",
   "binding": {
     "provider": "openrouter",
@@ -16,19 +16,19 @@
   "events": [
     {
       "type": "text_delta",
-      "text": "{\""
+      "text": "{\"cand"
     },
     {
       "type": "text_delta",
-      "text": "candidates\":["
+      "text": "idates\":[{\"category"
     },
     {
       "type": "text_delta",
-      "text": "{\"category\":\"correctness"
+      "text": "\":\"corre"
     },
     {
       "type": "text_delta",
-      "text": "\",\"cause\":\"The"
+      "text": "ctness\",\"cause\":\"The"
     },
     {
       "type": "text_delta",
@@ -36,195 +36,195 @@
     },
     {
       "type": "text_delta",
-      "text": " replaces the public function"
+      "text": " repl"
     },
     {
       "type": "text_delta",
-      "text": " `add("
+      "text": "aces the body"
     },
     {
       "type": "text_delta",
-      "text": "a: u32, b: u"
+      "text": " of src"
     },
     {
       "type": "text_delta",
-      "text": "32) -> u32` ("
+      "text": "/lib.rs with `"
     },
     {
       "type": "text_delta",
-      "text": "which"
+      "text": "pub fn add() {}"
     },
     {
       "type": "text_delta",
-      "text": " returned a"
+      "text": "` (dropping the u"
     },
     {
       "type": "text_delta",
-      "text": " + b) with `pub f"
+      "text": "32 par"
     },
     {
       "type": "text_delta",
-      "text": "n add() {}`, which"
+      "text": "ameters and the `"
     },
     {
       "type": "text_delta",
-      "text": " takes no arguments and retur"
+      "text": "a + b` return"
     },
     {
       "type": "text_delta",
-      "text": "ns un"
+      "text": ") and appends a line"
     },
     {
       "type": "text_delta",
-      "text": "it. Any down"
+      "text": " containing U+FFFD"
     },
     {
       "type": "text_delta",
-      "text": "stream caller that pass"
+      "text": " replacement characters before"
     },
     {
       "type": "text_delta",
-      "text": "es two u"
+      "text": " `//"
     },
     {
       "type": "text_delta",
-      "text": "32 values"
+      "text": " tail`."
     },
     {
       "type": "text_delta",
-      "text": " or uses the return"
+      "text": " Those characters s"
     },
     {
       "type": "text_delta",
-      "text": " value will"
+      "text": "it outside any"
     },
     {
       "type": "text_delta",
-      "text": " f"
+      "text": " comment or"
     },
     {
       "type": "text_delta",
-      "text": "ail to compile.\",\"com"
+      "text": " string, so the file no longer"
     },
     {
       "type": "text_delta",
-      "text": "ment_type\":\"logic\",\""
+      "text": " tokenizes as"
     },
     {
       "type": "text_delta",
-      "text": "confidence\":0.8,"
+      "text": " Rust.\",\""
     },
     {
       "type": "text_delta",
-      "text": "\"counterevidence\":["
+      "text": "comment_type\":\"synt"
     },
     {
       "type": "text_delta",
-      "text": "],\"end_line\":1"
+      "text": "ax\",\"confidence\":0."
     },
     {
       "type": "text_delta",
-      "text": ",\"evidence\":[\"e"
+      "text": "7,\"counterevidence"
     },
     {
       "type": "text_delta",
-      "text": "1\",\"e2\"],\"imp"
+      "text": "\":["
     },
     {
       "type": "text_delta",
-      "text": "act\":\"Down"
+      "text": "],\"end_line\":2,"
     },
     {
       "type": "text_delta",
-      "text": "stream cr"
+      "text": "\"evidence\":[\"e1"
     },
     {
       "type": "text_delta",
-      "text": "ates that depend on this"
+      "text": "\"],\"impact\":\"The"
     },
     {
       "type": "text_delta",
-      "text": " public"
+      "text": " crate f"
     },
     {
       "type": "text_delta",
-      "text": " API break"
+      "text": "ails to compile, so every"
     },
     {
       "type": "text_delta",
-      "text": " at"
+      "text": " build and"
     },
     {
       "type": "text_delta",
-      "text": " comp"
+      "text": " test of this"
     },
     {
       "type": "text_delta",
-      "text": "ile time,"
+      "text": " cr"
     },
     {
       "type": "text_delta",
-      "text": " and the add"
+      "text": "ate bre"
     },
     {
       "type": "text_delta",
-      "text": "ition beh"
+      "text": "aks. Any down"
     },
     {
       "type": "text_delta",
-      "text": "aviour is lost."
+      "text": "stream user"
     },
     {
       "type": "text_delta",
-      "text": " Within the repository"
+      "text": " of"
     },
     {
       "type": "text_delta",
-      "text": ", a compl"
+      "text": " `"
     },
     {
       "type": "text_delta",
-      "text": "ete liter"
+      "text": "add("
     },
     {
       "type": "text_delta",
-      "text": "al search for"
+      "text": "a"
     },
     {
       "type": "text_delta",
-      "text": " \\"
+      "text": ", b)` also fails to"
     },
     {
       "type": "text_delta",
-      "text": "\"add(\\\" retur"
+      "text": " compile, because the function"
     },
     {
       "type": "text_delta",
-      "text": "ned no call"
+      "text": " now"
     },
     {
       "type": "text_delta",
-      "text": " sites, so the bre"
+      "text": " takes no ar"
     },
     {
       "type": "text_delta",
-      "text": "akage is lim"
+      "text": "guments and returns unit."
     },
     {
       "type": "text_delta",
-      "text": "ited to external cons"
+      "text": "\",\"path"
     },
     {
       "type": "text_delta",
-      "text": "umers.\",\"path\":\"src"
+      "text": "\":\"src/lib.r"
     },
     {
       "type": "text_delta",
-      "text": "/lib.rs\",\"sever"
+      "text": "s\",\"sever"
     },
     {
       "type": "text_delta",
-      "text": "ity\":\"P2\",\"side\":"
+      "text": "ity\":\"P0\",\"side\":"
     },
     {
       "type": "text_delta",
@@ -236,131 +236,71 @@
     },
     {
       "type": "text_delta",
-      "text": "Restore the original signature and"
+      "text": "Restore `"
     },
     {
       "type": "text_delta",
-      "text": " body"
+      "text": "pub fn add(a:"
     },
     {
       "type": "text_delta",
-      "text": ","
+      "text": " u32, b: u32)"
     },
     {
       "type": "text_delta",
-      "text": " or make"
+      "text": " -> u32 { a +"
     },
     {
       "type": "text_delta",
-      "text": " the sign"
+      "text": " b }` and remove the st"
     },
     {
       "type": "text_delta",
-      "text": "ature change de"
+      "text": "ray non"
     },
     {
       "type": "text_delta",
-      "text": "liberately and version"
+      "text": "-ASCII line"
     },
     {
       "type": "text_delta",
-      "text": " it as"
+      "text": ".\",\"title\":\"src"
     },
     {
       "type": "text_delta",
-      "text": " a breaking change"
+      "text": "/lib.rs no"
     },
     {
       "type": "text_delta",
-      "text": ".\",\"title\":\"Public add"
+      "text": " longer compiles: inval"
     },
     {
       "type": "text_delta",
-      "text": "() signature changed to"
+      "text": "id charac"
     },
     {
       "type": "text_delta",
-      "text": " z"
+      "text": "ters and add"
     },
     {
       "type": "text_delta",
-      "text": "ero-arg"
+      "text": "() signature chang"
     },
     {
       "type": "text_delta",
-      "text": "ument un"
+      "text": "ed\",\"trigger\":\""
     },
     {
       "type": "text_delta",
-      "text": "it function,"
+      "text": "Any build or"
     },
     {
       "type": "text_delta",
-      "text": " breaking API"
+      "text": " test of the crate after"
     },
     {
       "type": "text_delta",
-      "text": " consumers\",\"trigger\":"
-    },
-    {
-      "type": "text_delta",
-      "text": "\"Any external"
-    },
-    {
-      "type": "text_delta",
-      "text": " cr"
-    },
-    {
-      "type": "text_delta",
-      "text": "ate or"
-    },
-    {
-      "type": "text_delta",
-      "text": " caller that inv"
-    },
-    {
-      "type": "text_delta",
-      "text": "okes add"
-    },
-    {
-      "type": "text_delta",
-      "text": " with two u"
-    },
-    {
-      "type": "text_delta",
-      "text": "32 arguments or uses"
-    },
-    {
-      "type": "text_delta",
-      "text": " its"
-    },
-    {
-      "type": "text_delta",
-      "text": " u32 result"
-    },
-    {
-      "type": "text_delta",
-      "text": " after"
-    },
-    {
-      "type": "text_delta",
-      "text": " this change is"
-    },
-    {
-      "type": "text_delta",
-      "text": " mer"
-    },
-    {
-      "type": "text_delta",
-      "text": "ged and"
-    },
-    {
-      "type": "text_delta",
-      "text": " released"
-    },
-    {
-      "type": "text_delta",
-      "text": "."
+      "text": " this change."
     },
     {
       "type": "text_delta",
@@ -372,73 +312,113 @@
     },
     {
       "type": "text_delta",
-      "text": "The diff confirms the public"
+      "text": "The head file cont"
     },
     {
       "type": "text_delta",
-      "text": " signature chang"
+      "text": "ains `"
     },
     {
       "type": "text_delta",
-      "text": "ed from add(u"
+      "text": "pub fn add() {}"
     },
     {
       "type": "text_delta",
-      "text": "32,"
+      "text": "` followed by a"
     },
     {
       "type": "text_delta",
-      "text": " u32) -> u32 "
+      "text": " line"
     },
     {
       "type": "text_delta",
-      "text": "to add() with no return"
+      "text": " of"
     },
     {
       "type": "text_delta",
-      "text": " value ("
+      "text": " repl"
     },
     {
       "type": "text_delta",
-      "text": "e1,"
+      "text": "acement characters outside any com"
     },
     {
       "type": "text_delta",
-      "text": " e2). A"
+      "text": "ment, which is a"
     },
     {
       "type": "text_delta",
-      "text": " complete literal search found"
+      "text": " comp"
     },
     {
       "type": "text_delta",
-      "text": " no in-repo callers,"
+      "text": "ile error. The repo search for"
     },
     {
       "type": "text_delta",
-      "text": " so the imp"
+      "text": " `"
     },
     {
       "type": "text_delta",
-      "text": "act dep"
+      "text": "add(` retur"
     },
     {
       "type": "text_delta",
-      "text": "ends on external dependents,"
+      "text": "ned no call"
     },
     {
       "type": "text_delta",
-      "text": " which I could not in"
+      "text": "ers or"
     },
     {
       "type": "text_delta",
-      "text": "spect.\"}"
+      "text": " tests in the head comm"
+    },
+    {
+      "type": "text_delta",
+      "text": "it, so the removed-"
+    },
+    {
+      "type": "text_delta",
+      "text": "addition imp"
+    },
+    {
+      "type": "text_delta",
+      "text": "act on"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-repo code is not"
+    },
+    {
+      "type": "text_delta",
+      "text": " sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "own,"
+    },
+    {
+      "type": "text_delta",
+      "text": " but the build break"
+    },
+    {
+      "type": "text_delta",
+      "text": " itself is sup"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported by e1.\"}"
     },
     {
       "type": "usage",
-      "input_tokens": 5713,
-      "output_tokens": 936,
-      "cost_usd": 0.0010393
+      "input_tokens": 5426,
+      "output_tokens": 989,
+      "cost_usd": 0.0010371
     },
     {
       "type": "finish",

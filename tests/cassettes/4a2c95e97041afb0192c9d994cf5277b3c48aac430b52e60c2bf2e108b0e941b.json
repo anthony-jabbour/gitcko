@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "key": "7f46cdde9fd4ff8444fcbea3cdbea9c3e4fe94d27148e9e96b51e06bf5f0dc20",
+  "key": "4a2c95e97041afb0192c9d994cf5277b3c48aac430b52e60c2bf2e108b0e941b",
   "role": "judge",
   "binding": {
     "provider": "openrouter",
@@ -36,7 +36,7 @@
     },
     {
       "type": "text_delta",
-      "text": "87"
+      "text": "99"
     },
     {
       "type": "text_delta",
@@ -76,11 +76,7 @@
     },
     {
       "type": "text_delta",
-      "text": " old"
-    },
-    {
-      "type": "text_delta",
-      "text": " and"
+      "text": " cited"
     },
     {
       "type": "text_delta",
@@ -88,15 +84,39 @@
     },
     {
       "type": "text_delta",
-      "text": " definitions"
+      "text": "-side"
     },
     {
       "type": "text_delta",
-      "text": " show"
+      "text": " source"
     },
     {
       "type": "text_delta",
-      "text": " that"
+      "text": " contains"
+    },
+    {
+      "type": "text_delta",
+      "text": " U"
+    },
+    {
+      "type": "text_delta",
+      "text": "+"
+    },
+    {
+      "type": "text_delta",
+      "text": "FF"
+    },
+    {
+      "type": "text_delta",
+      "text": "FD"
+    },
+    {
+      "type": "text_delta",
+      "text": " characters"
+    },
+    {
+      "type": "text_delta",
+      "text": " outside"
     },
     {
       "type": "text_delta",
@@ -104,43 +124,15 @@
     },
     {
       "type": "text_delta",
-      "text": " public"
+      "text": " comment"
     },
     {
       "type": "text_delta",
-      "text": " function"
+      "text": " or"
     },
     {
       "type": "text_delta",
-      "text": "’s"
-    },
-    {
-      "type": "text_delta",
-      "text": " parameter"
-    },
-    {
-      "type": "text_delta",
-      "text": " and"
-    },
-    {
-      "type": "text_delta",
-      "text": " return"
-    },
-    {
-      "type": "text_delta",
-      "text": "-type"
-    },
-    {
-      "type": "text_delta",
-      "text": " contract"
-    },
-    {
-      "type": "text_delta",
-      "text": " was"
-    },
-    {
-      "type": "text_delta",
-      "text": " removed"
+      "text": " string"
     },
     {
       "type": "text_delta",
@@ -148,59 +140,27 @@
     },
     {
       "type": "text_delta",
-      "text": " A"
+      "text": " They"
     },
     {
       "type": "text_delta",
-      "text": " downstream"
+      "text": " are"
     },
     {
       "type": "text_delta",
-      "text": " caller"
+      "text": " not"
     },
     {
       "type": "text_delta",
-      "text": " using"
+      "text": " valid"
     },
     {
       "type": "text_delta",
-      "text": " the"
+      "text": " Rust"
     },
     {
       "type": "text_delta",
-      "text": " prior"
-    },
-    {
-      "type": "text_delta",
-      "text": " two"
-    },
-    {
-      "type": "text_delta",
-      "text": "-"
-    },
-    {
-      "type": "text_delta",
-      "text": "argument"
-    },
-    {
-      "type": "text_delta",
-      "text": " API"
-    },
-    {
-      "type": "text_delta",
-      "text": " will"
-    },
-    {
-      "type": "text_delta",
-      "text": " no"
-    },
-    {
-      "type": "text_delta",
-      "text": " longer"
-    },
-    {
-      "type": "text_delta",
-      "text": " compile"
+      "text": " tokens"
     },
     {
       "type": "text_delta",
@@ -212,7 +172,27 @@
     },
     {
       "type": "text_delta",
-      "text": " this"
+      "text": " compiling"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " crate"
+    },
+    {
+      "type": "text_delta",
+      "text": " fails"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " That"
     },
     {
       "type": "text_delta",
@@ -224,39 +204,47 @@
     },
     {
       "type": "text_delta",
-      "text": " real"
+      "text": " concrete"
     },
     {
       "type": "text_delta",
-      "text": " compatibility"
+      "text": " build"
     },
     {
       "type": "text_delta",
-      "text": " break"
+      "text": "-breaking"
     },
     {
       "type": "text_delta",
-      "text": " for"
+      "text": " defect"
     },
     {
       "type": "text_delta",
-      "text": " external"
+      "text": " triggered"
     },
     {
       "type": "text_delta",
-      "text": " consumers"
+      "text": " by"
     },
     {
       "type": "text_delta",
-      "text": ","
+      "text": " any"
     },
     {
       "type": "text_delta",
-      "text": " even"
+      "text": " build"
     },
     {
       "type": "text_delta",
-      "text": " though"
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " test"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
     },
     {
       "type": "text_delta",
@@ -264,27 +252,7 @@
     },
     {
       "type": "text_delta",
-      "text": " repository"
-    },
-    {
-      "type": "text_delta",
-      "text": " has"
-    },
-    {
-      "type": "text_delta",
-      "text": " no"
-    },
-    {
-      "type": "text_delta",
-      "text": " internal"
-    },
-    {
-      "type": "text_delta",
-      "text": " call"
-    },
-    {
-      "type": "text_delta",
-      "text": " sites"
+      "text": " crate"
     },
     {
       "type": "text_delta",
@@ -304,7 +272,7 @@
     },
     {
       "type": "text_delta",
-      "text": "2"
+      "text": "0"
     },
     {
       "type": "text_delta",
@@ -332,9 +300,9 @@
     },
     {
       "type": "usage",
-      "input_tokens": 937,
-      "output_tokens": 659,
-      "cost_usd": 0.0004232
+      "input_tokens": 849,
+      "output_tokens": 416,
+      "cost_usd": 0.0002929
     },
     {
       "type": "finish",

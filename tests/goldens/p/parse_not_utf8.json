@@ -1,5 +1,10 @@
 {
-  "cleared_risks": [],
+  "cleared_risks": [
+    {
+      "description": "The signature change to add() is real: src/lib.rs at head now defines `pub fn add() {}` with no parameters or return value. However, a literal search for `add(` in the head commit returned no hits with complete coverage, and the repo has only two files (lib.rs and a toml), so no in-repo caller is broken. Dependents outside this repo could not be checked, and find_symbol was only partially parsed, so this is not a concrete defect demonstrated by the evidence.",
+      "name": "add signature changed to no-arg unit function"
+    }
+  ],
   "coverage": {
     "changed_files": 1,
     "held_back": [],
@@ -7,7 +12,38 @@
     "skipped_binary": []
   },
   "file_summaries": [],
-  "findings": [],
+  "findings": [
+    {
+      "body": "The change replaces the body of src/lib.rs with `pub fn add() {}` (dropping the u32 parameters and the `a + b` return) and appends a line containing U+FFFD replacement characters before `// tail`. Those characters sit outside any comment or string, so the file no longer tokenizes as Rust.\n\nTrigger: Any build or test of the crate after this change.\n\nImpact: The crate fails to compile, so every build and test of this crate breaks. Any downstream user of `add(a, b)` also fails to compile, because the function now takes no arguments and returns unit.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "syntax",
+      "confidence": 0.7,
+      "end_line": 2,
+      "evidence": [
+        {
+          "end_line": 2,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_0d010b2c6f6f45a3",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P0",
+      "side": "new",
+      "start_line": 1,
+      "suggestion": "Restore `pub fn add(a: u32, b: u32) -> u32 { a + b }` and remove the stray non-ASCII line.",
+      "title": "src/lib.rs no longer compiles: invalid characters and add() signature changed",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
   "instructions": null,
   "questions": [],
   "reason_codes": [
@@ -17,7 +53,7 @@
   "review_id": "<normalised>",
   "risk_level": {
     "level": "medium",
-    "reason": "The only changed file is src/lib.rs, where the public add function's signature and body were replaced by an empty stub, a breaking API change with a stray malformed line, though the diff is tiny.",
+    "reason": "The only changed file is src/lib.rs, where the public add function's signature and body are replaced with an empty stub, a breaking API change with a malformed trailing line, and the commit message 'Update lib' gives no rationale.",
     "source": "model"
   },
   "schema_version": "gitcko.review/1",
@@ -27,7 +63,7 @@
   "score_reasoning": null,
   "security_summary": null,
   "status": "partial",
-  "summary": "Review incomplete: 0 finding(s) across 1 investigated file(s). 1 hypothesis(es) could not be settled either way.",
+  "summary": "Review incomplete: 1 finding(s) across 1 investigated file(s). 1 hypothesis(es) could not be settled either way.",
   "target": {
     "base_sha": "862d4d389bcacc6f317192ec2073164175efffef",
     "head_sha": "aa706557efc86ede5b33e260b414d20db62b109e",

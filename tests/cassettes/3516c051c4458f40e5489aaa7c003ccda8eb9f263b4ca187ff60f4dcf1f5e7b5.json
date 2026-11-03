@@ -16,27 +16,31 @@
   "events": [
     {
       "type": "text_delta",
-      "text": "{\"level\":\"med"
+      "text": "{\"level\":\"medium\",\""
     },
     {
       "type": "text_delta",
-      "text": "ium\",\"priorities\":[\"src"
+      "text": "priorities\":[\"src/l"
     },
     {
       "type": "text_delta",
-      "text": "/lib.rs\"],"
+      "text": "ib.rs\"],\"re"
     },
     {
       "type": "text_delta",
-      "text": "\"reason\":\"The only"
+      "text": "ason\":\"The only"
     },
     {
       "type": "text_delta",
-      "text": " changed file is src/lib"
+      "text": " chang"
     },
     {
       "type": "text_delta",
-      "text": ".rs, where"
+      "text": "ed file is src/lib."
+    },
+    {
+      "type": "text_delta",
+      "text": "rs, where"
     },
     {
       "type": "text_delta",
@@ -48,15 +52,15 @@
     },
     {
       "type": "text_delta",
-      "text": " signature and"
+      "text": " signature and body"
     },
     {
       "type": "text_delta",
-      "text": " body were repl"
+      "text": " are repl"
     },
     {
       "type": "text_delta",
-      "text": "aced by an"
+      "text": "aced with an"
     },
     {
       "type": "text_delta",
@@ -72,29 +76,41 @@
     },
     {
       "type": "text_delta",
-      "text": " change with a stray mal"
+      "text": " change with"
     },
     {
       "type": "text_delta",
-      "text": "formed line"
+      "text": " a"
     },
     {
       "type": "text_delta",
-      "text": ", though"
+      "text": " malformed tr"
     },
     {
       "type": "text_delta",
-      "text": " the diff is t"
+      "text": "ailing line, and"
     },
     {
       "type": "text_delta",
-      "text": "iny.\"}"
+      "text": " the commit message "
+    },
+    {
+      "type": "text_delta",
+      "text": "'Update lib' gives"
+    },
+    {
+      "type": "text_delta",
+      "text": " no r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ationale.\"}"
     },
     {
       "type": "usage",
       "input_tokens": 807,
-      "output_tokens": 89,
-      "cost_usd": 0.0001252
+      "output_tokens": 100,
+      "cost_usd": 0.0001307
     },
     {
       "type": "finish",
