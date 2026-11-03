@@ -56,15 +56,17 @@ struct Built {
 
 fn build_from(files: &[(&str, &str)]) -> Built {
     let rust = adapter(Language::Rust).unwrap();
+    // The default 2 s parse timeout is wall-clock: on a loaded CI runner the big
+    // fixtures below hit it and lose everything after the cut. These tests exercise the
+    // graph's work-counted limits, so give the parse all the time it needs.
+    let limits = ParseLimits {
+        timeout: std::time::Duration::from_secs(3_600),
+        ..ParseLimits::default()
+    };
     let extracted: Vec<(RepoPath, Extraction)> = files
         .iter()
         .filter(|(p, _)| p.ends_with(".rs"))
-        .map(|(p, src)| {
-            (
-                RepoPath::parse(p).unwrap(),
-                rust.extract(src, &ParseLimits::default()),
-            )
-        })
+        .map(|(p, src)| (RepoPath::parse(p).unwrap(), rust.extract(src, &limits)))
         .collect();
     let input = GraphInput {
         files: extracted
