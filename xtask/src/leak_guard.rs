@@ -336,12 +336,40 @@ pub fn self_test() -> Result {
     let secret_line = format!("GITHUB_PAT={fake_github_token}");
     let env_line = format!("export MY_{}_KEY=1", "STRIPE");
     let binary_blob = format!("AB\0\0{secret_line}\0");
+    // A real cassette key, which gitleaks' generic-api-key rule takes for a secret.
+    let key = [
+        "fb15778528bd683c4aaabd9e8a6421fa",
+        "8d9c4800217953d30dd43fd09614e9ac",
+    ]
+    .concat();
+    let cassette = format!("tests/cassettes/{key}.json");
+    let key_line = format!("{{\n  \"v\": 1,\n  \"key\": \"{key}\",\n  \"role\": \"review\"\n}}\n");
+    let token_beside_key =
+        format!("{{\"v\": 1, \"key\": \"{key}\", \"note\": \"{fake_github_token}\"}}\n");
+    let token_below_key =
+        format!("{{\n  \"key\": \"{key}\",\n  \"note\": \"{fake_github_token}\"\n}}\n");
 
     let cases: &[SelfTestCase] = &[
         (
             "clean",
             &[("README.md", "hello"), ("CONTRIBUTING.md", "x")],
             false,
+        ),
+        ("a cassette's key line", &[(&cassette, &key_line)], false),
+        (
+            "a token beside a cassette's key",
+            &[(&cassette, &token_beside_key)],
+            true,
+        ),
+        (
+            "a token below a cassette's key",
+            &[(&cassette, &token_below_key)],
+            true,
+        ),
+        (
+            "a key-shaped line outside the cassettes",
+            &[("data/key.json", &key_line)],
+            true,
         ),
         ("private repo name", &[("notes.txt", &private_name)], true),
         (
