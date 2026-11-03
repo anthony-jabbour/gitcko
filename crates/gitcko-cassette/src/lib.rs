@@ -18,7 +18,7 @@ use std::sync::Arc;
 use futures_util::StreamExt;
 use gitcko_model::{
     ErrorKind, Event, EventStream, ModelProvider, PromptRef, ProviderError, Request,
-    ResolvedBinding,
+    ResolvedBinding, Usage,
 };
 use gitcko_protocol::config::{DataPolicy, ModelProvider as Provider, ModelRole, ReasoningEffort};
 use gitcko_redact::Redactor;
@@ -169,7 +169,17 @@ impl ModelProvider for Cassette {
         let path = self.path(&key);
         match &self.recorder {
             None => replay(&path, &key, &self.binding, cancel),
-            Some(_) if path.exists() => replay(&path, &key, &self.binding, cancel),
+            // Nothing is spent on a call already held, so its cost is $0, still known: a
+            // recording's spend cap counts only what this recording pays for.
+            Some(_) if path.exists() => replay(&path, &key, &self.binding, cancel)
+                .map(|event| match event {
+                    Ok(Event::Usage(usage)) => Ok(Event::Usage(Usage {
+                        cost_usd: usage.cost_usd.map(|_| 0.0),
+                        ..usage
+                    })),
+                    other => other,
+                })
+                .boxed(),
             Some(recorder) => {
                 let file = File {
                     v: VERSION,

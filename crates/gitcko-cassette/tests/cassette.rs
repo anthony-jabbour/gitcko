@@ -133,8 +133,32 @@ async fn recording_a_call_it_already_holds_replays_it() {
     let first = only_file(dir.path());
     // The fake holds one answer; a second live call would get none.
     let again = run(&recorder, request("fn main() {}")).await;
-    assert_eq!(again, response("first"));
+    let costs = |events: &[Result<Event, ProviderError>]| -> Vec<Option<f64>> {
+        events
+            .iter()
+            .filter_map(|e| match e {
+                Ok(Event::Usage(u)) => Some(u.cost_usd),
+                _ => None,
+            })
+            .collect()
+    };
+    // The held answer comes back whole, except that it cost nothing this time.
+    assert_eq!(costs(&again), [Some(0.0)]);
+    let strip = |events: Vec<Result<Event, ProviderError>>| -> Vec<_> {
+        events
+            .into_iter()
+            .filter(|e| !matches!(e, Ok(Event::Usage(_))))
+            .collect()
+    };
+    assert_eq!(strip(again), strip(response("first")));
     assert_eq!(only_file(dir.path()), first);
+    // Replay still reports what the call cost when it was recorded.
+    let replayed = run(
+        &Cassette::replay(dir.path(), &binding(11434, None)),
+        request("fn main() {}"),
+    )
+    .await;
+    assert_eq!(costs(&replayed), [Some(0.000_125)]);
 }
 
 /// A review of an auth bug names authorization in prose, even in a streamed piece of its
