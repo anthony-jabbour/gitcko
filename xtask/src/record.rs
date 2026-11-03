@@ -79,6 +79,7 @@ pub fn run(engine: &dyn Engine, args: &[&str], env: &dyn Fn(&str) -> Option<Stri
         let outcome = eval::run_case(engine, &case, &models)?;
         spent += outcome.cost_usd.unwrap_or(0.0);
         ended_as_expected(&case.id(), &case.expect, &outcome.review)?;
+        replays(engine, &case)?;
 
         println!("recorded {} (${spent:.2} so far)", case.id());
     }
@@ -99,6 +100,24 @@ fn ended_as_expected(id: &str, expect: &eval::Expect, review: &Review) -> Result
         "{id}: {}; a call may have failed live, so record it again",
         problems.join("; ")
     ))
+}
+
+/// Replays the case just recorded, offline. An optional call that failed live (the risk
+/// check falls back to rules) leaves no cassette and needn't change how the run ends, so
+/// only a replay proves every call is held. A missing one panics in replay by design;
+/// that becomes "record it again" while the key is at hand.
+fn replays(engine: &dyn Engine, case: &eval::Case) -> Result {
+    let replayed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        eval::run_case(engine, case, &Models::Replay)
+    }));
+    match replayed {
+        Ok(Ok(outcome)) => ended_as_expected(&case.id(), &case.expect, &outcome.review),
+        Ok(Err(e)) => Err(e),
+        Err(_) => Err(format!(
+            "{}: a call isn't held for replay, so it may have failed live: record it again",
+            case.id()
+        )),
+    }
 }
 
 #[cfg(test)]
@@ -129,6 +148,39 @@ mod tests {
         assert!(err.contains("record it again"), "{err}");
         // Control: the run the case expects passes.
         assert!(ended_as_expected("a/x", &clean_expect(), &review()).is_ok());
+    }
+
+    /// Records fine live; on replay, a call it made isn't held.
+    struct LosesACall;
+
+    impl Engine for LosesACall {
+        fn review(
+            &self,
+            _case: &eval::Case,
+            _repo: &Path,
+            models: &Models,
+        ) -> Result<eval::Outcome> {
+            if *models == Models::Replay {
+                panic!("no cassette for this model call");
+            }
+            Ok(eval::Outcome {
+                review: crate::eval::tests::review(),
+                cost_usd: Some(0.0),
+            })
+        }
+    }
+
+    #[test]
+    fn a_case_whose_calls_dont_all_replay_is_not_called_recorded() {
+        let root = gitcko_test_support::workspace_root().join(eval::ROOT);
+        let case = eval::selected(&root, Suite::P, Some("rename_pure"))
+            .unwrap()
+            .remove(0);
+        let err = replays(&LosesACall, &case).unwrap_err();
+        assert!(
+            err.contains("p/rename_pure") && err.contains("record it again"),
+            "{err}"
+        );
     }
 
     #[test]
