@@ -1,0 +1,392 @@
+{
+  "v": 1,
+  "key": "c4aadb2ff798fa3fa0af0afbe74a92c285419ec4f3cdf7e460a0fdeb4c9b790c",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hyp"
+    },
+    {
+      "type": "text_delta",
+      "text": "otheses\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"claim"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " public"
+    },
+    {
+      "type": "text_delta",
+      "text": " sign"
+    },
+    {
+      "type": "text_delta",
+      "text": "ature of add chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed from add"
+    },
+    {
+      "type": "text_delta",
+      "text": "(a"
+    },
+    {
+      "type": "text_delta",
+      "text": ": u32, b: u32"
+    },
+    {
+      "type": "text_delta",
+      "text": ") -> u32 to add"
+    },
+    {
+      "type": "text_delta",
+      "text": "() with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no parameters and"
+    },
+    {
+      "type": "text_delta",
+      "text": " no return value"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " Any caller that pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "es two ar"
+    },
+    {
+      "type": "text_delta",
+      "text": "guments or u"
+    },
+    {
+      "type": "text_delta",
+      "text": "ses the u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 result will fail to comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ile or"
+    },
+    {
+      "type": "text_delta",
+      "text": " get"
+    },
+    {
+      "type": "text_delta",
+      "text": " w"
+    },
+    {
+      "type": "text_delta",
+      "text": "rong behaviour."
+    },
+    {
+      "type": "text_delta",
+      "text": " Check"
+    },
+    {
+      "type": "text_delta",
+      "text": " for call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers of l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib::"
+    },
+    {
+      "type": "text_delta",
+      "text": "add in the cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate and"
+    },
+    {
+      "type": "text_delta",
+      "text": " d"
+    },
+    {
+      "type": "text_delta",
+      "text": "ependents.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":1,\"path\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"start_line\":1,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\"add"
+    },
+    {
+      "type": "text_delta",
+      "text": " sign"
+    },
+    {
+      "type": "text_delta",
+      "text": "ature chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed to no-"
+    },
+    {
+      "type": "text_delta",
+      "text": "arg un"
+    },
+    {
+      "type": "text_delta",
+      "text": "it function\"},{\"category\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"correctness\",\"claim\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The replacement body is emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty, so the ar"
+    },
+    {
+      "type": "text_delta",
+      "text": "ithmetic a"
+    },
+    {
+      "type": "text_delta",
+      "text": " + b is g"
+    },
+    {
+      "type": "text_delta",
+      "text": "one."
+    },
+    {
+      "type": "text_delta",
+      "text": " Any run"
+    },
+    {
+      "type": "text_delta",
+      "text": "time ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " relied on the"
+    },
+    {
+      "type": "text_delta",
+      "text": " sum now"
+    },
+    {
+      "type": "text_delta",
+      "text": " gets un"
+    },
+    {
+      "type": "text_delta",
+      "text": "it or a"
+    },
+    {
+      "type": "text_delta",
+      "text": " compile error. Check whether"
+    },
+    {
+      "type": "text_delta",
+      "text": " tests or"
+    },
+    {
+      "type": "text_delta",
+      "text": " callers still exercise add"
+    },
+    {
+      "type": "text_delta",
+      "text": "ition.\",\"end_line\":1"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":1,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Addition log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic removed\""
+    },
+    {
+      "type": "text_delta",
+      "text": "},{\"category\":\"repository"
+    },
+    {
+      "type": "text_delta",
+      "text": "_rule\",\"claim\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The second"
+    },
+    {
+      "type": "text_delta",
+      "text": " added"
+    },
+    {
+      "type": "text_delta",
+      "text": " line contains invalid or"
+    },
+    {
+      "type": "text_delta",
+      "text": " non-UTF-8 "
+    },
+    {
+      "type": "text_delta",
+      "text": "bytes in"
+    },
+    {
+      "type": "text_delta",
+      "text": " a comment. If it"
+    },
+    {
+      "type": "text_delta",
+      "text": " is really"
+    },
+    {
+      "type": "text_delta",
+      "text": " in the"
+    },
+    {
+      "type": "text_delta",
+      "text": " file"
+    },
+    {
+      "type": "text_delta",
+      "text": ", the"
+    },
+    {
+      "type": "text_delta",
+      "text": " Rust source"
+    },
+    {
+      "type": "text_delta",
+      "text": " will"
+    },
+    {
+      "type": "text_delta",
+      "text": " fail to parse, bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aking the build. Confir"
+    },
+    {
+      "type": "text_delta",
+      "text": "m the act"
+    },
+    {
+      "type": "text_delta",
+      "text": "ual bytes in src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs.\",\"end_"
+    },
+    {
+      "type": "text_delta",
+      "text": "line\":2,\"path\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "start_line\":2,\"title"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"St"
+    },
+    {
+      "type": "text_delta",
+      "text": "ray non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-text"
+    },
+    {
+      "type": "text_delta",
+      "text": " b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ytes added to l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1406,
+      "output_tokens": 575,
+      "cost_usd": 0.0004281
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

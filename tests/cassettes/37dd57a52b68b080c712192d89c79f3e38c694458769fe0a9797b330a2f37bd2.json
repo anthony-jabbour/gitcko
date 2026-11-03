@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "37dd57a52b68b080c712192d89c79f3e38c694458769fe0a9797b330a2f37bd2",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The diff removes the"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard, so average"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " divides by zero and panics"
+    },
+    {
+      "type": "text_delta",
+      "text": " when"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples is empty, contrad"
+    },
+    {
+      "type": "text_delta",
+      "text": "icting its"
+    },
+    {
+      "type": "text_delta",
+      "text": " docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented return"
+    },
+    {
+      "type": "text_delta",
+      "text": " of 0.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 922,
+      "output_tokens": 136,
+      "cost_usd": 0.0001602
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

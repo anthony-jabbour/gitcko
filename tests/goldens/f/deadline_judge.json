@@ -1,0 +1,40 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "budget_exhausted",
+    "deadline"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The empty-slice guard was removed, so average now divides by zero and panics on empty input, and the public function has at least one caller elsewhere.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "ee4ff854098c575414fd1a1c308b32736c92b4a4",
+    "head_sha": "74fb4b5fc0126e125e89ffaa5275257ce037ecf3",
+    "local_changes": false,
+    "merge_base": "ee4ff854098c575414fd1a1c308b32736c92b4a4"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

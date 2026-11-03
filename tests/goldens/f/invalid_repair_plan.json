@@ -1,0 +1,76 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The change removes the `samples.is_empty()` guard from `fixture::average`. For an empty slice, `total` is 0 and `samples.len() as u32` is 0, so the integer division `total / 0` now runs and panics. Before the change, the function returned 0 early. The only in-repo caller, `report` at line 7, passes its slice straight through with no guard, so `report(&[])` now panics where it previously returned \"mean=0\".\n\nTrigger: Calling `fixture::average(&[])` directly, or `fixture::report(&[])`, which forwards to `average`.\n\nImpact: Public API callers that pass an empty slice to `average` or `report` now get a panic (division by zero) instead of 0 or \"mean=0\". Any caller that relied on the documented empty-input behaviour and has no try/catch-style guard can crash.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.85,
+      "end_line": 3,
+      "evidence": [
+        {
+          "end_line": 8,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 7,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 7
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_0e9aae0d0337f6d8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P2",
+      "side": "new",
+      "start_line": 2,
+      "suggestion": "Restore the empty-slice guard: `if samples.is_empty() { return 0; }` before the division.",
+      "title": "average divides by zero on an empty slice after the empty guard was removed",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "invalid_model_output"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The empty-slice guard was removed, so average now divides by zero and panics on empty input, and the public function has at least one caller elsewhere.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "ee4ff854098c575414fd1a1c308b32736c92b4a4",
+    "head_sha": "74fb4b5fc0126e125e89ffaa5275257ce037ecf3",
+    "local_changes": false,
+    "merge_base": "ee4ff854098c575414fd1a1c308b32736c92b4a4"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

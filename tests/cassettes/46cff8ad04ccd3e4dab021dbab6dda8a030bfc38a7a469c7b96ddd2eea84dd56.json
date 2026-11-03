@@ -1,0 +1,260 @@
+{
+  "v": 1,
+  "key": "46cff8ad04ccd3e4dab021dbab6dda8a030bfc38a7a469c7b96ddd2eea84dd56",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":[{\"category\":\"corre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ctness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty-slice guard was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed. When"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples is empty, sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() is 0 "
+    },
+    {
+      "type": "text_delta",
+      "text": "and the integer division total"
+    },
+    {
+      "type": "text_delta",
+      "text": " / 0 panics, where"
+    },
+    {
+      "type": "text_delta",
+      "text": " the do"
+    },
+    {
+      "type": "text_delta",
+      "text": "c comment prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0."
+    },
+    {
+      "type": "text_delta",
+      "text": " Show"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing it"
+    },
+    {
+      "type": "text_delta",
+      "text": " need"
+    },
+    {
+      "type": "text_delta",
+      "text": "s a call to"
+    },
+    {
+      "type": "text_delta",
+      "text": " average("
+    },
+    {
+      "type": "text_delta",
+      "text": "&[])."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics on empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "},"
+    },
+    {
+      "type": "text_delta",
+      "text": "{\"category\":\"corre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ctness\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " sum is acc"
+    },
+    {
+      "type": "text_delta",
+      "text": "umulated in u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 with no"
+    },
+    {
+      "type": "text_delta",
+      "text": " overflow check"
+    },
+    {
+      "type": "text_delta",
+      "text": ". Large sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples can overflow:"
+    },
+    {
+      "type": "text_delta",
+      "text": " that"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics"
+    },
+    {
+      "type": "text_delta",
+      "text": " in debug buil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds and wraps sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently in release builds, retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ning a wrong mean."
+    },
+    {
+      "type": "text_delta",
+      "text": " The old"
+    },
+    {
+      "type": "text_delta",
+      "text": " code had"
+    },
+    {
+      "type": "text_delta",
+      "text": " the same s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " this is only"
+    },
+    {
+      "type": "text_delta",
+      "text": " a concern if the change"
+    },
+    {
+      "type": "text_delta",
+      "text": " makes it more"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "achable.\",\"end_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3,\"title\":\"u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 sum can"
+    },
+    {
+      "type": "text_delta",
+      "text": " overflow for"
+    },
+    {
+      "type": "text_delta",
+      "text": " large samples\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1525,
+      "output_tokens": 369,
+      "cost_usd": 0.000337
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

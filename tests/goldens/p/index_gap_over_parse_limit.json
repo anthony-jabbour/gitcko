@@ -1,0 +1,40 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "reduced_context",
+    "index_gap"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The diff only adds generated, trivially constant declarations to one file, so a real defect is unlikely, though the file grows to 40000 lines.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "b37d081d9e923085d9482dca2a4c47426ddfcac6",
+    "head_sha": "4c0cb19fc3b5151cea5af5e4a9cd4b0f81922ff4",
+    "local_changes": false,
+    "merge_base": "b37d081d9e923085d9482dca2a4c47426ddfcac6"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

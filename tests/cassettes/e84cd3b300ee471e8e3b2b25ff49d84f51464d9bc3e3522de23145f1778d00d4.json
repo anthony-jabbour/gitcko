@@ -1,0 +1,148 @@
+{
+  "v": 1,
+  "key": "e84cd3b300ee471e8e3b2b25ff49d84f51464d9bc3e3522de23145f1778d00d4",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"security"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"claim\":\"can"
+    },
+    {
+      "type": "text_delta",
+      "text": "_delete chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed from requ"
+    },
+    {
+      "type": "text_delta",
+      "text": "iring both active"
+    },
+    {
+      "type": "text_delta",
+      "text": " and admin to requiring either"
+    },
+    {
+      "type": "text_delta",
+      "text": ";"
+    },
+    {
+      "type": "text_delta",
+      "text": " any"
+    },
+    {
+      "type": "text_delta",
+      "text": " active"
+    },
+    {
+      "type": "text_delta",
+      "text": " non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-admin user ("
+    },
+    {
+      "type": "text_delta",
+      "text": "or in"
+    },
+    {
+      "type": "text_delta",
+      "text": "active admin) now pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the deletion check, which"
+    },
+    {
+      "type": "text_delta",
+      "text": " is an authorization bypass"
+    },
+    {
+      "type": "text_delta",
+      "text": " if"
+    },
+    {
+      "type": "text_delta",
+      "text": " callers r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely on it to"
+    },
+    {
+      "type": "text_delta",
+      "text": " gate deletes"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":7"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":7,\"title\":\"can"
+    },
+    {
+      "type": "text_delta",
+      "text": "_delete u"
+    },
+    {
+      "type": "text_delta",
+      "text": "ses || instead of &"
+    },
+    {
+      "type": "text_delta",
+      "text": "&, lo"
+    },
+    {
+      "type": "text_delta",
+      "text": "osening authorization\"}]"
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1423,
+      "output_tokens": 142,
+      "cost_usd": 0.0002133
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

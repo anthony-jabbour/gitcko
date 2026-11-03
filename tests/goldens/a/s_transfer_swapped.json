@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The change swaps the two balance updates in the public transfer function. The base code debited `from` and credited `to`. At head, line 6 debits `to` and line 7 credits `from`, so every call moves the amount in the opposite direction from the documented contract that `from` pays `to`.\n\nTrigger: Any call to `transfer(from, to, amount)` with a positive amount.</br>\n\nImpact: Any caller of the public `transfer` gets balances moved backwards: the payer's balance grows and the payee's shrinks. This is a money-movement regression. No callers or tests are in this repository, so the impact depends on external users of the crate.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.85,
+      "end_line": 7,
+      "evidence": [
+        {
+          "end_line": 8,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_f107268e5c8f74a2",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 6,
+      "suggestion": "Restore the base order: `from.balance -= amount;` then `to.balance += amount;`.",
+      "title": "transfer debits the receiver and credits the sender",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The diff reverses the transfer direction: the amount is now subtracted from the recipient and added to the sender, so every transfer moves money the wrong way while the commit message only says 'Reorder transfer updates'.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "34a95369e981ac4b0da38b054d0860146ad907d8",
+    "head_sha": "40926077eeadb41b314c2af499778fc97677407a",
+    "local_changes": false,
+    "merge_base": "34a95369e981ac4b0da38b054d0860146ad907d8"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

@@ -1,0 +1,88 @@
+{
+  "v": 1,
+  "key": "c44b0072b4f87363d2f59546b561ef85a0e55a366c776a0a32d4f1442b100580",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "repair",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard was removed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so average"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " divides by zero when"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples is empty, and the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public function"
+    },
+    {
+      "type": "text_delta",
+      "text": " has"
+    },
+    {
+      "type": "text_delta",
+      "text": " at"
+    },
+    {
+      "type": "text_delta",
+      "text": " least one caller el"
+    },
+    {
+      "type": "text_delta",
+      "text": "sewhere.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1050,
+      "output_tokens": 72,
+      "cost_usd": 0.000141
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

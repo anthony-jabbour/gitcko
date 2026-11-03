@@ -1,10 +1,16 @@
-kind = "clean"
+kind = "seeded"
 status = "partial"
 reason_codes = ["invalid_model_output"]
 
-[[silence]]
+# The fault spoils the first investigation only; the hypothesis seeded from `report`,
+# the caller, still reaches the bug, so the review publishes it and says it is partial.
+[[finding]]
 path = "src/lib.rs"
-why = "the fault leaves the bug unconfirmed, so nothing may be published"
+start_line = 3
+end_line = 3
+severity = "P1"
+comment_type = "logic"
+root_cause = "Dropping the empty check divides by zero and panics on an empty slice"
 
 [fault]
 kind = "invalid_repair"

@@ -1,0 +1,224 @@
+{
+  "v": 1,
+  "key": "737e294cd9e6b849c02961767362558e3b515e286e9a8b5099ef805a1e42d327",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"h"
+    },
+    {
+      "type": "text_delta",
+      "text": "ypotheses\":[{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "category\":\"concurrency\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " incre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the read-back now"
+    },
+    {
+      "type": "text_delta",
+      "text": " happen under"
+    },
+    {
+      "type": "text_delta",
+      "text": " separate l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ock acquisitions."
+    },
+    {
+      "type": "text_delta",
+      "text": " Another thread can"
+    },
+    {
+      "type": "text_delta",
+      "text": " b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ump between"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard dr"
+    },
+    {
+      "type": "text_delta",
+      "text": "op at line 7"
+    },
+    {
+      "type": "text_delta",
+      "text": " and the re-lock at"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 8, so the returned"
+    },
+    {
+      "type": "text_delta",
+      "text": " value may not be"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " one this call produced."
+    },
+    {
+      "type": "text_delta",
+      "text": " Two concurrent call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers can"
+    },
+    {
+      "type": "text_delta",
+      "text": " rece"
+    },
+    {
+      "type": "text_delta",
+      "text": "ive the same value or"
+    },
+    {
+      "type": "text_delta",
+      "text": " skip one"
+    },
+    {
+      "type": "text_delta",
+      "text": ". Showing it"
+    },
+    {
+      "type": "text_delta",
+      "text": " need"
+    },
+    {
+      "type": "text_delta",
+      "text": "s two"
+    },
+    {
+      "type": "text_delta",
+      "text": " threads calling bump on"
+    },
+    {
+      "type": "text_delta",
+      "text": " the same"
+    },
+    {
+      "type": "text_delta",
+      "text": " Mutex concurrently and"
+    },
+    {
+      "type": "text_delta",
+      "text": " com"
+    },
+    {
+      "type": "text_delta",
+      "text": "paring the"
+    },
+    {
+      "type": "text_delta",
+      "text": " returned values with"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " expected un"
+    },
+    {
+      "type": "text_delta",
+      "text": "ique s"
+    },
+    {
+      "type": "text_delta",
+      "text": "equence.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":8"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":4,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ned value is no"
+    },
+    {
+      "type": "text_delta",
+      "text": " longer at"
+    },
+    {
+      "type": "text_delta",
+      "text": "omic with the increment\"}"
+    },
+    {
+      "type": "text_delta",
+      "text": "]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1567,
+      "output_tokens": 352,
+      "cost_usd": 0.0003327
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

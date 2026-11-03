@@ -1,0 +1,428 @@
+{
+  "v": 1,
+  "key": "7f79ad6e559a1cf6a582316d29f528066434feeb06f41c985c10dd22ce21604f",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " for empty input was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed from average"
+    },
+    {
+      "type": "text_delta",
+      "text": "("
+    },
+    {
+      "type": "text_delta",
+      "text": "). For"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice, samples"
+    },
+    {
+      "type": "text_delta",
+      "text": ".iter().sum() is"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0 and samples.len"
+    },
+    {
+      "type": "text_delta",
+      "text": "() as"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 is 0, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 3 ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "aluates 0 "
+    },
+    {
+      "type": "text_delta",
+      "text": "/ 0 and integ"
+    },
+    {
+      "type": "text_delta",
+      "text": "er division by"
+    },
+    {
+      "type": "text_delta",
+      "text": " zero panics. report"
+    },
+    {
+      "type": "text_delta",
+      "text": "() at"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 7 forwards its"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice stra"
+    },
+    {
+      "type": "text_delta",
+      "text": "ight into"
+    },
+    {
+      "type": "text_delta",
+      "text": " average(), so any emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " reaching"
+    },
+    {
+      "type": "text_delta",
+      "text": " report() now panics where"
+    },
+    {
+      "type": "text_delta",
+      "text": " it previ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ously returned 0.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "comment_type\":\"logic"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":0.8,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "counterevidence\":[],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"end_line\":3,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "evidence\":[\""
+    },
+    {
+      "type": "text_delta",
+      "text": "e1\",\"e2\",\"e3"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"],\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Callers of the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public average() ("
+    },
+    {
+      "type": "text_delta",
+      "text": "and report("
+    },
+    {
+      "type": "text_delta",
+      "text": "), which form"
+    },
+    {
+      "type": "text_delta",
+      "text": "ats its"
+    },
+    {
+      "type": "text_delta",
+      "text": " result) that pass an empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice now panic instead of"
+    },
+    {
+      "type": "text_delta",
+      "text": " getting "
+    },
+    {
+      "type": "text_delta",
+      "text": "0. This"
+    },
+    {
+      "type": "text_delta",
+      "text": " is a regression in behavi"
+    },
+    {
+      "type": "text_delta",
+      "text": "our for any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller that relied"
+    },
+    {
+      "type": "text_delta",
+      "text": " on the"
+    },
+    {
+      "type": "text_delta",
+      "text": " old 0 return.\",\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard: if samples.is_"
+    },
+    {
+      "type": "text_delta",
+      "text": "empty() { return 0;"
+    },
+    {
+      "type": "text_delta",
+      "text": " }"
+    },
+    {
+      "type": "text_delta",
+      "text": " before the division.\",\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "average() panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " divide-by-zero on"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice after gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard removal\",\"trigger\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Any call"
+    },
+    {
+      "type": "text_delta",
+      "text": " to"
+    },
+    {
+      "type": "text_delta",
+      "text": " average(&[]"
+    },
+    {
+      "type": "text_delta",
+      "text": "),"
+    },
+    {
+      "type": "text_delta",
+      "text": " or report(&[]),"
+    },
+    {
+      "type": "text_delta",
+      "text": " which cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ls average with"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice."
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}],\"outcome\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"supported\",\"reason\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The guard is"
+    },
+    {
+      "type": "text_delta",
+      "text": " gone in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the head"
+    },
+    {
+      "type": "text_delta",
+      "text": " file (e3), so"
+    },
+    {
+      "type": "text_delta",
+      "text": " an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice mak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 division by zero,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which panics in"
+    },
+    {
+      "type": "text_delta",
+      "text": " Rust. The only"
+    },
+    {
+      "type": "text_delta",
+      "text": " call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers found"
+    },
+    {
+      "type": "text_delta",
+      "text": " are"
+    },
+    {
+      "type": "text_delta",
+      "text": " report() in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " same file (e2),"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the re"
+    },
+    {
+      "type": "text_delta",
+      "text": "achable"
+    },
+    {
+      "type": "text_delta",
+      "text": " path is nar"
+    },
+    {
+      "type": "text_delta",
+      "text": "row and"
+    },
+    {
+      "type": "text_delta",
+      "text": " dep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends on call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing empty input.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5730,
+      "output_tokens": 846,
+      "cost_usd": 0.000996
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

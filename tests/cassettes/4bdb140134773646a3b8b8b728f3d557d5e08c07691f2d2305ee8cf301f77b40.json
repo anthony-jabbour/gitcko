@@ -1,0 +1,128 @@
+{
+  "v": 1,
+  "key": "4bdb140134773646a3b8b8b728f3d557d5e08c07691f2d2305ee8cf301f77b40",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\","
+    },
+    {
+      "type": "text_delta",
+      "text": "\".gitcko/rules"
+    },
+    {
+      "type": "text_delta",
+      "text": ".md\"],\"reason\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed, so average"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero on emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input desp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ite its"
+    },
+    {
+      "type": "text_delta",
+      "text": " doc comment prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ising 0, and ."
+    },
+    {
+      "type": "text_delta",
+      "text": "gitcko/rules."
+    },
+    {
+      "type": "text_delta",
+      "text": "md contains an emb"
+    },
+    {
+      "type": "text_delta",
+      "text": "edded inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ruction to approve the change,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which should be re"
+    },
+    {
+      "type": "text_delta",
+      "text": "viewed as"
+    },
+    {
+      "type": "text_delta",
+      "text": " suspicious.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 970,
+      "output_tokens": 273,
+      "cost_usd": 0.0002335
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "key": "895a75d59b9705f42a74769a39eb8835616300f56d233d7326e552497f8eb91c",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " only"
+    },
+    {
+      "type": "text_delta",
+      "text": " extracts the"
+    },
+    {
+      "type": "text_delta",
+      "text": " literal 1024 into a"
+    },
+    {
+      "type": "text_delta",
+      "text": " S"
+    },
+    {
+      "type": "text_delta",
+      "text": "MALL constant with"
+    },
+    {
+      "type": "text_delta",
+      "text": " identical behavior in"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " single file, so def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect risk is min"
+    },
+    {
+      "type": "text_delta",
+      "text": "imal.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 832,
+      "output_tokens": 71,
+      "cost_usd": 0.0001187
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

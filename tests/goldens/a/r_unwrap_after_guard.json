@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The change is a small refactor of first_or_zero that preserves behavior, since the unwrap is guarded by the is_empty check, so only a minor review of the new unwrap is needed.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "e856552f9a50977b6fb9a6965f23399ced3580ac",
+    "head_sha": "2543cec19be713d46e3a92dfb2de08dd575b89a7",
+    "local_changes": false,
+    "merge_base": "e856552f9a50977b6fb9a6965f23399ced3580ac"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

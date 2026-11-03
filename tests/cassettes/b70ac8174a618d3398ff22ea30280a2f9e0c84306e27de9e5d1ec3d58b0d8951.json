@@ -1,0 +1,436 @@
+{
+  "v": 1,
+  "key": "b70ac8174a618d3398ff22ea30280a2f9e0c84306e27de9e5d1ec3d58b0d8951",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff removed the `"
+    },
+    {
+      "type": "text_delta",
+      "text": "samples.is_empty()"
+    },
+    {
+      "type": "text_delta",
+      "text": "` gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard."
+    },
+    {
+      "type": "text_delta",
+      "text": " With an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice, `total`"
+    },
+    {
+      "type": "text_delta",
+      "text": " is 0 and"
+    },
+    {
+      "type": "text_delta",
+      "text": " `sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() as u32`"
+    },
+    {
+      "type": "text_delta",
+      "text": " is 0, so line"
+    },
+    {
+      "type": "text_delta",
+      "text": " 4 comput"
+    },
+    {
+      "type": "text_delta",
+      "text": "es `0 / 0`"
+    },
+    {
+      "type": "text_delta",
+      "text": ". Integer division by zero"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics in both debug and release"
+    },
+    {
+      "type": "text_delta",
+      "text": " builds."
+    },
+    {
+      "type": "text_delta",
+      "text": " The doc comment on line "
+    },
+    {
+      "type": "text_delta",
+      "text": "1 still prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0 for empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":0.95,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "counterevidence\":[],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4,\"ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":[\"e1\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"impact\":\"Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " passes an empty s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ample set"
+    },
+    {
+      "type": "text_delta",
+      "text": " now panics inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of rece"
+    },
+    {
+      "type": "text_delta",
+      "text": "iving the"
+    },
+    {
+      "type": "text_delta",
+      "text": " documented 0. This is a"
+    },
+    {
+      "type": "text_delta",
+      "text": " cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ash on a path"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " function"
+    },
+    {
+      "type": "text_delta",
+      "text": " expl"
+    },
+    {
+      "type": "text_delta",
+      "text": "icitly documents as"
+    },
+    {
+      "type": "text_delta",
+      "text": " sup"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported.\",\"path\":\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"new\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "3,\"suggestion\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Restore the early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return: `if samples.is"
+    },
+    {
+      "type": "text_delta",
+      "text": "_empty() { return 0"
+    },
+    {
+      "type": "text_delta",
+      "text": "; }`"
+    },
+    {
+      "type": "text_delta",
+      "text": " before the s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": "() pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ide-"
+    },
+    {
+      "type": "text_delta",
+      "text": "by-zero on empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"trigger\":\"Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling average(&[]),"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " example when a"
+    },
+    {
+      "type": "text_delta",
+      "text": " window or"
+    },
+    {
+      "type": "text_delta",
+      "text": " batch has"
+    },
+    {
+      "type": "text_delta",
+      "text": " no samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The overflow h"
+    },
+    {
+      "type": "text_delta",
+      "text": "ypothesis is not"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " change-introduced def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect:"
+    },
+    {
+      "type": "text_delta",
+      "text": " the sum is"
+    },
+    {
+      "type": "text_delta",
+      "text": " unchanged from the old code"
+    },
+    {
+      "type": "text_delta",
+      "text": ", and the di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff does"
+    },
+    {
+      "type": "text_delta",
+      "text": " not make"
+    },
+    {
+      "type": "text_delta",
+      "text": " over"
+    },
+    {
+      "type": "text_delta",
+      "text": "flow more reachable. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " read"
+    },
+    {
+      "type": "text_delta",
+      "text": " of src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs did"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "veal a separate reg"
+    },
+    {
+      "type": "text_delta",
+      "text": "ression: remov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing the empty-slice gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard mak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es "
+    },
+    {
+      "type": "text_delta",
+      "text": "0/0 panic on"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which"
+    },
+    {
+      "type": "text_delta",
+      "text": " cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "radicts the doc comment"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5387,
+      "output_tokens": 1027,
+      "cost_usd": 0.0010522
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "v": 1,
+  "key": "046f5c3e1f56d07c4ac98afd56d0b14df8647c2ed47349e43e2189e50b27e2d9",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/a/"
+    },
+    {
+      "type": "text_delta",
+      "text": "mod.rs\"],\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff only"
+    },
+    {
+      "type": "text_delta",
+      "text": " shows a file being mo"
+    },
+    {
+      "type": "text_delta",
+      "text": "ved into a folder as"
+    },
+    {
+      "type": "text_delta",
+      "text": " m"
+    },
+    {
+      "type": "text_delta",
+      "text": "od.rs, with no vis"
+    },
+    {
+      "type": "text_delta",
+      "text": "ible log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic change, so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " risk is min"
+    },
+    {
+      "type": "text_delta",
+      "text": "imal.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 748,
+      "output_tokens": 70,
+      "cost_usd": 0.0001098
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

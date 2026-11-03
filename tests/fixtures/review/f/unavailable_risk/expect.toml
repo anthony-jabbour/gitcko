@@ -1,13 +1,13 @@
-kind = "seeded"
-status = "complete"
+kind = "clean"
+status = "failed"
+reason_codes = ["provider_failure", "review_failed"]
 
-[[finding]]
+# The risk call is optional, but in evals/models.toml it shares the `review` binding:
+# three failures in a row bench that binding (the breaker, MODEL_ROUTING §7), so the
+# plan call is refused and the review fails honestly instead of going on without it.
+[[silence]]
 path = "src/lib.rs"
-start_line = 3
-end_line = 3
-severity = "P1"
-comment_type = "logic"
-root_cause = "Dropping the empty check divides by zero and panics on an empty slice"
+why = "the fault benches the binding, so nothing may be published"
 
 [fault]
 kind = "unavailable"

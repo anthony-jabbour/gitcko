@@ -1,0 +1,136 @@
+{
+  "v": 1,
+  "key": "9df05172ac9fef88db4f0f8bb5b758421e7b8383c35ca1a0dc4ea2e50b46da9b",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"refuted\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The search for `"
+    },
+    {
+      "type": "text_delta",
+      "text": "sub(` with"
+    },
+    {
+      "type": "text_delta",
+      "text": " compl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ete coverage fin"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds only the new"
+    },
+    {
+      "type": "text_delta",
+      "text": " definition at"
+    },
+    {
+      "type": "text_delta",
+      "text": " src/lib.rs l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ines 5-6 "
+    },
+    {
+      "type": "text_delta",
+      "text": "(e1"
+    },
+    {
+      "type": "text_delta",
+      "text": ", e2), and find_sym"
+    },
+    {
+      "type": "text_delta",
+      "text": "bol reports no other"
+    },
+    {
+      "type": "text_delta",
+      "text": " callers. No code"
+    },
+    {
+      "type": "text_delta",
+      "text": " in the repo dep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends on dist"
+    },
+    {
+      "type": "text_delta",
+      "text": "inguishing underflow,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the hypothesis has"
+    },
+    {
+      "type": "text_delta",
+      "text": " no caus"
+    },
+    {
+      "type": "text_delta",
+      "text": "al path"
+    },
+    {
+      "type": "text_delta",
+      "text": " to a w"
+    },
+    {
+      "type": "text_delta",
+      "text": "rong result. The sa"
+    },
+    {
+      "type": "text_delta",
+      "text": "turating behaviour is the"
+    },
+    {
+      "type": "text_delta",
+      "text": " explicit implementation, not"
+    },
+    {
+      "type": "text_delta",
+      "text": " a h"
+    },
+    {
+      "type": "text_delta",
+      "text": "idden defect.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5626,
+      "output_tokens": 474,
+      "cost_usd": 0.0007996
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

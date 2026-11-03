@@ -1,0 +1,368 @@
+{
+  "v": 1,
+  "key": "c44cbeb55c973eabe467c0dc1956e71a9433bba58bb20d50ed48c998d33c4fa0",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " loop"
+    },
+    {
+      "type": "text_delta",
+      "text": " includes"
+    },
+    {
+      "type": "text_delta",
+      "text": " i"
+    },
+    {
+      "type": "text_delta",
+      "text": " ="
+    },
+    {
+      "type": "text_delta",
+      "text": " xs"
+    },
+    {
+      "type": "text_delta",
+      "text": ".len"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " -"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " every"
+    },
+    {
+      "type": "text_delta",
+      "text": " non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " body"
+    },
+    {
+      "type": "text_delta",
+      "text": " then"
+    },
+    {
+      "type": "text_delta",
+      "text": " indexes"
+    },
+    {
+      "type": "text_delta",
+      "text": " xs"
+    },
+    {
+      "type": "text_delta",
+      "text": "[i"
+    },
+    {
+      "type": "text_delta",
+      "text": " +"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "]"
+    },
+    {
+      "type": "text_delta",
+      "text": " =="
+    },
+    {
+      "type": "text_delta",
+      "text": " xs"
+    },
+    {
+      "type": "text_delta",
+      "text": "[x"
+    },
+    {
+      "type": "text_delta",
+      "text": "s"
+    },
+    {
+      "type": "text_delta",
+      "text": ".len"
+    },
+    {
+      "type": "text_delta",
+      "text": "()],"
+    },
+    {
+      "type": "text_delta",
+      "text": " which"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " out"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " bounds"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " The"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice"
+    },
+    {
+      "type": "text_delta",
+      "text": " avoids"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " loop"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " This"
+    },
+    {
+      "type": "text_delta",
+      "text": " directly"
+    },
+    {
+      "type": "text_delta",
+      "text": " breaks"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " function"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " all"
+    },
+    {
+      "type": "text_delta",
+      "text": " non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " inputs"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "accept"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 916,
+      "output_tokens": 145,
+      "cost_usd": 0.0001641
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

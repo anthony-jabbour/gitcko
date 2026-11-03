@@ -1,0 +1,172 @@
+{
+  "v": 1,
+  "key": "07ed2f1eaa9b03aeec709fc1e571fcb82564d1257e93278de0ad1910d25bf490",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hyp"
+    },
+    {
+      "type": "text_delta",
+      "text": "otheses\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"claim"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty-slice early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so calling average with"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero (samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "len() as"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 is 0) and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics."
+    },
+    {
+      "type": "text_delta",
+      "text": " The do"
+    },
+    {
+      "type": "text_delta",
+      "text": "c com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0 for"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " this bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks that"
+    },
+    {
+      "type": "text_delta",
+      "text": " contract. Trigger:"
+    },
+    {
+      "type": "text_delta",
+      "text": " any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller passing an empty sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice, for"
+    },
+    {
+      "type": "text_delta",
+      "text": " example a window"
+    },
+    {
+      "type": "text_delta",
+      "text": " with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no samples.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":5,\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"start_line\":4,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"title\":\"Emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty slice now"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1529,
+      "output_tokens": 424,
+      "cost_usd": 0.0003649
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

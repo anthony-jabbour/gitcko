@@ -1,0 +1,212 @@
+{
+  "v": 1,
+  "key": "375ea1c0add2c30845de4da838dc877310bec375edf9ebef666279322b5c78aa",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"cla"
+    },
+    {
+      "type": "text_delta",
+      "text": "im\":\"Every constant A"
+    },
+    {
+      "type": "text_delta",
+      "text": "0.."
+    },
+    {
+      "type": "text_delta",
+      "text": "A187 in src/table."
+    },
+    {
+      "type": "text_delta",
+      "text": "rs is"
+    },
+    {
+      "type": "text_delta",
+      "text": " incremented by one"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed code"
+    },
+    {
+      "type": "text_delta",
+      "text": " that tre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ats these values as array"
+    },
+    {
+      "type": "text_delta",
+      "text": " indices, wire or"
+    },
+    {
+      "type": "text_delta",
+      "text": " protocol cod"
+    },
+    {
+      "type": "text_delta",
+      "text": "es, or sentinels ("
+    },
+    {
+      "type": "text_delta",
+      "text": "for example, rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ying on A0 =="
+    },
+    {
+      "type": "text_delta",
+      "text": " 0 or"
+    },
+    {
+      "type": "text_delta",
+      "text": " on"
+    },
+    {
+      "type": "text_delta",
+      "text": " A"
+    },
+    {
+      "type": "text_delta",
+      "text": "_"
+    },
+    {
+      "type": "text_delta",
+      "text": "n"
+    },
+    {
+      "type": "text_delta",
+      "text": " == n) will now"
+    },
+    {
+      "type": "text_delta",
+      "text": " read the"
+    },
+    {
+      "type": "text_delta",
+      "text": " wrong entry or m"
+    },
+    {
+      "type": "text_delta",
+      "text": "is-decode values"
+    },
+    {
+      "type": "text_delta",
+      "text": ". Check"
+    },
+    {
+      "type": "text_delta",
+      "text": " callers and any"
+    },
+    {
+      "type": "text_delta",
+      "text": " st"
+    },
+    {
+      "type": "text_delta",
+      "text": "ored or"
+    },
+    {
+      "type": "text_delta",
+      "text": " ser"
+    },
+    {
+      "type": "text_delta",
+      "text": "ialized data that"
+    },
+    {
+      "type": "text_delta",
+      "text": " ass"
+    },
+    {
+      "type": "text_delta",
+      "text": "umes the old values.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":1498"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/table"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "1,\"title\":\"Global"
+    },
+    {
+      "type": "text_delta",
+      "text": " +"
+    },
+    {
+      "type": "text_delta",
+      "text": "1 shift of table"
+    },
+    {
+      "type": "text_delta",
+      "text": " constants bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks value"
+    },
+    {
+      "type": "text_delta",
+      "text": "-dependent call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 15798,
+      "output_tokens": 555,
+      "cost_usd": 0.0018573
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

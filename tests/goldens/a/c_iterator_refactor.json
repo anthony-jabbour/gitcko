@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "A small, behavior-preserving refactor replacing a loop with an iterator map-collect that computes the same squares, with no new branches or error paths.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "94e6977cd91197a3ab18229abc41e81e2353dcbb",
+    "head_sha": "053bd12a63976bb955bf2a9dd2b66344ae78b65d",
+    "local_changes": false,
+    "merge_base": "94e6977cd91197a3ab18229abc41e81e2353dcbb"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

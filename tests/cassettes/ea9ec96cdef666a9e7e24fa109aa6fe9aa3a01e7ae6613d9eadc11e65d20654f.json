@@ -1,0 +1,272 @@
+{
+  "v": 1,
+  "key": "ea9ec96cdef666a9e7e24fa109aa6fe9aa3a01e7ae6613d9eadc11e65d20654f",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "99"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " implementation"
+    },
+    {
+      "type": "text_delta",
+      "text": " sums"
+    },
+    {
+      "type": "text_delta",
+      "text": " an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice"
+    },
+    {
+      "type": "text_delta",
+      "text": " to"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " divides"
+    },
+    {
+      "type": "text_delta",
+      "text": " by"
+    },
+    {
+      "type": "text_delta",
+      "text": " its"
+    },
+    {
+      "type": "text_delta",
+      "text": " length"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " also"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " Integer"
+    },
+    {
+      "type": "text_delta",
+      "text": " division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by"
+    },
+    {
+      "type": "text_delta",
+      "text": " zero"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " contradict"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " documented"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty"
+    },
+    {
+      "type": "text_delta",
+      "text": "-input"
+    },
+    {
+      "type": "text_delta",
+      "text": " result"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "accept"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 897,
+      "output_tokens": 179,
+      "cost_usd": 0.0001792
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

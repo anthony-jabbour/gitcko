@@ -1,0 +1,156 @@
+{
+  "v": 1,
+  "key": "5abed85e3d243981831a37fcbcd18d12f6e356aa905e6120b43da3884b9d67d3",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"security\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "claim\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " now writ"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the"
+    },
+    {
+      "type": "text_delta",
+      "text": " raw login token into the"
+    },
+    {
+      "type": "text_delta",
+      "text": " form"
+    },
+    {
+      "type": "text_delta",
+      "text": "atted login line."
+    },
+    {
+      "type": "text_delta",
+      "text": " If this"
+    },
+    {
+      "type": "text_delta",
+      "text": " string"
+    },
+    {
+      "type": "text_delta",
+      "text": " is log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ged or ot"
+    },
+    {
+      "type": "text_delta",
+      "text": "herwise em"
+    },
+    {
+      "type": "text_delta",
+      "text": "itted, an"
+    },
+    {
+      "type": "text_delta",
+      "text": "yone with"
+    },
+    {
+      "type": "text_delta",
+      "text": " log"
+    },
+    {
+      "type": "text_delta",
+      "text": " access can rec"
+    },
+    {
+      "type": "text_delta",
+      "text": "over a live"
+    },
+    {
+      "type": "text_delta",
+      "text": " credential; a re"
+    },
+    {
+      "type": "text_delta",
+      "text": "viewer should check"
+    },
+    {
+      "type": "text_delta",
+      "text": " every"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller of login_line and where"
+    },
+    {
+      "type": "text_delta",
+      "text": " its"
+    },
+    {
+      "type": "text_delta",
+      "text": " output goes.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":2,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Login token is"
+    },
+    {
+      "type": "text_delta",
+      "text": " interpolated into the login"
+    },
+    {
+      "type": "text_delta",
+      "text": " line output"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1514,
+      "output_tokens": 136,
+      "cost_usd": 0.0002194
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

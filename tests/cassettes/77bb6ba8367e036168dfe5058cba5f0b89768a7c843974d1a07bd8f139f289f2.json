@@ -1,0 +1,416 @@
+{
+  "v": 1,
+  "key": "77bb6ba8367e036168dfe5058cba5f0b89768a7c843974d1a07bd8f139f289f2",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-slice guard was remov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed."
+    },
+    {
+      "type": "text_delta",
+      "text": " With samples emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty, total"
+    },
+    {
+      "type": "text_delta",
+      "text": " is 0 and samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "len() as"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 is 0, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " the exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ression total"
+    },
+    {
+      "type": "text_delta",
+      "text": " / 0 is an"
+    },
+    {
+      "type": "text_delta",
+      "text": " integer division by zero,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics in Rust in"
+    },
+    {
+      "type": "text_delta",
+      "text": " both debug and release buil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds. The doc comment on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1 says the function retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ns 0 when there are no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.9,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"evidence\":[\"e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1\"],\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " passes an empty slice,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which the docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented contract expl"
+    },
+    {
+      "type": "text_delta",
+      "text": "icitly allows, pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of get"
+    },
+    {
+      "type": "text_delta",
+      "text": "ting 0. This"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " a crash for"
+    },
+    {
+      "type": "text_delta",
+      "text": " call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers of"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " public"
+    },
+    {
+      "type": "text_delta",
+      "text": " function."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"path\":\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"new\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "3,\"suggestion\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Restore the gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard: if samples.is_"
+    },
+    {
+      "type": "text_delta",
+      "text": "empty() { return 0;"
+    },
+    {
+      "type": "text_delta",
+      "text": " } before the division"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"title"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics on empty input ("
+    },
+    {
+      "type": "text_delta",
+      "text": "division by zero)\",\"trig"
+    },
+    {
+      "type": "text_delta",
+      "text": "ger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling average(&[]),"
+    },
+    {
+      "type": "text_delta",
+      "text": " or any path"
+    },
+    {
+      "type": "text_delta",
+      "text": " that passes an empty slice"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples."
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"outcome\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "supported\",\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " head version"
+    },
+    {
+      "type": "text_delta",
+      "text": " of average"
+    },
+    {
+      "type": "text_delta",
+      "text": " on"
+    },
+    {
+      "type": "text_delta",
+      "text": " lines 3"
+    },
+    {
+      "type": "text_delta",
+      "text": "-4 divides by sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty check, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice caus"
+    },
+    {
+      "type": "text_delta",
+      "text": "es a"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic. The documented cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ract on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1 says the"
+    },
+    {
+      "type": "text_delta",
+      "text": " result should"
+    },
+    {
+      "type": "text_delta",
+      "text": " be 0 "
+    },
+    {
+      "type": "text_delta",
+      "text": "in"
+    },
+    {
+      "type": "text_delta",
+      "text": " that case. I did not check"
+    },
+    {
+      "type": "text_delta",
+      "text": " the callers,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so reach"
+    },
+    {
+      "type": "text_delta",
+      "text": "ability in"
+    },
+    {
+      "type": "text_delta",
+      "text": " production"
+    },
+    {
+      "type": "text_delta",
+      "text": " is not"
+    },
+    {
+      "type": "text_delta",
+      "text": " conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "irmed, though the public"
+    },
+    {
+      "type": "text_delta",
+      "text": " API"
+    },
+    {
+      "type": "text_delta",
+      "text": " mak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es it reachable.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5363,
+      "output_tokens": 760,
+      "cost_usd": 0.0009163
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

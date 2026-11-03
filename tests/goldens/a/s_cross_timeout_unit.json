@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The public timeout() return value changed units from seconds to milliseconds (30 to 30_000) while callers elsewhere still likely assume seconds, so they may wait 1000 times longer or misconfigure timeouts.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "f9c297d7d1a56f68ea23bccecc3b5c0a875e6b6e",
+    "head_sha": "633fd69f4abc881dc73e1ecfdb8ced7c33563ea2",
+    "local_changes": false,
+    "merge_base": "f9c297d7d1a56f68ea23bccecc3b5c0a875e6b6e"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The diff only shows a file being moved into a folder as mod.rs, with no visible logic change, so the risk is minimal.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "91c163d9796a699c7207a1c8ca95229eb610af7d",
+    "head_sha": "88c4c5f6ad229400c11ad8a267c04c4abdddc821",
+    "local_changes": false,
+    "merge_base": "91c163d9796a699c7207a1c8ca95229eb610af7d"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

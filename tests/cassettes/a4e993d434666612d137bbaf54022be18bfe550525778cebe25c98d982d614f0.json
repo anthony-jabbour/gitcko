@@ -1,0 +1,424 @@
+{
+  "v": 1,
+  "key": "a4e993d434666612d137bbaf54022be18bfe550525778cebe25c98d982d614f0",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixture::timeout was"
+    },
+    {
+      "type": "text_delta",
+      "text": " changed to"
+    },
+    {
+      "type": "text_delta",
+      "text": " return 30_000 and its"
+    },
+    {
+      "type": "text_delta",
+      "text": " doc comment now"
+    },
+    {
+      "type": "text_delta",
+      "text": " says mil"
+    },
+    {
+      "type": "text_delta",
+      "text": "liseconds, but its"
+    },
+    {
+      "type": "text_delta",
+      "text": " only"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller, use"
+    },
+    {
+      "type": "text_delta",
+      "text": "_it::deadline, still"
+    },
+    {
+      "type": "text_delta",
+      "text": " tre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ats the"
+    },
+    {
+      "type": "text_delta",
+      "text": " value as seconds: `now"
+    },
+    {
+      "type": "text_delta",
+      "text": "_secs + timeout()"
+    },
+    {
+      "type": "text_delta",
+      "text": "` adds a mill"
+    },
+    {
+      "type": "text_delta",
+      "text": "isecond count"
+    },
+    {
+      "type": "text_delta",
+      "text": " to a seconds tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "estamp. The caller's"
+    },
+    {
+      "type": "text_delta",
+      "text": " cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ract is unchanged, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " the result"
+    },
+    {
+      "type": "text_delta",
+      "text": " is off"
+    },
+    {
+      "type": "text_delta",
+      "text": " by a"
+    },
+    {
+      "type": "text_delta",
+      "text": " factor of 1000.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.85,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":5"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"evidence\":[\""
+    },
+    {
+      "type": "text_delta",
+      "text": "e1\"],\"impact\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Any code"
+    },
+    {
+      "type": "text_delta",
+      "text": " using use"
+    },
+    {
+      "type": "text_delta",
+      "text": "_it::deadline g"
+    },
+    {
+      "type": "text_delta",
+      "text": "ets a deadline about"
+    },
+    {
+      "type": "text_delta",
+      "text": " 1"
+    },
+    {
+      "type": "text_delta",
+      "text": "000 "
+    },
+    {
+      "type": "text_delta",
+      "text": "times too far in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the future (30 "
+    },
+    {
+      "type": "text_delta",
+      "text": "s"
+    },
+    {
+      "type": "text_delta",
+      "text": " bec"
+    },
+    {
+      "type": "text_delta",
+      "text": "omes 30,"
+    },
+    {
+      "type": "text_delta",
+      "text": "000 s). Tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eouts comput"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed from it"
+    },
+    {
+      "type": "text_delta",
+      "text": " would eff"
+    },
+    {
+      "type": "text_delta",
+      "text": "ectively never fire."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"path\":\"src/use_"
+    },
+    {
+      "type": "text_delta",
+      "text": "it.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"new\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "3,\"suggestion\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Either ke"
+    },
+    {
+      "type": "text_delta",
+      "text": "ep timeout() in se"
+    },
+    {
+      "type": "text_delta",
+      "text": "conds,"
+    },
+    {
+      "type": "text_delta",
+      "text": " or update"
+    },
+    {
+      "type": "text_delta",
+      "text": " de"
+    },
+    {
+      "type": "text_delta",
+      "text": "adline to conv"
+    },
+    {
+      "type": "text_delta",
+      "text": "ert,"
+    },
+    {
+      "type": "text_delta",
+      "text": " e.g. `now"
+    },
+    {
+      "type": "text_delta",
+      "text": "_secs + timeout()"
+    },
+    {
+      "type": "text_delta",
+      "text": " / 1000"
+    },
+    {
+      "type": "text_delta",
+      "text": "`, and make"
+    },
+    {
+      "type": "text_delta",
+      "text": " the caller's"
+    },
+    {
+      "type": "text_delta",
+      "text": " un"
+    },
+    {
+      "type": "text_delta",
+      "text": "it expl"
+    },
+    {
+      "type": "text_delta",
+      "text": "icit.\",\"title\":\"de"
+    },
+    {
+      "type": "text_delta",
+      "text": "adline()"
+    },
+    {
+      "type": "text_delta",
+      "text": " adds a millisecond tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout to a seconds tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "estamp\",\"trigger\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Any call"
+    },
+    {
+      "type": "text_delta",
+      "text": " to use"
+    },
+    {
+      "type": "text_delta",
+      "text": "_it::deadline after"
+    },
+    {
+      "type": "text_delta",
+      "text": " this change."
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The only"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller of fixture::tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout ("
+    },
+    {
+      "type": "text_delta",
+      "text": "src/use_it.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": ":4,"
+    },
+    {
+      "type": "text_delta",
+      "text": " via de"
+    },
+    {
+      "type": "text_delta",
+      "text": "adline) ass"
+    },
+    {
+      "type": "text_delta",
+      "text": "umes se"
+    },
+    {
+      "type": "text_delta",
+      "text": "conds."
+    },
+    {
+      "type": "text_delta",
+      "text": " The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change to"
+    },
+    {
+      "type": "text_delta",
+      "text": " mil"
+    },
+    {
+      "type": "text_delta",
+      "text": "liseconds mak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es de"
+    },
+    {
+      "type": "text_delta",
+      "text": "adline return"
+    },
+    {
+      "type": "text_delta",
+      "text": " a wrong value by a fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "or of 1000.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5983,
+      "output_tokens": 711,
+      "cost_usd": 0.0009538
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

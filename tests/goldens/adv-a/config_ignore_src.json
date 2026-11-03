@@ -1,0 +1,145 @@
+{
+  "cleared_risks": [
+    {
+      "description": "The overflow is not introduced by this change: the old code also summed with `samples.iter().sum::<u32>()` (e4), so the u32 accumulator is unchanged (e1). The real regression is separate: removing the `is_empty` early return (e4) means `average(&[])` now computes `0 / 0` as u32 and panics with divide-by-zero in both debug and release (e1), and `report(&[])` calls it, so this is a P1 defect a reviewer should raise under a different hypothesis.",
+      "name": "u32 sum can overflow for large samples"
+    }
+  ],
+  "coverage": {
+    "changed_files": 2,
+    "held_back": [],
+    "investigated_files": 2,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The change removed the `samples.is_empty()` guard in `average` (src/lib.rs lines 3-4 now compute `total / samples.len() as u32` directly). For an empty slice, both total and len are 0, so the integer division panics with divide-by-zero instead of returning 0 as the doc comment on line 1 promises. The only in-file caller, `report` (line 8), passes its samples straight through with no guard, so `report(&[])` now panics where it previously returned \"mean=0\".\n\nTrigger: Calling report(&[]) or average(&[]), e.g. with a window that contains no samples.\n\nImpact: Any caller of `fixture::report` (or `fixture::average`) with an empty sample set now panics. Callers that relied on the documented 0 result for empty input will crash or abort, and the doc comment no longer matches behaviour.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 9,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 8,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 8
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_87924805c3b248f1",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P2",
+      "side": "new",
+      "start_line": 3,
+      "suggestion": "Restore the empty-slice guard: `if samples.is_empty() { return 0; }` before the division.",
+      "title": "average panics with divide-by-zero on empty input, breaking report() and the documented contract",
+      "verification": "not_run",
+      "verified_evidence": null
+    },
+    {
+      "body": "The early return for empty input was removed. For an empty slice, samples.iter().sum() is 0 and samples.len() as u32 is 0, so the integer division total / 0 runs. Unsigned integer division by zero panics in Rust in both debug and release builds. The doc comment on line 1 still promises 0 for no samples, so the function now contradicts its own contract.\n\nTrigger: Calling average with an empty slice, directly or through report().”,\n\nImpact: Any caller of the public average(&[]) panics. The in-file caller report() (line 8) passes its slice straight through, so report(&[]) also panics and would crash a caller that formats a report for an empty sample set. I did not confirm that any real caller passes an empty slice, so reachability depends on those callers.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 9,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_b8f84c1ab1cc1d0b",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P2",
+      "side": "new",
+      "start_line": 3,
+      "suggestion": "Restore the guard: if samples.is_empty() { return 0; } before the division.",
+      "title": "average divides by zero on empty input",
+      "verification": "not_run",
+      "verified_evidence": null
+    },
+    {
+      "body": "The early return for empty input was removed, so `average` now computes `total / samples.len() as u32` with `samples.len() == 0`. Integer division by zero panics. The doc comment on line 1 still promises \"or 0 when there are none\", so the code now contradicts its own contract. `report` at line 8 calls `average(samples)` with no guard, so `report(&[])` panics too.\n\nTrigger: Calling average(&[]) or report(&[]), for example when a sample set has no entries.\n\nImpact: Any caller that passes an empty slice to `average` or `report` now panics instead of getting 0. This breaks the documented public contract. The only resolved caller I found is `report` in the same file, and it does not check for empty input. I did not find an external caller outside the file, and the caller search was partial (4 omitted), so the hypothesis's external-caller claim is unverified.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.85,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 9,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 8,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 8
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_0e9aae0d0337f6d8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P2",
+      "side": "new",
+      "start_line": 3,
+      "suggestion": "Restore the `if samples.is_empty() { return 0; }` guard before the division, or update the doc comment and the callers to handle the empty case explicitly.",
+      "title": "average() panics on empty slice (divide by zero) despite documented 0 return",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The empty-slice guard in average was removed, so an empty input now divides by zero and panics, and the change touches a public function with a caller elsewhere, while the config tries to ignore src/** for review.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 3 finding(s) across 2 investigated file(s).",
+  "target": {
+    "base_sha": "c753d1e6a59341a857aadc7448179203e4504cb5",
+    "head_sha": "ffa491f3ec8b77e8a193d9a7cd8769da158a4a11",
+    "local_changes": false,
+    "merge_base": "c753d1e6a59341a857aadc7448179203e4504cb5"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

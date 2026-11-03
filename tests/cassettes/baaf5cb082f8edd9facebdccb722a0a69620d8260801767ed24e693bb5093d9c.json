@@ -1,0 +1,288 @@
+{
+  "v": 1,
+  "key": "baaf5cb082f8edd9facebdccb722a0a69620d8260801767ed24e693bb5093d9c",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"hypotheses\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "{\"category\":\"correctness"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"claim\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs now declares `"
+    },
+    {
+      "type": "text_delta",
+      "text": "pub mod new_name;"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": " but the diff shows no content"
+    },
+    {
+      "type": "text_delta",
+      "text": " for src/new_name.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s. If that"
+    },
+    {
+      "type": "text_delta",
+      "text": " file is missing or was"
+    },
+    {
+      "type": "text_delta",
+      "text": " not moved from"
+    },
+    {
+      "type": "text_delta",
+      "text": " old_name."
+    },
+    {
+      "type": "text_delta",
+      "text": "rs, the cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate will"
+    },
+    {
+      "type": "text_delta",
+      "text": " not"
+    },
+    {
+      "type": "text_delta",
+      "text": " compile with"
+    },
+    {
+      "type": "text_delta",
+      "text": " E0583"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "(file not found for"
+    },
+    {
+      "type": "text_delta",
+      "text": " module)."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":1,\"path\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"start_line\":1,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\"Module"
+    },
+    {
+      "type": "text_delta",
+      "text": " declaration points at a file that"
+    },
+    {
+      "type": "text_delta",
+      "text": " may not"
+    },
+    {
+      "type": "text_delta",
+      "text": " exist\"},{\"category\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"correctness\",\"claim\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Remov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing `pub mod old_"
+    },
+    {
+      "type": "text_delta",
+      "text": "name;` breaks any un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed code"
+    },
+    {
+      "type": "text_delta",
+      "text": " that still"
+    },
+    {
+      "type": "text_delta",
+      "text": " uses `old"
+    },
+    {
+      "type": "text_delta",
+      "text": "_name::"
+    },
+    {
+      "type": "text_delta",
+      "text": "..."
+    },
+    {
+      "type": "text_delta",
+      "text": "` pa"
+    },
+    {
+      "type": "text_delta",
+      "text": "ths, including `cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate::old_name` or `"
+    },
+    {
+      "type": "text_delta",
+      "text": "use`"
+    },
+    {
+      "type": "text_delta",
+      "text": " stat"
+    },
+    {
+      "type": "text_delta",
+      "text": "ements el"
+    },
+    {
+      "type": "text_delta",
+      "text": "sewhere in the cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate and"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": " d"
+    },
+    {
+      "type": "text_delta",
+      "text": "ependents"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " this"
+    },
+    {
+      "type": "text_delta",
+      "text": " library. Checking for rem"
+    },
+    {
+      "type": "text_delta",
+      "text": "aining references to old"
+    },
+    {
+      "type": "text_delta",
+      "text": "_name would conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "irm or"
+    },
+    {
+      "type": "text_delta",
+      "text": " refute this"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"end_line\":1,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"path\":\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "1,\"title\":\"Rem"
+    },
+    {
+      "type": "text_delta",
+      "text": "aining references to the old module name"
+    },
+    {
+      "type": "text_delta",
+      "text": " would"
+    },
+    {
+      "type": "text_delta",
+      "text": " f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ail to resolve\"}]"
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1388,
+      "output_tokens": 580,
+      "cost_usd": 0.0004288
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

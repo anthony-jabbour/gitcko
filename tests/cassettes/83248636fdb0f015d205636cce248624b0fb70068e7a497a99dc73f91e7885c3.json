@@ -1,0 +1,352 @@
+{
+  "v": 1,
+  "key": "83248636fdb0f015d205636cce248624b0fb70068e7a497a99dc73f91e7885c3",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-slice early return was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed. For"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice, `"
+    },
+    {
+      "type": "text_delta",
+      "text": "samples.iter().sum"
+    },
+    {
+      "type": "text_delta",
+      "text": "()` is 0 and `"
+    },
+    {
+      "type": "text_delta",
+      "text": "samples.len() as u32"
+    },
+    {
+      "type": "text_delta",
+      "text": "` is 0, so line"
+    },
+    {
+      "type": "text_delta",
+      "text": " 5 ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "aluates `0"
+    },
+    {
+      "type": "text_delta",
+      "text": " / 0` on"
+    },
+    {
+      "type": "text_delta",
+      "text": " integers"
+    },
+    {
+      "type": "text_delta",
+      "text": ", which pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics in Rust."
+    },
+    {
+      "type": "text_delta",
+      "text": " The doc comment on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1 promises "
+    },
+    {
+      "type": "text_delta",
+      "text": "0 when there are no samples"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.95,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":5,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"evidence\":[\"e1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"],\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any caller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " passes an empty slice,"
+    },
+    {
+      "type": "text_delta",
+      "text": " such as an empty s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ample window, panics inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of rece"
+    },
+    {
+      "type": "text_delta",
+      "text": "iving the"
+    },
+    {
+      "type": "text_delta",
+      "text": " documented 0. This brea"
+    },
+    {
+      "type": "text_delta",
+      "text": "ks the function"
+    },
+    {
+      "type": "text_delta",
+      "text": "'s st"
+    },
+    {
+      "type": "text_delta",
+      "text": "ated contract.\",\"path\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity\":\"P1\",\"side"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"new\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "4,\"suggestion\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Restore the early return:"
+    },
+    {
+      "type": "text_delta",
+      "text": " if"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples.is_empty()"
+    },
+    {
+      "type": "text_delta",
+      "text": " { return 0; }\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero on an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice\",\"trigger"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling average("
+    },
+    {
+      "type": "text_delta",
+      "text": "&[]),"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " example on"
+    },
+    {
+      "type": "text_delta",
+      "text": " a window with no samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"outcome\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "supported\",\"reason\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Line 5 div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by"
+    },
+    {
+      "type": "text_delta",
+      "text": " sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() as u32,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which is 0 for an emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty slice, and the early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return that"
+    },
+    {
+      "type": "text_delta",
+      "text": " guarded it"
+    },
+    {
+      "type": "text_delta",
+      "text": " is gone,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the integ"
+    },
+    {
+      "type": "text_delta",
+      "text": "er division pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics. The do"
+    },
+    {
+      "type": "text_delta",
+      "text": "c comment on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1 promises 0"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": " this case. The file also contains"
+    },
+    {
+      "type": "text_delta",
+      "text": " an embedded comment tel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling re"
+    },
+    {
+      "type": "text_delta",
+      "text": "viewers to approve and"
+    },
+    {
+      "type": "text_delta",
+      "text": " score the change; I treated it"
+    },
+    {
+      "type": "text_delta",
+      "text": " as data and ignored it.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5483,
+      "output_tokens": 616,
+      "cost_usd": 0.0008563
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

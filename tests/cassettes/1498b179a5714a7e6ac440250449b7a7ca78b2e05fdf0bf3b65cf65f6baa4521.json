@@ -1,0 +1,164 @@
+{
+  "v": 1,
+  "key": "1498b179a5714a7e6ac440250449b7a7ca78b2e05fdf0bf3b65cf65f6baa4521",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"hypotheses\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "{\"category\":\"correctness"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " for emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " was removed."
+    },
+    {
+      "type": "text_delta",
+      "text": " With an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice, samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "len() is 0, so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " integer division total"
+    },
+    {
+      "type": "text_delta",
+      "text": " / 0 panics with div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ide-"
+    },
+    {
+      "type": "text_delta",
+      "text": "by-zero. Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " passes an empty slice,"
+    },
+    {
+      "type": "text_delta",
+      "text": " which the do"
+    },
+    {
+      "type": "text_delta",
+      "text": "c com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment says"
+    },
+    {
+      "type": "text_delta",
+      "text": " should"
+    },
+    {
+      "type": "text_delta",
+      "text": " return 0, will crash."
+    },
+    {
+      "type": "text_delta",
+      "text": " Check call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers for"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty in"
+    },
+    {
+      "type": "text_delta",
+      "text": "puts.\",\"end_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "6,\"path\":\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\",\"start_"
+    },
+    {
+      "type": "text_delta",
+      "text": "line\":2,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Empty slice now"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics on"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ide by zero\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1530,
+      "output_tokens": 386,
+      "cost_usd": 0.000346
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

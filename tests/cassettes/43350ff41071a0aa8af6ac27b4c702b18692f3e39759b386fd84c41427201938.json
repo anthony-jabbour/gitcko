@@ -1,0 +1,36 @@
+{
+  "v": 1,
+  "key": "43350ff41071a0aa8af6ac27b4c702b18692f3e39759b386fd84c41427201938",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 6926,
+      "output_tokens": 13,
+      "cost_usd": 0.0006991
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "v": 1,
+  "key": "4c7b00e1752664963a46d9cb76626db3a113077fe470137fca19bc54169e08f2",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The only"
+    },
+    {
+      "type": "text_delta",
+      "text": " change is ad"
+    },
+    {
+      "type": "text_delta",
+      "text": "ding a no-op '"
+    },
+    {
+      "type": "text_delta",
+      "text": "+ 0' to a const"
+    },
+    {
+      "type": "text_delta",
+      "text": "ant expression in src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs, which has no beh"
+    },
+    {
+      "type": "text_delta",
+      "text": "avioral effect.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 809,
+      "output_tokens": 70,
+      "cost_usd": 0.0001159
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

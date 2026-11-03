@@ -1,0 +1,76 @@
+{
+  "v": 1,
+  "key": "2e307a803b3107ec5a6358cf423e2068813d1769e3055bc1942ed0f5fedb0d65",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " only r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ewrites an error message string"
+    },
+    {
+      "type": "text_delta",
+      "text": " in a single function"
+    },
+    {
+      "type": "text_delta",
+      "text": ", with no log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic or"
+    },
+    {
+      "type": "text_delta",
+      "text": " control-flow chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 856,
+      "output_tokens": 57,
+      "cost_usd": 0.0001141
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

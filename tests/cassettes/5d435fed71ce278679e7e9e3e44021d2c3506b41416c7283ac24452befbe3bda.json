@@ -1,0 +1,452 @@
+{
+  "v": 1,
+  "key": "5d435fed71ce278679e7e9e3e44021d2c3506b41416c7283ac24452befbe3bda",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"Line"
+    },
+    {
+      "type": "text_delta",
+      "text": " 4 now"
+    },
+    {
+      "type": "text_delta",
+      "text": " disc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ards the result"
+    },
+    {
+      "type": "text_delta",
+      "text": " of write_all with `let _"
+    },
+    {
+      "type": "text_delta",
+      "text": " =`."
+    },
+    {
+      "type": "text_delta",
+      "text": " save"
+    },
+    {
+      "type": "text_delta",
+      "text": "() then returns only"
+    },
+    {
+      "type": "text_delta",
+      "text": " the result of flush()"
+    },
+    {
+      "type": "text_delta",
+      "text": " on line 5. For writ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ose flush is a no-op"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " such as std"
+    },
+    {
+      "type": "text_delta",
+      "text": "::fs::File and"
+    },
+    {
+      "type": "text_delta",
+      "text": " TcpStream, flush"
+    },
+    {
+      "type": "text_delta",
+      "text": " returns Ok even when write"
+    },
+    {
+      "type": "text_delta",
+      "text": "_all failed, so a fail"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed write (for"
+    },
+    {
+      "type": "text_delta",
+      "text": " example "
+    },
+    {
+      "type": "text_delta",
+      "text": "ENOSPC on a full"
+    },
+    {
+      "type": "text_delta",
+      "text": " disk or a re"
+    },
+    {
+      "type": "text_delta",
+      "text": "set conn"
+    },
+    {
+      "type": "text_delta",
+      "text": "ection) is"
+    },
+    {
+      "type": "text_delta",
+      "text": " reported as success"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "c"
+    },
+    {
+      "type": "text_delta",
+      "text": "omment"
+    },
+    {
+      "type": "text_delta",
+      "text": "_"
+    },
+    {
+      "type": "text_delta",
+      "text": "type\":\"logic\",\"conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":0.9"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"counterevidence\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[],\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4,\"ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":[\"e1\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "e2\"],\"impact\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ies on save() retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ning Err for a fail"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed write now"
+    },
+    {
+      "type": "text_delta",
+      "text": " g"
+    },
+    {
+      "type": "text_delta",
+      "text": "ets Ok("
+    },
+    {
+      "type": "text_delta",
+      "text": "()) with the record miss"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks the io"
+    },
+    {
+      "type": "text_delta",
+      "text": "::Result contract and causes"
+    },
+    {
+      "type": "text_delta",
+      "text": " silent data loss."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"path\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"side\":\"new\",\"start_"
+    },
+    {
+      "type": "text_delta",
+      "text": "line\":4,\"suggest"
+    },
+    {
+      "type": "text_delta",
+      "text": "ion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore `"
+    },
+    {
+      "type": "text_delta",
+      "text": "out"
+    },
+    {
+      "type": "text_delta",
+      "text": ".write_all(record)?"
+    },
+    {
+      "type": "text_delta",
+      "text": ";` before"
+    },
+    {
+      "type": "text_delta",
+      "text": " `out.flush()`."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"title\":\"write"
+    },
+    {
+      "type": "text_delta",
+      "text": "_all error discarded in"
+    },
+    {
+      "type": "text_delta",
+      "text": " save(), so fail"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed writes report"
+    },
+    {
+      "type": "text_delta",
+      "text": " success\",\"trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling save() with a writ"
+    },
+    {
+      "type": "text_delta",
+      "text": "er wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ose write_all fails but"
+    },
+    {
+      "type": "text_delta",
+      "text": " whose flush succ"
+    },
+    {
+      "type": "text_delta",
+      "text": "eeds, such as a File"
+    },
+    {
+      "type": "text_delta",
+      "text": " on"
+    },
+    {
+      "type": "text_delta",
+      "text": " a full disk or a socket"
+    },
+    {
+      "type": "text_delta",
+      "text": " that err"
+    },
+    {
+      "type": "text_delta",
+      "text": "ors on"
+    },
+    {
+      "type": "text_delta",
+      "text": " write."
+    },
+    {
+      "type": "text_delta",
+      "text": ")"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff confirms write"
+    },
+    {
+      "type": "text_delta",
+      "text": "_all's error is disc"
+    },
+    {
+      "type": "text_delta",
+      "text": "arded (e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1, line 4)"
+    },
+    {
+      "type": "text_delta",
+      "text": " and save() retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ns only flush()"
+    },
+    {
+      "type": "text_delta",
+      "text": "'s result."
+    },
+    {
+      "type": "text_delta",
+      "text": " The search found no in-repo"
+    },
+    {
+      "type": "text_delta",
+      "text": " call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers of save(), so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " impact fal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ls on external callers, but the"
+    },
+    {
+      "type": "text_delta",
+      "text": " contract break"
+    },
+    {
+      "type": "text_delta",
+      "text": " is real for"
+    },
+    {
+      "type": "text_delta",
+      "text": " common"
+    },
+    {
+      "type": "text_delta",
+      "text": " writ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ose flush is a no-op"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5653,
+      "output_tokens": 1033,
+      "cost_usd": 0.0010818
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

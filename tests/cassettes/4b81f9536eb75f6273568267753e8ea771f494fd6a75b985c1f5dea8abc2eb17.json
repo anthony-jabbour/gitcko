@@ -1,0 +1,436 @@
+{
+  "v": 1,
+  "key": "4b81f9536eb75f6273568267753e8ea771f494fd6a75b985c1f5dea8abc2eb17",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "9"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " replaces"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " prior"
+    },
+    {
+      "type": "text_delta",
+      "text": " conjunction"
+    },
+    {
+      "type": "text_delta",
+      "text": " with"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " dis"
+    },
+    {
+      "type": "text_delta",
+      "text": "junction"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " so"
+    },
+    {
+      "type": "text_delta",
+      "text": " an"
+    },
+    {
+      "type": "text_delta",
+      "text": " active"
+    },
+    {
+      "type": "text_delta",
+      "text": " non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-admin"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " an"
+    },
+    {
+      "type": "text_delta",
+      "text": " inactive"
+    },
+    {
+      "type": "text_delta",
+      "text": " admin"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " pass"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "can"
+    },
+    {
+      "type": "text_delta",
+      "text": "_delete"
+    },
+    {
+      "type": "text_delta",
+      "text": "`."
+    },
+    {
+      "type": "text_delta",
+      "text": " That"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " concrete"
+    },
+    {
+      "type": "text_delta",
+      "text": " weakening"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " function"
+    },
+    {
+      "type": "text_delta",
+      "text": "’s"
+    },
+    {
+      "type": "text_delta",
+      "text": " deletion"
+    },
+    {
+      "type": "text_delta",
+      "text": " check"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " No"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-re"
+    },
+    {
+      "type": "text_delta",
+      "text": "pository"
+    },
+    {
+      "type": "text_delta",
+      "text": " callers"
+    },
+    {
+      "type": "text_delta",
+      "text": " are"
+    },
+    {
+      "type": "text_delta",
+      "text": " shown"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " which"
+    },
+    {
+      "type": "text_delta",
+      "text": " limits"
+    },
+    {
+      "type": "text_delta",
+      "text": " demonstrated"
+    },
+    {
+      "type": "text_delta",
+      "text": " reach"
+    },
+    {
+      "type": "text_delta",
+      "text": "ability"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " supports"
+    },
+    {
+      "type": "text_delta",
+      "text": " P"
+    },
+    {
+      "type": "text_delta",
+      "text": "2"
+    },
+    {
+      "type": "text_delta",
+      "text": " rather"
+    },
+    {
+      "type": "text_delta",
+      "text": " than"
+    },
+    {
+      "type": "text_delta",
+      "text": " P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " but"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " function"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " public"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " can"
+    },
+    {
+      "type": "text_delta",
+      "text": " affect"
+    },
+    {
+      "type": "text_delta",
+      "text": " external"
+    },
+    {
+      "type": "text_delta",
+      "text": " callers"
+    },
+    {
+      "type": "text_delta",
+      "text": " that"
+    },
+    {
+      "type": "text_delta",
+      "text": " use"
+    },
+    {
+      "type": "text_delta",
+      "text": " it"
+    },
+    {
+      "type": "text_delta",
+      "text": " as"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " deletion"
+    },
+    {
+      "type": "text_delta",
+      "text": " gate"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "P"
+    },
+    {
+      "type": "text_delta",
+      "text": "2"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "accept"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1027,
+      "output_tokens": 439,
+      "cost_usd": 0.0003478
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

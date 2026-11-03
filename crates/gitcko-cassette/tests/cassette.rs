@@ -122,6 +122,100 @@ async fn record_then_replay_is_exact_for_events_and_file() {
     assert!(first.ends_with(b"}\n"));
 }
 
+/// Two cases that send the same request must replay the same answer, so the second
+/// never reaches the model and never overwrites the first.
+#[tokio::test]
+async fn recording_a_call_it_already_holds_replays_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let inner = Arc::new(FakeProvider::new(vec![response("first")]));
+    let recorder = Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
+    let _ = run(&recorder, request("fn main() {}")).await;
+    let first = only_file(dir.path());
+    // The fake holds one answer; a second live call would get none.
+    let again = run(&recorder, request("fn main() {}")).await;
+    let costs = |events: &[Result<Event, ProviderError>]| -> Vec<Option<f64>> {
+        events
+            .iter()
+            .filter_map(|e| match e {
+                Ok(Event::Usage(u)) => Some(u.cost_usd),
+                _ => None,
+            })
+            .collect()
+    };
+    // The held answer comes back whole, except that it cost nothing this time.
+    assert_eq!(costs(&again), [Some(0.0)]);
+    let strip = |events: Vec<Result<Event, ProviderError>>| -> Vec<_> {
+        events
+            .into_iter()
+            .filter(|e| !matches!(e, Ok(Event::Usage(_))))
+            .collect()
+    };
+    assert_eq!(strip(again), strip(response("first")));
+    assert_eq!(only_file(dir.path()), first);
+    // Replay still reports what the call cost when it was recorded.
+    let replayed = run(
+        &Cassette::replay(dir.path(), &binding(11434, None)),
+        request("fn main() {}"),
+    )
+    .await;
+    assert_eq!(costs(&replayed), [Some(0.000_125)]);
+}
+
+/// A review of an auth bug names authorization in prose, even in a streamed piece of its
+/// own; only a header is refused.
+#[tokio::test]
+async fn prose_about_authorization_is_recorded() {
+    let dir = tempfile::tempdir().unwrap();
+    let pieces = [
+        "Expired sessions now pass the",
+        " authorization",
+        "-logic check.",
+    ];
+    let mut events: Vec<_> = pieces
+        .iter()
+        .map(|p| {
+            Ok(Event::TextDelta {
+                text: p.to_string(),
+            })
+        })
+        .collect();
+    events.push(Ok(Event::Finish {
+        reason: FinishReason::Stop,
+    }));
+    let inner = Arc::new(FakeProvider::new(vec![events.clone()]));
+    let recorder = Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
+    assert_eq!(run(&recorder, request("x")).await, events);
+    only_file(dir.path());
+}
+
+/// A header in tool-call arguments is refused too: as a key, and split into a name field
+/// and a value field, where no separator follows the name.
+#[tokio::test]
+async fn a_header_in_tool_arguments_is_not_written() {
+    for arguments in [
+        r#"{"Authorization": "Zm9v"}"#,
+        r#"{"header": "Authorization", "value": "Zm9v"}"#,
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let events = vec![
+            Ok(Event::ToolCall(ToolCall {
+                id: "call_1".into(),
+                name: "fetch".into(),
+                arguments: arguments.into(),
+            })),
+            Ok(Event::Finish {
+                reason: FinishReason::Stop,
+            }),
+        ];
+        let inner = Arc::new(FakeProvider::new(vec![events]));
+        let recorder =
+            Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
+        let got = run(&recorder, request("x")).await;
+        assert!(got.last().unwrap().is_err(), "{arguments}");
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
+    }
+}
+
 #[tokio::test]
 async fn a_failed_call_is_passed_through_and_not_recorded() {
     let dir = tempfile::tempdir().unwrap();
@@ -173,6 +267,10 @@ async fn a_recording_with_a_secret_or_a_local_path_is_not_written() {
     let mut leaks = vec![
         format!("the key is {key}"),
         "Authorization: Basic Zm9v".to_string(),
+        r#"{"authorization": "Basic Zm9v"}"#.to_string(),
+        "Authorization : Basic Zm9v".to_string(),
+        "authorization=Basic Zm9v".to_string(),
+        "'Authorization' = 'Basic Zm9v'".to_string(),
         format!("bearer {}", "x".repeat(8)),
         format!("see {}/notes.txt", home.display()),
         format!("see {}/src/lib.rs", cwd.display()),

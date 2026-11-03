@@ -1,0 +1,428 @@
+{
+  "v": 1,
+  "key": "abc76aae8272e73fa158500ed1f734d3558dbd1ccee684ff74f128fd25d7eedc",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"corre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ctness\",\"cause\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " repl"
+    },
+    {
+      "type": "text_delta",
+      "text": "aces the body"
+    },
+    {
+      "type": "text_delta",
+      "text": " of src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs with `"
+    },
+    {
+      "type": "text_delta",
+      "text": "pub fn add() {}"
+    },
+    {
+      "type": "text_delta",
+      "text": "` (dropping the u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 par"
+    },
+    {
+      "type": "text_delta",
+      "text": "ameters and the `"
+    },
+    {
+      "type": "text_delta",
+      "text": "a + b` return"
+    },
+    {
+      "type": "text_delta",
+      "text": ") and appends a line"
+    },
+    {
+      "type": "text_delta",
+      "text": " containing U+FFFD"
+    },
+    {
+      "type": "text_delta",
+      "text": " replacement characters before"
+    },
+    {
+      "type": "text_delta",
+      "text": " `//"
+    },
+    {
+      "type": "text_delta",
+      "text": " tail`."
+    },
+    {
+      "type": "text_delta",
+      "text": " Those characters s"
+    },
+    {
+      "type": "text_delta",
+      "text": "it outside any"
+    },
+    {
+      "type": "text_delta",
+      "text": " comment or"
+    },
+    {
+      "type": "text_delta",
+      "text": " string, so the file no longer"
+    },
+    {
+      "type": "text_delta",
+      "text": " tokenizes as"
+    },
+    {
+      "type": "text_delta",
+      "text": " Rust.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "comment_type\":\"synt"
+    },
+    {
+      "type": "text_delta",
+      "text": "ax\",\"confidence\":0."
+    },
+    {
+      "type": "text_delta",
+      "text": "7,\"counterevidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":2,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"evidence\":[\"e1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"],\"impact\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " crate f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ails to compile, so every"
+    },
+    {
+      "type": "text_delta",
+      "text": " build and"
+    },
+    {
+      "type": "text_delta",
+      "text": " test of this"
+    },
+    {
+      "type": "text_delta",
+      "text": " cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ate bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aks. Any down"
+    },
+    {
+      "type": "text_delta",
+      "text": "stream user"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "add("
+    },
+    {
+      "type": "text_delta",
+      "text": "a"
+    },
+    {
+      "type": "text_delta",
+      "text": ", b)` also fails to"
+    },
+    {
+      "type": "text_delta",
+      "text": " compile, because the function"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " takes no ar"
+    },
+    {
+      "type": "text_delta",
+      "text": "guments and returns unit."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P0\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":1"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore `"
+    },
+    {
+      "type": "text_delta",
+      "text": "pub fn add(a:"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32, b: u32)"
+    },
+    {
+      "type": "text_delta",
+      "text": " -> u32 { a +"
+    },
+    {
+      "type": "text_delta",
+      "text": " b }` and remove the st"
+    },
+    {
+      "type": "text_delta",
+      "text": "ray non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-ASCII line"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"title\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs no"
+    },
+    {
+      "type": "text_delta",
+      "text": " longer compiles: inval"
+    },
+    {
+      "type": "text_delta",
+      "text": "id charac"
+    },
+    {
+      "type": "text_delta",
+      "text": "ters and add"
+    },
+    {
+      "type": "text_delta",
+      "text": "() signature chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed\",\"trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any build or"
+    },
+    {
+      "type": "text_delta",
+      "text": " test of the crate after"
+    },
+    {
+      "type": "text_delta",
+      "text": " this change."
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}],\"outcome\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"supported\",\"reason\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The head file cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ains `"
+    },
+    {
+      "type": "text_delta",
+      "text": "pub fn add() {}"
+    },
+    {
+      "type": "text_delta",
+      "text": "` followed by a"
+    },
+    {
+      "type": "text_delta",
+      "text": " line"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " repl"
+    },
+    {
+      "type": "text_delta",
+      "text": "acement characters outside any com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment, which is a"
+    },
+    {
+      "type": "text_delta",
+      "text": " comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ile error. The repo search for"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "add(` retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ned no call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers or"
+    },
+    {
+      "type": "text_delta",
+      "text": " tests in the head comm"
+    },
+    {
+      "type": "text_delta",
+      "text": "it, so the removed-"
+    },
+    {
+      "type": "text_delta",
+      "text": "addition imp"
+    },
+    {
+      "type": "text_delta",
+      "text": "act on"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-repo code is not"
+    },
+    {
+      "type": "text_delta",
+      "text": " sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "own,"
+    },
+    {
+      "type": "text_delta",
+      "text": " but the build break"
+    },
+    {
+      "type": "text_delta",
+      "text": " itself is sup"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported by e1.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5426,
+      "output_tokens": 989,
+      "cost_usd": 0.0010371
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

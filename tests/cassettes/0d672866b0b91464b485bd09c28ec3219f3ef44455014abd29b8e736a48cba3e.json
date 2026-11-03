@@ -1,0 +1,488 @@
+{
+  "v": 1,
+  "key": "0d672866b0b91464b485bd09c28ec3219f3ef44455014abd29b8e736a48cba3e",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout() now"
+    },
+    {
+      "type": "text_delta",
+      "text": " returns 30_000 ("
+    },
+    {
+      "type": "text_delta",
+      "text": "mil"
+    },
+    {
+      "type": "text_delta",
+      "text": "liseconds) instead of"
+    },
+    {
+      "type": "text_delta",
+      "text": " 30 (seconds),"
+    },
+    {
+      "type": "text_delta",
+      "text": " but its only"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller, deadline("
+    },
+    {
+      "type": "text_delta",
+      "text": "), still"
+    },
+    {
+      "type": "text_delta",
+      "text": " adds the result"
+    },
+    {
+      "type": "text_delta",
+      "text": " to a se"
+    },
+    {
+      "type": "text_delta",
+      "text": "conds-based"
+    },
+    {
+      "type": "text_delta",
+      "text": " value (now_secs + tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout()). The deadline"
+    },
+    {
+      "type": "text_delta",
+      "text": " therefore mo"
+    },
+    {
+      "type": "text_delta",
+      "text": "ves 30_000 secon"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds into the future inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of 30, about"
+    },
+    {
+      "type": "text_delta",
+      "text": " 1000x too"
+    },
+    {
+      "type": "text_delta",
+      "text": " far.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.8,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":4,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"evidence\":[\"e1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"e2\",\"e3\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"impact\":\"Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " code rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ying on deadline()"
+    },
+    {
+      "type": "text_delta",
+      "text": " to b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ound a w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ait or"
+    },
+    {
+      "type": "text_delta",
+      "text": " exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ire a"
+    },
+    {
+      "type": "text_delta",
+      "text": " request will"
+    },
+    {
+      "type": "text_delta",
+      "text": " w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ait ro"
+    },
+    {
+      "type": "text_delta",
+      "text": "ughly 8"
+    },
+    {
+      "type": "text_delta",
+      "text": ".3 hours instead of"
+    },
+    {
+      "type": "text_delta",
+      "text": " 30 seconds. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " h"
+    },
+    {
+      "type": "text_delta",
+      "text": "ypothesis's"
+    },
+    {
+      "type": "text_delta",
+      "text": " 'requests' fram"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing is not"
+    },
+    {
+      "type": "text_delta",
+      "text": " confirmed by"
+    },
+    {
+      "type": "text_delta",
+      "text": " the repo; the"
+    },
+    {
+      "type": "text_delta",
+      "text": " only caller found"
+    },
+    {
+      "type": "text_delta",
+      "text": " is deadline()"
+    },
+    {
+      "type": "text_delta",
+      "text": " in src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/use_it.rs."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"path\":\"src/use_"
+    },
+    {
+      "type": "text_delta",
+      "text": "it.rs\",\"severity\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"P1\",\"side\":\"new"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"start_line\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Either convert at"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " call site ("
+    },
+    {
+      "type": "text_delta",
+      "text": "timeout() * 1000"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " se"
+    },
+    {
+      "type": "text_delta",
+      "text": "conds-based hel"
+    },
+    {
+      "type": "text_delta",
+      "text": "per) or keep tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout() in seconds and"
+    },
+    {
+      "type": "text_delta",
+      "text": " rename the const"
+    },
+    {
+      "type": "text_delta",
+      "text": "ant,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so"
+    },
+    {
+      "type": "text_delta",
+      "text": " that units"
+    },
+    {
+      "type": "text_delta",
+      "text": " ag"
+    },
+    {
+      "type": "text_delta",
+      "text": "ree.\",\"title\":\"tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout() un"
+    },
+    {
+      "type": "text_delta",
+      "text": "it change mak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es deadline() "
+    },
+    {
+      "type": "text_delta",
+      "text": "1000x too"
+    },
+    {
+      "type": "text_delta",
+      "text": " far in the"
+    },
+    {
+      "type": "text_delta",
+      "text": " future\",\"trigger\":\"de"
+    },
+    {
+      "type": "text_delta",
+      "text": "adline() is called with"
+    },
+    {
+      "type": "text_delta",
+      "text": " any"
+    },
+    {
+      "type": "text_delta",
+      "text": " current time; it"
+    },
+    {
+      "type": "text_delta",
+      "text": " always ad"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout() to"
+    },
+    {
+      "type": "text_delta",
+      "text": " it"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "\\n"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ole caller,"
+    },
+    {
+      "type": "text_delta",
+      "text": " deadline()"
+    },
+    {
+      "type": "text_delta",
+      "text": " in src/use_it.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s, adds tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout() direct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ly to a seconds value"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so the change"
+    },
+    {
+      "type": "text_delta",
+      "text": " from "
+    },
+    {
+      "type": "text_delta",
+      "text": "30 to 30_000 "
+    },
+    {
+      "type": "text_delta",
+      "text": "silently alters its"
+    },
+    {
+      "type": "text_delta",
+      "text": " result"
+    },
+    {
+      "type": "text_delta",
+      "text": " by"
+    },
+    {
+      "type": "text_delta",
+      "text": " 1000x. The hyp"
+    },
+    {
+      "type": "text_delta",
+      "text": "othesis hol"
+    },
+    {
+      "type": "text_delta",
+      "text": "ds for"
+    },
+    {
+      "type": "text_delta",
+      "text": " this"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller, though no request-hand"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling code was found to"
+    },
+    {
+      "type": "text_delta",
+      "text": " confirm the"
+    },
+    {
+      "type": "text_delta",
+      "text": " 'requests' part"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5829,
+      "output_tokens": 945,
+      "cost_usd": 0.0010554
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

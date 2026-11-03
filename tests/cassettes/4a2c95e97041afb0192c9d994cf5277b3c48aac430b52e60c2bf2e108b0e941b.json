@@ -1,0 +1,312 @@
+{
+  "v": 1,
+  "key": "4a2c95e97041afb0192c9d994cf5277b3c48aac430b52e60c2bf2e108b0e941b",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "99"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " cited"
+    },
+    {
+      "type": "text_delta",
+      "text": " new"
+    },
+    {
+      "type": "text_delta",
+      "text": "-side"
+    },
+    {
+      "type": "text_delta",
+      "text": " source"
+    },
+    {
+      "type": "text_delta",
+      "text": " contains"
+    },
+    {
+      "type": "text_delta",
+      "text": " U"
+    },
+    {
+      "type": "text_delta",
+      "text": "+"
+    },
+    {
+      "type": "text_delta",
+      "text": "FF"
+    },
+    {
+      "type": "text_delta",
+      "text": "FD"
+    },
+    {
+      "type": "text_delta",
+      "text": " characters"
+    },
+    {
+      "type": "text_delta",
+      "text": " outside"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " comment"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " string"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " They"
+    },
+    {
+      "type": "text_delta",
+      "text": " are"
+    },
+    {
+      "type": "text_delta",
+      "text": " not"
+    },
+    {
+      "type": "text_delta",
+      "text": " valid"
+    },
+    {
+      "type": "text_delta",
+      "text": " Rust"
+    },
+    {
+      "type": "text_delta",
+      "text": " tokens"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " so"
+    },
+    {
+      "type": "text_delta",
+      "text": " compiling"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " crate"
+    },
+    {
+      "type": "text_delta",
+      "text": " fails"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " That"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " concrete"
+    },
+    {
+      "type": "text_delta",
+      "text": " build"
+    },
+    {
+      "type": "text_delta",
+      "text": "-breaking"
+    },
+    {
+      "type": "text_delta",
+      "text": " defect"
+    },
+    {
+      "type": "text_delta",
+      "text": " triggered"
+    },
+    {
+      "type": "text_delta",
+      "text": " by"
+    },
+    {
+      "type": "text_delta",
+      "text": " any"
+    },
+    {
+      "type": "text_delta",
+      "text": " build"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " test"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " crate"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "P"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "accept"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 849,
+      "output_tokens": 416,
+      "cost_usd": 0.0002929
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

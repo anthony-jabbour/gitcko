@@ -1,0 +1,120 @@
+{
+  "v": 1,
+  "key": "a1787799f5123d8ccd18fbbbb6e1ed7c16b3f642046a9cbfc1320f0ca2724782",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"reason\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently al"
+    },
+    {
+      "type": "text_delta",
+      "text": "ters the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public position"
+    },
+    {
+      "type": "text_delta",
+      "text": " function so"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " missing element"
+    },
+    {
+      "type": "text_delta",
+      "text": " returns"
+    },
+    {
+      "type": "text_delta",
+      "text": " Some(0) instead of None"
+    },
+    {
+      "type": "text_delta",
+      "text": ", a"
+    },
+    {
+      "type": "text_delta",
+      "text": " sem"
+    },
+    {
+      "type": "text_delta",
+      "text": "antic break"
+    },
+    {
+      "type": "text_delta",
+      "text": " that callers rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ying on None"
+    },
+    {
+      "type": "text_delta",
+      "text": " will misread"
+    },
+    {
+      "type": "text_delta",
+      "text": " as"
+    },
+    {
+      "type": "text_delta",
+      "text": " a found"
+    },
+    {
+      "type": "text_delta",
+      "text": " match"
+    },
+    {
+      "type": "text_delta",
+      "text": " at index 0.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 950,
+      "output_tokens": 80,
+      "cost_usd": 0.000135
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

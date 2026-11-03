@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "0398f3763dc5fe1eba4ae90a53cbf9d1ef66c5e39fee6dd048e4915525785411",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ump()"
+    },
+    {
+      "type": "text_delta",
+      "text": " still holds the mutex gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard `v` while calling self"
+    },
+    {
+      "type": "text_delta",
+      "text": ".get(), which lik"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely locks the"
+    },
+    {
+      "type": "text_delta",
+      "text": " same non"
+    },
+    {
+      "type": "text_delta",
+      "text": "-reentrant Mut"
+    },
+    {
+      "type": "text_delta",
+      "text": "ex again"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " would"
+    },
+    {
+      "type": "text_delta",
+      "text": " deadlock.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 833,
+      "output_tokens": 208,
+      "cost_usd": 0.0001873
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

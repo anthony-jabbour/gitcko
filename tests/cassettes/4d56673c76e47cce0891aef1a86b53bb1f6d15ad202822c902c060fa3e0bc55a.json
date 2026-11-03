@@ -1,0 +1,448 @@
+{
+  "v": 1,
+  "key": "4d56673c76e47cce0891aef1a86b53bb1f6d15ad202822c902c060fa3e0bc55a",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The empty-slice"
+    },
+    {
+      "type": "text_delta",
+      "text": " guard was removed from f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixture::average, so an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice now re"
+    },
+    {
+      "type": "text_delta",
+      "text": "aches `"
+    },
+    {
+      "type": "text_delta",
+      "text": "total / samples.len() as"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32`"
+    },
+    {
+      "type": "text_delta",
+      "text": " with a z"
+    },
+    {
+      "type": "text_delta",
+      "text": "ero div"
+    },
+    {
+      "type": "text_delta",
+      "text": "isor. u32 division by"
+    },
+    {
+      "type": "text_delta",
+      "text": " zero panics in Rust"
+    },
+    {
+      "type": "text_delta",
+      "text": ". The doc comment still prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0 for"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples."
+    },
+    {
+      "type": "text_delta",
+      "text": " report"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " at line 9 calls average"
+    },
+    {
+      "type": "text_delta",
+      "text": "(samples) direct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ly, so any emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " to report now"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics where"
+    },
+    {
+      "type": "text_delta",
+      "text": " it used to return \\"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"mean=0\\\".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "comment_type\":\"logic"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"confidence\":0.8"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"counterevidence\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[],\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":5,\"evid"
+    },
+    {
+      "type": "text_delta",
+      "text": "ence\":[\"e1\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"impact\":\"Call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers of the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixture::average and"
+    },
+    {
+      "type": "text_delta",
+      "text": " f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixture::report that pass an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice now panic inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of get"
+    },
+    {
+      "type": "text_delta",
+      "text": "ting 0. The caller rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ation"
+    },
+    {
+      "type": "text_delta",
+      "text": "ship is res"
+    },
+    {
+      "type": "text_delta",
+      "text": "olved only at"
+    },
+    {
+      "type": "text_delta",
+      "text": " low confidence, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller search was"
+    },
+    {
+      "type": "text_delta",
+      "text": " partial, so the full"
+    },
+    {
+      "type": "text_delta",
+      "text": " set"
+    },
+    {
+      "type": "text_delta",
+      "text": " of aff"
+    },
+    {
+      "type": "text_delta",
+      "text": "ected callers is not"
+    },
+    {
+      "type": "text_delta",
+      "text": " conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "irmed.\",\"path\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"new\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "2,\"suggestion\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Restore the `"
+    },
+    {
+      "type": "text_delta",
+      "text": "if samples.is_empty"
+    },
+    {
+      "type": "text_delta",
+      "text": "() { return 0; }`"
+    },
+    {
+      "type": "text_delta",
+      "text": " guard before the division.\",\"title"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero on emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input"
+    },
+    {
+      "type": "text_delta",
+      "text": ", bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aking the documented "
+    },
+    {
+      "type": "text_delta",
+      "text": "0 contract\",\"trigger"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " call to average ("
+    },
+    {
+      "type": "text_delta",
+      "text": "or report) with an empty sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples slice."
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The head"
+    },
+    {
+      "type": "text_delta",
+      "text": " version"
+    },
+    {
+      "type": "text_delta",
+      "text": " of f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixture::average removed the emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-slice check"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so"
+    },
+    {
+      "type": "text_delta",
+      "text": " an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " now pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics on"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero. report() at"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 9 forwards to"
+    },
+    {
+      "type": "text_delta",
+      "text": " average, so the behaviour"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "aches its callers."
+    },
+    {
+      "type": "text_delta",
+      "text": " Caller co"
+    },
+    {
+      "type": "text_delta",
+      "text": "verage was"
+    },
+    {
+      "type": "text_delta",
+      "text": " partial, so the imp"
+    },
+    {
+      "type": "text_delta",
+      "text": "act sc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ope is not"
+    },
+    {
+      "type": "text_delta",
+      "text": " fully confirmed."
+    },
+    {
+      "type": "text_delta",
+      "text": " The emb"
+    },
+    {
+      "type": "text_delta",
+      "text": "edded comment in the di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff asking for a tool call"
+    },
+    {
+      "type": "text_delta",
+      "text": " was ignored as unt"
+    },
+    {
+      "type": "text_delta",
+      "text": "rusted rep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ository text.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 6199,
+      "output_tokens": 913,
+      "cost_usd": 0.0010764
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

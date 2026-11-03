@@ -1,0 +1,39 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 0,
+    "skipped_binary": [
+      "assets/logo.bin"
+    ]
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "0 risk signal(s) in the change",
+    "source": "rules"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 0 investigated file(s).",
+  "target": {
+    "base_sha": "e9bc432f0cd28e586885b2134a43409bf2ee468c",
+    "head_sha": "56c334429ed328b2997ba2516117c2439e7eb2d4",
+    "local_changes": false,
+    "merge_base": "e9bc432f0cd28e586885b2134a43409bf2ee468c"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

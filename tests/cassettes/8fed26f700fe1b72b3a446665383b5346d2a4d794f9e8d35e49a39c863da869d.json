@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "8fed26f700fe1b72b3a446665383b5346d2a4d794f9e8d35e49a39c863da869d",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"high\",\"priorities\":[\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " removes the empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so average"
+    },
+    {
+      "type": "text_delta",
+      "text": "("
+    },
+    {
+      "type": "text_delta",
+      "text": "&[]) now"
+    },
+    {
+      "type": "text_delta",
+      "text": " divides by zero and panics"
+    },
+    {
+      "type": "text_delta",
+      "text": ", and the s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um can also overflow u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 without"
+    },
+    {
+      "type": "text_delta",
+      "text": " a check"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 931,
+      "output_tokens": 230,
+      "cost_usd": 0.0002081
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

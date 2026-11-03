@@ -1,0 +1,348 @@
+{
+  "v": 1,
+  "key": "d1104d781b5f3e8a64abfb44a385ffb51581534911e45edeefa67b5f689fe7db",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "98"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " current"
+    },
+    {
+      "type": "text_delta",
+      "text": " implementation"
+    },
+    {
+      "type": "text_delta",
+      "text": " filters"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " done"
+    },
+    {
+      "type": "text_delta",
+      "text": " tasks"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " which"
+    },
+    {
+      "type": "text_delta",
+      "text": " conflicts"
+    },
+    {
+      "type": "text_delta",
+      "text": " with"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " name"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "pending"
+    },
+    {
+      "type": "text_delta",
+      "text": "`,"
+    },
+    {
+      "type": "text_delta",
+      "text": " but"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " cited"
+    },
+    {
+      "type": "text_delta",
+      "text": " evidence"
+    },
+    {
+      "type": "text_delta",
+      "text": " shows"
+    },
+    {
+      "type": "text_delta",
+      "text": " only"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " new"
+    },
+    {
+      "type": "text_delta",
+      "text": "-side"
+    },
+    {
+      "type": "text_delta",
+      "text": " source"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " It"
+    },
+    {
+      "type": "text_delta",
+      "text": " does"
+    },
+    {
+      "type": "text_delta",
+      "text": " not"
+    },
+    {
+      "type": "text_delta",
+      "text": " establish"
+    },
+    {
+      "type": "text_delta",
+      "text": " that"
+    },
+    {
+      "type": "text_delta",
+      "text": " this"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " introduced"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " wors"
+    },
+    {
+      "type": "text_delta",
+      "text": "ened"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " predicate"
+    },
+    {
+      "type": "text_delta",
+      "text": ";"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " claimed"
+    },
+    {
+      "type": "text_delta",
+      "text": " prior"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "!"
+    },
+    {
+      "type": "text_delta",
+      "text": "t"
+    },
+    {
+      "type": "text_delta",
+      "text": ".done"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": " implementation"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " not"
+    },
+    {
+      "type": "text_delta",
+      "text": " included"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " evidence"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reject"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 953,
+      "output_tokens": 349,
+      "cost_usd": 0.0002698
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

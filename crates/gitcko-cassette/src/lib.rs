@@ -6,7 +6,10 @@
 //!
 //! Replay is the default and the only mode CI allows. Recording wraps a real provider,
 //! is refused when `CI` is set, and refuses to write a file holding the binding's key,
-//! an auth header, a credential-shaped string or a local absolute path.
+//! an auth header, a credential-shaped string or a local absolute path. A recording
+//! replays a call it already holds rather than asking again: cases that share a request
+//! must share its answer, or replay would follow one case's answer down another's path.
+//! To record a call afresh, delete its file first.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -15,7 +18,7 @@ use std::sync::Arc;
 use futures_util::StreamExt;
 use gitcko_model::{
     ErrorKind, Event, EventStream, ModelProvider, PromptRef, ProviderError, Request,
-    ResolvedBinding,
+    ResolvedBinding, Usage,
 };
 use gitcko_protocol::config::{DataPolicy, ModelProvider as Provider, ModelRole, ReasoningEffort};
 use gitcko_redact::Redactor;
@@ -166,6 +169,17 @@ impl ModelProvider for Cassette {
         let path = self.path(&key);
         match &self.recorder {
             None => replay(&path, &key, &self.binding, cancel),
+            // Nothing is spent on a call already held, so its cost is $0, still known: a
+            // recording's spend cap counts only what this recording pays for.
+            Some(_) if path.exists() => replay(&path, &key, &self.binding, cancel)
+                .map(|event| match event {
+                    Ok(Event::Usage(usage)) => Ok(Event::Usage(Usage {
+                        cost_usd: usage.cost_usd.map(|_| 0.0),
+                        ..usage
+                    })),
+                    other => other,
+                })
+                .boxed(),
             Some(recorder) => {
                 let file = File {
                     v: VERSION,
@@ -254,7 +268,8 @@ fn record(inner: EventStream, mut file: File, path: PathBuf, redactor: Redactor)
         // The redactor's shapes cover `Bearer <token>`; a header name is refused alone.
         let meaning = plain_text(&file);
         let leaks = redactor.redact(&meaning) != meaning
-            || meaning.to_ascii_lowercase().contains("authorization");
+            || names_auth_header(&meaning)
+            || file.events.iter().any(tool_argument_names_auth);
         let written = !leaks
             && path.parent().is_some_and(|dir| std::fs::create_dir_all(dir).is_ok())
             && std::fs::write(&path, text).is_ok();
@@ -268,6 +283,39 @@ fn record(inner: EventStream, mut file: File, path: PathBuf, redactor: Redactor)
     })
     .flat_map(futures_util::stream::iter)
     .boxed()
+}
+
+/// An auth header by name: the name followed by `:` or `=` past any spaces, quotes and
+/// escapes (`plain_text` keeps tool-call arguments whole too, so a header there keeps its
+/// colon). Not the bare word: a review of an auth bug says "authorization" in prose, and
+/// refusing that would leave exactly those cases unrecorded.
+fn names_auth_header(text: &str) -> bool {
+    const NAME: &str = "authorization";
+    let lower = text.to_ascii_lowercase();
+    lower.match_indices(NAME).any(|(at, _)| {
+        lower[at + NAME.len()..]
+            .trim_start_matches(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '\\'))
+            .starts_with([':', '='])
+    })
+}
+
+/// A tool call whose decoded arguments hold the header name as a whole key or value, as
+/// in `{"header": "Authorization", "value": ...}`, where no separator follows the name.
+/// Arguments are structure, not prose, so the whole-string match refuses no review text.
+fn tool_argument_names_auth(event: &Event) -> bool {
+    fn names(value: &serde_json::Value) -> bool {
+        let is_name = |s: &str| s.trim().eq_ignore_ascii_case("authorization");
+        match value {
+            serde_json::Value::String(s) => is_name(s),
+            serde_json::Value::Array(items) => items.iter().any(names),
+            serde_json::Value::Object(map) => map.iter().any(|(k, v)| is_name(k) || names(v)),
+            _ => false,
+        }
+    }
+    let Event::ToolCall(call) = event else {
+        return false;
+    };
+    serde_json::from_str(&call.arguments).is_ok_and(|args| names(&args))
 }
 
 /// Every string and key in the file and in tool-call arguments, decoded, one per line,

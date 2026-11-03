@@ -1,0 +1,100 @@
+{
+  "v": 1,
+  "key": "e2d4575e86a46c8ebbf73180fdb708d93e500ed065d8986c7c20899506d805bf",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"outcome\":\"ref"
+    },
+    {
+      "type": "text_delta",
+      "text": "uted\",\"reason\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/new_name.rs ex"
+    },
+    {
+      "type": "text_delta",
+      "text": "ists at head"
+    },
+    {
+      "type": "text_delta",
+      "text": " ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e1) and src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs declares"
+    },
+    {
+      "type": "text_delta",
+      "text": " `pub mod new_name"
+    },
+    {
+      "type": "text_delta",
+      "text": ";` (e2), so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " module resolves and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the E"
+    },
+    {
+      "type": "text_delta",
+      "text": "0583 miss"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing-file error"
+    },
+    {
+      "type": "text_delta",
+      "text": " does not occur.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5667,
+      "output_tokens": 87,
+      "cost_usd": 0.0006102
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,452 @@
+{
+  "v": 1,
+  "key": "f3dab18954b8458a6c83ed218e8592cd860202f4334e6308ad94d8336f3c3b2f",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "98"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " function"
+    },
+    {
+      "type": "text_delta",
+      "text": " casts"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "body"
+    },
+    {
+      "type": "text_delta",
+      "text": ".len"
+    },
+    {
+      "type": "text_delta",
+      "text": "()`"
+    },
+    {
+      "type": "text_delta",
+      "text": " to"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "u"
+    },
+    {
+      "type": "text_delta",
+      "text": "8"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " then"
+    },
+    {
+      "type": "text_delta",
+      "text": " app"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " entire"
+    },
+    {
+      "type": "text_delta",
+      "text": " body"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " For"
+    },
+    {
+      "type": "text_delta",
+      "text": " any"
+    },
+    {
+      "type": "text_delta",
+      "text": " body"
+    },
+    {
+      "type": "text_delta",
+      "text": " longer"
+    },
+    {
+      "type": "text_delta",
+      "text": " than"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "255"
+    },
+    {
+      "type": "text_delta",
+      "text": " bytes"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " header"
+    },
+    {
+      "type": "text_delta",
+      "text": " therefore"
+    },
+    {
+      "type": "text_delta",
+      "text": " cannot"
+    },
+    {
+      "type": "text_delta",
+      "text": " encode"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " actual"
+    },
+    {
+      "type": "text_delta",
+      "text": " body"
+    },
+    {
+      "type": "text_delta",
+      "text": " length"
+    },
+    {
+      "type": "text_delta",
+      "text": " ("
+    },
+    {
+      "type": "text_delta",
+      "text": "for"
+    },
+    {
+      "type": "text_delta",
+      "text": " example"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "256"
+    },
+    {
+      "type": "text_delta",
+      "text": " becomes"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "),"
+    },
+    {
+      "type": "text_delta",
+      "text": " producing"
+    },
+    {
+      "type": "text_delta",
+      "text": " an"
+    },
+    {
+      "type": "text_delta",
+      "text": " incorrectly"
+    },
+    {
+      "type": "text_delta",
+      "text": " framed"
+    },
+    {
+      "type": "text_delta",
+      "text": " result"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " The"
+    },
+    {
+      "type": "text_delta",
+      "text": " trunc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ation"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " malformed"
+    },
+    {
+      "type": "text_delta",
+      "text": " output"
+    },
+    {
+      "type": "text_delta",
+      "text": " follow"
+    },
+    {
+      "type": "text_delta",
+      "text": " directly"
+    },
+    {
+      "type": "text_delta",
+      "text": " from"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " cited"
+    },
+    {
+      "type": "text_delta",
+      "text": " code"
+    },
+    {
+      "type": "text_delta",
+      "text": ";"
+    },
+    {
+      "type": "text_delta",
+      "text": " P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " supported"
+    },
+    {
+      "type": "text_delta",
+      "text": " because"
+    },
+    {
+      "type": "text_delta",
+      "text": " callers"
+    },
+    {
+      "type": "text_delta",
+      "text": " can"
+    },
+    {
+      "type": "text_delta",
+      "text": " pass"
+    },
+    {
+      "type": "text_delta",
+      "text": " such"
+    },
+    {
+      "type": "text_delta",
+      "text": " bodies"
+    },
+    {
+      "type": "text_delta",
+      "text": " to"
+    },
+    {
+      "type": "text_delta",
+      "text": " this"
+    },
+    {
+      "type": "text_delta",
+      "text": " public"
+    },
+    {
+      "type": "text_delta",
+      "text": " function"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "accept"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 932,
+      "output_tokens": 470,
+      "cost_usd": 0.0003282
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

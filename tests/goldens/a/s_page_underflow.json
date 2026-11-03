@@ -1,0 +1,74 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The change replaces `page * size` with `(page - 1) * size`, but `page` is a `usize` and the doc comment says pages are 0-based. For page 0, `page - 1` underflows: it panics in debug builds and wraps in release builds. The wrapped product then clamps to `items.len()`, so the function returns an empty slice instead of the first page.\n\nTrigger: Calling `page(items, 0, size)` with any size, which is the documented first page.\n\nImpact: Any caller that passes the documented 0-based first page gets a panic in debug builds or silently empty results in release builds. Search found no in-repo callers of `page(`, so the reachable impact is limited to external users of this public function.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 3,
+      "evidence": [
+        {
+          "end_line": 2,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 2
+        },
+        {
+          "end_line": 6,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_31610f0ba2337bdf",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P2",
+      "side": "new",
+      "start_line": 3,
+      "suggestion": "Use `let start = page.saturating_mul(size).min(items.len());` to restore the 0-based contract, or change the doc and contract if 1-based pages are intended.",
+      "title": "page 0 underflows `page - 1` and returns an empty slice or panics",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The diff changes the pagination offset to (page - 1) * size while the doc comment says page starts at 0, so page 0 underflows (panic in debug, wraps in release) and every page is shifted by one.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "955e8d624941c3266642005a1f02f4b0add96e5a",
+    "head_sha": "bda10d42c673adbc2b8e138801668fdf6c5b7ecc",
+    "local_changes": false,
+    "merge_base": "955e8d624941c3266642005a1f02f4b0add96e5a"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

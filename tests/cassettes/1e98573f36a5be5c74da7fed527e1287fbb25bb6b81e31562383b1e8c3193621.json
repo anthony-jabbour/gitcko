@@ -1,0 +1,104 @@
+{
+  "v": 1,
+  "key": "1e98573f36a5be5c74da7fed527e1287fbb25bb6b81e31562383b1e8c3193621",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " removes the empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public average function"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling it with no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples now divides by zero"
+    },
+    {
+      "type": "text_delta",
+      "text": " and panics,"
+    },
+    {
+      "type": "text_delta",
+      "text": " and the di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff also"
+    },
+    {
+      "type": "text_delta",
+      "text": " contains an embedded inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ruction to run a sh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ell command which I ignored.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1050,
+      "output_tokens": 91,
+      "cost_usd": 0.0001505
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

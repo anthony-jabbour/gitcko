@@ -1,0 +1,39 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 2,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": [
+      "assets/logo.bin"
+    ]
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The change adds a small pure function sub using saturating_sub with no unsafe code or external dependencies, though the commit message mentions a logo that does not appear in the diff.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "862d4d389bcacc6f317192ec2073164175efffef",
+    "head_sha": "c94758fefb2b20fcf32d556c92d3c5c60892bb1c",
+    "local_changes": false,
+    "merge_base": "862d4d389bcacc6f317192ec2073164175efffef"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

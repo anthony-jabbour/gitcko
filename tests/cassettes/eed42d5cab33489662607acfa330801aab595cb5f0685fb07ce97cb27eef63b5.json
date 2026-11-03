@@ -1,0 +1,120 @@
+{
+  "v": 1,
+  "key": "eed42d5cab33489662607acfa330801aab595cb5f0685fb07ce97cb27eef63b5",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"medium\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "priorities\":[\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\"],\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The change replaces"
+    },
+    {
+      "type": "text_delta",
+      "text": " a bounds-"
+    },
+    {
+      "type": "text_delta",
+      "text": "checked index"
+    },
+    {
+      "type": "text_delta",
+      "text": " with un"
+    },
+    {
+      "type": "text_delta",
+      "text": "safe get_unchec"
+    },
+    {
+      "type": "text_delta",
+      "text": "ked; it"
+    },
+    {
+      "type": "text_delta",
+      "text": " is sound only because"
+    },
+    {
+      "type": "text_delta",
+      "text": " se"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed % len is always"
+    },
+    {
+      "type": "text_delta",
+      "text": " below len for"
+    },
+    {
+      "type": "text_delta",
+      "text": " non-empty slices, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " risk is low"
+    },
+    {
+      "type": "text_delta",
+      "text": "-"
+    },
+    {
+      "type": "text_delta",
+      "text": "to-mo"
+    },
+    {
+      "type": "text_delta",
+      "text": "derate but the unsafe"
+    },
+    {
+      "type": "text_delta",
+      "text": " block war"
+    },
+    {
+      "type": "text_delta",
+      "text": "rants a"
+    },
+    {
+      "type": "text_delta",
+      "text": " close look"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 979,
+      "output_tokens": 103,
+      "cost_usd": 0.0001494
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

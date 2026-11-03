@@ -1,0 +1,416 @@
+{
+  "v": 1,
+  "key": "d12d45547c72a5d56fe5d7ee3f769f8fe24195f0a3d41a1ae25e4d14b9d8d74d",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "99"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": "is"
+    },
+    {
+      "type": "text_delta",
+      "text": "_exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ired"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": " returns"
+    },
+    {
+      "type": "text_delta",
+      "text": " true"
+    },
+    {
+      "type": "text_delta",
+      "text": " when"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "now"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " at"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " before"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "expires"
+    },
+    {
+      "type": "text_delta",
+      "text": "_at"
+    },
+    {
+      "type": "text_delta",
+      "text": "`,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "allow"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": " denies"
+    },
+    {
+      "type": "text_delta",
+      "text": " un"
+    },
+    {
+      "type": "text_delta",
+      "text": "expired"
+    },
+    {
+      "type": "text_delta",
+      "text": " sessions"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " returns"
+    },
+    {
+      "type": "text_delta",
+      "text": " true"
+    },
+    {
+      "type": "text_delta",
+      "text": " after"
+    },
+    {
+      "type": "text_delta",
+      "text": " expiry"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " This"
+    },
+    {
+      "type": "text_delta",
+      "text": " revers"
+    },
+    {
+      "type": "text_delta",
+      "text": "es"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " apparent"
+    },
+    {
+      "type": "text_delta",
+      "text": " session"
+    },
+    {
+      "type": "text_delta",
+      "text": "-exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "iry"
+    },
+    {
+      "type": "text_delta",
+      "text": " contract"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " allows"
+    },
+    {
+      "type": "text_delta",
+      "text": " expired"
+    },
+    {
+      "type": "text_delta",
+      "text": " sessions"
+    },
+    {
+      "type": "text_delta",
+      "text": " through"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " gate"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " The"
+    },
+    {
+      "type": "text_delta",
+      "text": " security"
+    },
+    {
+      "type": "text_delta",
+      "text": " defect"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " supported"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " but"
+    },
+    {
+      "type": "text_delta",
+      "text": " P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " lowest"
+    },
+    {
+      "type": "text_delta",
+      "text": " justified"
+    },
+    {
+      "type": "text_delta",
+      "text": " severity"
+    },
+    {
+      "type": "text_delta",
+      "text": " given"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " limited"
+    },
+    {
+      "type": "text_delta",
+      "text": " evidence"
+    },
+    {
+      "type": "text_delta",
+      "text": " about"
+    },
+    {
+      "type": "text_delta",
+      "text": " deployment"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " reach"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "accept"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 953,
+      "output_tokens": 334,
+      "cost_usd": 0.0002623
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

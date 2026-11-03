@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 2,
+    "held_back": [],
+    "investigated_files": 2,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The early return for empty input was removed. For an empty slice, `samples.iter().sum()` yields 0 and `samples.len() as u32` is 0, so the head code computes `0u32 / 0u32`. Rust integer division by zero panics in every build profile, so `average(&[])` panics instead of returning the 0 promised by the doc comment on line 1.\n\nTrigger: Calling average with an empty slice, e.g. average(&[]).\n\nImpact: Any caller that passes an empty slice, which the doc comment says yields 0, now panics. This is a crash on a path the documented contract covers.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.95,
+      "end_line": 4,
+      "evidence": [
+        {
+          "end_line": 5,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_0e9aae0d0337f6d8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 3,
+      "suggestion": "Restore the guard: `if samples.is_empty() { return 0; }` before the division.",
+      "title": "average panics with division by zero on empty input",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The empty-slice guard was removed, so average() now divides by zero when samples is empty, contradicting its documented return of 0 and causing a panic.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 2 investigated file(s).",
+  "target": {
+    "base_sha": "54ab9798a685f74ee339778477518ce42f52cbc1",
+    "head_sha": "2d6d3b8c2f1a91ef30415e31a686d72df053bfad",
+    "local_changes": false,
+    "merge_base": "54ab9798a685f74ee339778477518ce42f52cbc1"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

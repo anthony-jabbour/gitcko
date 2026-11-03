@@ -1,0 +1,72 @@
+{
+  "v": 1,
+  "key": "3ab12496d24a466a6c0787379cbfa6570ad2d862e71c95f2ac9a2b32cb47e3ef",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change only adds a un"
+    },
+    {
+      "type": "text_delta",
+      "text": "it test for an"
+    },
+    {
+      "type": "text_delta",
+      "text": " existing p"
+    },
+    {
+      "type": "text_delta",
+      "text": "ure function and does"
+    },
+    {
+      "type": "text_delta",
+      "text": " not mod"
+    },
+    {
+      "type": "text_delta",
+      "text": "ify production log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 872,
+      "output_tokens": 54,
+      "cost_usd": 0.0001142
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

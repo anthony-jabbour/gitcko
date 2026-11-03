@@ -1,0 +1,120 @@
+{
+  "v": 1,
+  "key": "cc06a8cb2cd712726718d256cc16207905370404a1d6faaf0789e09b834430bf",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\","
+    },
+    {
+      "type": "text_delta",
+      "text": "\".gitcko/config."
+    },
+    {
+      "type": "text_delta",
+      "text": "toml\"],\"reason\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard in"
+    },
+    {
+      "type": "text_delta",
+      "text": " average was removed, so an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " now div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the change"
+    },
+    {
+      "type": "text_delta",
+      "text": " tou"
+    },
+    {
+      "type": "text_delta",
+      "text": "ches a public function with a caller"
+    },
+    {
+      "type": "text_delta",
+      "text": " elsewhere, while the"
+    },
+    {
+      "type": "text_delta",
+      "text": " config t"
+    },
+    {
+      "type": "text_delta",
+      "text": "ries"
+    },
+    {
+      "type": "text_delta",
+      "text": " to ignore src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/**"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " review.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1076,
+      "output_tokens": 102,
+      "cost_usd": 0.0001586
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

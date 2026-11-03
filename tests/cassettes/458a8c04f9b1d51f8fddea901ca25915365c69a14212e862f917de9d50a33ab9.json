@@ -1,0 +1,472 @@
+{
+  "v": 1,
+  "key": "458a8c04f9b1d51f8fddea901ca25915365c69a14212e862f917de9d50a33ab9",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The guard `"
+    },
+    {
+      "type": "text_delta",
+      "text": "if samples.is_empty"
+    },
+    {
+      "type": "text_delta",
+      "text": "() { return 0; }`"
+    },
+    {
+      "type": "text_delta",
+      "text": " was removed. For an empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice, `sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.iter().sum()"
+    },
+    {
+      "type": "text_delta",
+      "text": "` y"
+    },
+    {
+      "type": "text_delta",
+      "text": "ields 0, and `sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() as u32`"
+    },
+    {
+      "type": "text_delta",
+      "text": " is 0, so `"
+    },
+    {
+      "type": "text_delta",
+      "text": "total / 0` execut"
+    },
+    {
+      "type": "text_delta",
+      "text": "es an integer division by zero"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " which panics."
+    },
+    {
+      "type": "text_delta",
+      "text": " The doc comment on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1"
+    },
+    {
+      "type": "text_delta",
+      "text": " still promises 0 for"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples, and `"
+    },
+    {
+      "type": "text_delta",
+      "text": "report` (line 8) cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ls `average` un"
+    },
+    {
+      "type": "text_delta",
+      "text": "con"
+    },
+    {
+      "type": "text_delta",
+      "text": "ditionally, so `"
+    },
+    {
+      "type": "text_delta",
+      "text": "report(&[])` panics"
+    },
+    {
+      "type": "text_delta",
+      "text": " too.\",\"comment_type\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"logic\",\"conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":0.9,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "counterevidence\":[],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"end_line\":4,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "evidence\":[\"e1\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "e2\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "e3\"],\"impact\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing an empty s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ample sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice now panics instead of get"
+    },
+    {
+      "type": "text_delta",
+      "text": "ting the"
+    },
+    {
+      "type": "text_delta",
+      "text": " documented 0. This includ"
+    },
+    {
+      "type": "text_delta",
+      "text": "es `report`"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so"
+    },
+    {
+      "type": "text_delta",
+      "text": " form"
+    },
+    {
+      "type": "text_delta",
+      "text": "atting an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ample set"
+    },
+    {
+      "type": "text_delta",
+      "text": " cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ashes. The external caller's"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "liance on the empty result c"
+    },
+    {
+      "type": "text_delta",
+      "text": "annot be ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "ified from this"
+    },
+    {
+      "type": "text_delta",
+      "text": " repo, but"
+    },
+    {
+      "type": "text_delta",
+      "text": " the docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented contract is broken reg"
+    },
+    {
+      "type": "text_delta",
+      "text": "ardless.\",\"path\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the early return: `"
+    },
+    {
+      "type": "text_delta",
+      "text": "if samples.is_empty"
+    },
+    {
+      "type": "text_delta",
+      "text": "() { return 0; }`"
+    },
+    {
+      "type": "text_delta",
+      "text": " before the division.\",\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "average"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero on empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"trigger\":\"Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling average("
+    },
+    {
+      "type": "text_delta",
+      "text": "&[]) or report(&"
+    },
+    {
+      "type": "text_delta",
+      "text": "[]), where samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "len() is 0."
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The remov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty guard mak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es average"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ide by zero for emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input, contradicting its"
+    },
+    {
+      "type": "text_delta",
+      "text": " docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented return"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0 and reachable through"
+    },
+    {
+      "type": "text_delta",
+      "text": " report. The u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um over"
+    },
+    {
+      "type": "text_delta",
+      "text": "flow behaviour is un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed by"
+    },
+    {
+      "type": "text_delta",
+      "text": " this"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff (same"
+    },
+    {
+      "type": "text_delta",
+      "text": " un"
+    },
+    {
+      "type": "text_delta",
+      "text": "chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "ked sum::"
+    },
+    {
+      "type": "text_delta",
+      "text": "<u32> sem"
+    },
+    {
+      "type": "text_delta",
+      "text": "antics as"
+    },
+    {
+      "type": "text_delta",
+      "text": " before),"
+    },
+    {
+      "type": "text_delta",
+      "text": " so it is not re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported as a new def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect. External callers could not be"
+    },
+    {
+      "type": "text_delta",
+      "text": " inspected,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so their"
+    },
+    {
+      "type": "text_delta",
+      "text": " reliance on"
+    },
+    {
+      "type": "text_delta",
+      "text": " the empty result is unverified"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5822,
+      "output_tokens": 920,
+      "cost_usd": 0.0010422
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

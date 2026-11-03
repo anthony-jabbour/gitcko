@@ -1,0 +1,412 @@
+{
+  "v": 1,
+  "key": "c4c41e9170495186cb4a4c51a15cdaff5775474515670b3eac3201b6dd46800b",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "93"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " public"
+    },
+    {
+      "type": "text_delta",
+      "text": " query"
+    },
+    {
+      "type": "text_delta",
+      "text": " builder"
+    },
+    {
+      "type": "text_delta",
+      "text": " places"
+    },
+    {
+      "type": "text_delta",
+      "text": " `"
+    },
+    {
+      "type": "text_delta",
+      "text": "name"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": " directly"
+    },
+    {
+      "type": "text_delta",
+      "text": " inside"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " quoted"
+    },
+    {
+      "type": "text_delta",
+      "text": " SQL"
+    },
+    {
+      "type": "text_delta",
+      "text": " string"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " supplies"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " bound"
+    },
+    {
+      "type": "text_delta",
+      "text": " parameters"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " A"
+    },
+    {
+      "type": "text_delta",
+      "text": " name"
+    },
+    {
+      "type": "text_delta",
+      "text": " containing"
+    },
+    {
+      "type": "text_delta",
+      "text": " SQL"
+    },
+    {
+      "type": "text_delta",
+      "text": " syntax"
+    },
+    {
+      "type": "text_delta",
+      "text": " therefore"
+    },
+    {
+      "type": "text_delta",
+      "text": " changes"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " generated"
+    },
+    {
+      "type": "text_delta",
+      "text": " query"
+    },
+    {
+      "type": "text_delta",
+      "text": ";"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " example"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " value"
+    },
+    {
+      "type": "text_delta",
+      "text": " such"
+    },
+    {
+      "type": "text_delta",
+      "text": " as"
+    },
+    {
+      "type": "text_delta",
+      "text": " `'"
+    },
+    {
+      "type": "text_delta",
+      "text": " OR"
+    },
+    {
+      "type": "text_delta",
+      "text": " '"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "'"
+    },
+    {
+      "type": "text_delta",
+      "text": "='"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "`"
+    },
+    {
+      "type": "text_delta",
+      "text": " broad"
+    },
+    {
+      "type": "text_delta",
+      "text": "ens"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " WHERE"
+    },
+    {
+      "type": "text_delta",
+      "text": " condition"
+    },
+    {
+      "type": "text_delta",
+      "text": " when"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " query"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " executed"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " The"
+    },
+    {
+      "type": "text_delta",
+      "text": " same"
+    },
+    {
+      "type": "text_delta",
+      "text": " interpolation"
+    },
+    {
+      "type": "text_delta",
+      "text": " also"
+    },
+    {
+      "type": "text_delta",
+      "text": " makes"
+    },
+    {
+      "type": "text_delta",
+      "text": " ordinary"
+    },
+    {
+      "type": "text_delta",
+      "text": " names"
+    },
+    {
+      "type": "text_delta",
+      "text": " containing"
+    },
+    {
+      "type": "text_delta",
+      "text": " apost"
+    },
+    {
+      "type": "text_delta",
+      "text": "roph"
+    },
+    {
+      "type": "text_delta",
+      "text": "es"
+    },
+    {
+      "type": "text_delta",
+      "text": " produce"
+    },
+    {
+      "type": "text_delta",
+      "text": " malformed"
+    },
+    {
+      "type": "text_delta",
+      "text": " SQL"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "accept"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 941,
+      "output_tokens": 519,
+      "cost_usd": 0.0003536
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

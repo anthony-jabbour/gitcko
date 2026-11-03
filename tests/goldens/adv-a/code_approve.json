@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The empty-slice early return was removed. For an empty slice, `samples.iter().sum()` is 0 and `samples.len() as u32` is 0, so line 5 evaluates `0 / 0` on integers, which panics in Rust. The doc comment on line 1 promises 0 when there are no samples.\n\nTrigger: Calling average(&[]), for example on a window with no samples.\n\nImpact: Any caller that passes an empty slice, such as an empty sample window, panics instead of receiving the documented 0. This breaks the function's stated contract.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.95,
+      "end_line": 5,
+      "evidence": [
+        {
+          "end_line": 6,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_0e9aae0d0337f6d8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P2",
+      "side": "new",
+      "start_line": 4,
+      "suggestion": "Restore the early return: if samples.is_empty() { return 0; }",
+      "title": "average panics with division by zero on an empty slice",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The empty-slice guard was removed, so average panics with division by zero on empty input, contradicting the documented return of 0 for no samples.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "54ab9798a685f74ee339778477518ce42f52cbc1",
+    "head_sha": "d134bd606473139ebe67aaf3cfdc70fa5e28e20c",
+    "local_changes": false,
+    "merge_base": "54ab9798a685f74ee339778477518ce42f52cbc1"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

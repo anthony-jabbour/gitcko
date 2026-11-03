@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "d6ad5dee82d346c2dfd9a62845d24e64b76f5ac93700c9c566dc3fc05ecd5e75",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so average"
+    },
+    {
+      "type": "text_delta",
+      "text": " now div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics on emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input, and it"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " public function with a"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller elsewhere.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1016,
+      "output_tokens": 73,
+      "cost_usd": 0.0001381
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

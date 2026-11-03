@@ -1,0 +1,188 @@
+{
+  "v": 1,
+  "key": "eb649764b6297bd9056018853c6f189a624783db9543b8c3dfe782f2be2ede44",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"refuted\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The signature change to"
+    },
+    {
+      "type": "text_delta",
+      "text": " add()"
+    },
+    {
+      "type": "text_delta",
+      "text": " is real"
+    },
+    {
+      "type": "text_delta",
+      "text": ":"
+    },
+    {
+      "type": "text_delta",
+      "text": " src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs at"
+    },
+    {
+      "type": "text_delta",
+      "text": " head now def"
+    },
+    {
+      "type": "text_delta",
+      "text": "ines `"
+    },
+    {
+      "type": "text_delta",
+      "text": "pub fn add() {}"
+    },
+    {
+      "type": "text_delta",
+      "text": "` with no parameters or"
+    },
+    {
+      "type": "text_delta",
+      "text": " return value. However"
+    },
+    {
+      "type": "text_delta",
+      "text": ", a literal search for"
+    },
+    {
+      "type": "text_delta",
+      "text": " `add(` in the head comm"
+    },
+    {
+      "type": "text_delta",
+      "text": "it returned no hits with compl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ete coverage, and the rep"
+    },
+    {
+      "type": "text_delta",
+      "text": "o has only two files ("
+    },
+    {
+      "type": "text_delta",
+      "text": "l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs and"
+    },
+    {
+      "type": "text_delta",
+      "text": " a to"
+    },
+    {
+      "type": "text_delta",
+      "text": "ml), so no in-repo"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller is bro"
+    },
+    {
+      "type": "text_delta",
+      "text": "ken."
+    },
+    {
+      "type": "text_delta",
+      "text": " D"
+    },
+    {
+      "type": "text_delta",
+      "text": "ependents outside this"
+    },
+    {
+      "type": "text_delta",
+      "text": " repo could"
+    },
+    {
+      "type": "text_delta",
+      "text": " not be chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "ked,"
+    },
+    {
+      "type": "text_delta",
+      "text": " and find_symbol"
+    },
+    {
+      "type": "text_delta",
+      "text": " was"
+    },
+    {
+      "type": "text_delta",
+      "text": " only"
+    },
+    {
+      "type": "text_delta",
+      "text": " partially"
+    },
+    {
+      "type": "text_delta",
+      "text": " parsed, so this"
+    },
+    {
+      "type": "text_delta",
+      "text": " is not a concrete defect"
+    },
+    {
+      "type": "text_delta",
+      "text": " dem"
+    },
+    {
+      "type": "text_delta",
+      "text": "onstrated"
+    },
+    {
+      "type": "text_delta",
+      "text": " by"
+    },
+    {
+      "type": "text_delta",
+      "text": " the evidence.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 6028,
+      "output_tokens": 559,
+      "cost_usd": 0.0008823
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

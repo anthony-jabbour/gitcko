@@ -1,0 +1,548 @@
+{
+  "v": 1,
+  "key": "28576841ee04d3ff390db117ed19fc0d829643189266c5f2654d06e308d92e3e",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"data"
+    },
+    {
+      "type": "text_delta",
+      "text": "_integrity\",\"cause\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Status"
+    },
+    {
+      "type": "text_delta",
+      "text": " der"
+    },
+    {
+      "type": "text_delta",
+      "text": "ives no"
+    },
+    {
+      "type": "text_delta",
+      "text": " explicit disc"
+    },
+    {
+      "type": "text_delta",
+      "text": "riminants, so each"
+    },
+    {
+      "type": "text_delta",
+      "text": " variant's"
+    },
+    {
+      "type": "text_delta",
+      "text": " value"
+    },
+    {
+      "type": "text_delta",
+      "text": " is its decl"
+    },
+    {
+      "type": "text_delta",
+      "text": "aration position. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff moves Busy from"
+    },
+    {
+      "type": "text_delta",
+      "text": " index 1"
+    },
+    {
+      "type": "text_delta",
+      "text": " to index 2 and"
+    },
+    {
+      "type": "text_delta",
+      "text": " Failed from index"
+    },
+    {
+      "type": "text_delta",
+      "text": " 2 to index 1."
+    },
+    {
+      "type": "text_delta",
+      "text": " src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/use_it.rs `"
+    },
+    {
+      "type": "text_delta",
+      "text": "wire` retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ns `status as u8`,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so"
+    },
+    {
+      "type": "text_delta",
+      "text": " Busy now enc"
+    },
+    {
+      "type": "text_delta",
+      "text": "odes as 2"
+    },
+    {
+      "type": "text_delta",
+      "text": " and Failed as 1"
+    },
+    {
+      "type": "text_delta",
+      "text": ". Its doc comment says"
+    },
+    {
+      "type": "text_delta",
+      "text": " existing peers already store these values"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so the b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ytes s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ent to them"
+    },
+    {
+      "type": "text_delta",
+      "text": " change.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.85,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":5"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":[\"e2"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"e4\",\"e5\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"impact\":\"Pe"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers and"
+    },
+    {
+      "type": "text_delta",
+      "text": " any"
+    },
+    {
+      "type": "text_delta",
+      "text": " persisted data"
+    },
+    {
+      "type": "text_delta",
+      "text": " that r"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely on the exist"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ire encoding will"
+    },
+    {
+      "type": "text_delta",
+      "text": " read"
+    },
+    {
+      "type": "text_delta",
+      "text": " Busy as"
+    },
+    {
+      "type": "text_delta",
+      "text": " Failed and Failed as"
+    },
+    {
+      "type": "text_delta",
+      "text": " Busy. Status"
+    },
+    {
+      "type": "text_delta",
+      "text": " values"
+    },
+    {
+      "type": "text_delta",
+      "text": " are sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ently swapped across"
+    },
+    {
+      "type": "text_delta",
+      "text": " the prot"
+    },
+    {
+      "type": "text_delta",
+      "text": "ocol bo"
+    },
+    {
+      "type": "text_delta",
+      "text": "undary,"
+    },
+    {
+      "type": "text_delta",
+      "text": " with no comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ile-"
+    },
+    {
+      "type": "text_delta",
+      "text": "time or runtime error.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/use_it."
+    },
+    {
+      "type": "text_delta",
+      "text": "rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"new\",\"start_line\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "4,\"suggestion\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Rest"
+    },
+    {
+      "type": "text_delta",
+      "text": "ore the original"
+    },
+    {
+      "type": "text_delta",
+      "text": " declaration order, or"
+    },
+    {
+      "type": "text_delta",
+      "text": " p"
+    },
+    {
+      "type": "text_delta",
+      "text": "in expl"
+    },
+    {
+      "type": "text_delta",
+      "text": "icit discriminants with #"
+    },
+    {
+      "type": "text_delta",
+      "text": "[repr(u8)]"
+    },
+    {
+      "type": "text_delta",
+      "text": " and Ok ="
+    },
+    {
+      "type": "text_delta",
+      "text": " 0, Fail"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed = 1, Busy"
+    },
+    {
+      "type": "text_delta",
+      "text": " = 1"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " not all"
+    },
+    {
+      "type": "text_delta",
+      "text": "owed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so use"
+    },
+    {
+      "type": "text_delta",
+      "text": " Busy = 1"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " Failed = 2 and"
+    },
+    {
+      "type": "text_delta",
+      "text": " keep them"
+    },
+    {
+      "type": "text_delta",
+      "text": " f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixed under"
+    },
+    {
+      "type": "text_delta",
+      "text": " re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ordering.\",\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Reordering Status vari"
+    },
+    {
+      "type": "text_delta",
+      "text": "ants chang"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the u"
+    },
+    {
+      "type": "text_delta",
+      "text": "8 wire encoding in"
+    },
+    {
+      "type": "text_delta",
+      "text": " w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ire()"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any call to use"
+    },
+    {
+      "type": "text_delta",
+      "text": "_it::wire("
+    },
+    {
+      "type": "text_delta",
+      "text": "Status::Busy) or"
+    },
+    {
+      "type": "text_delta",
+      "text": " w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ire(Status::Failed"
+    },
+    {
+      "type": "text_delta",
+      "text": ") after this change, when"
+    },
+    {
+      "type": "text_delta",
+      "text": " pe"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers or"
+    },
+    {
+      "type": "text_delta",
+      "text": " st"
+    },
+    {
+      "type": "text_delta",
+      "text": "ored data exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ect the previ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ous by"
+    },
+    {
+      "type": "text_delta",
+      "text": "te values."
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The en"
+    },
+    {
+      "type": "text_delta",
+      "text": "um has"
+    },
+    {
+      "type": "text_delta",
+      "text": " impl"
+    },
+    {
+      "type": "text_delta",
+      "text": "icit discriminants,"
+    },
+    {
+      "type": "text_delta",
+      "text": " and src/use_it.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ire() casts"
+    },
+    {
+      "type": "text_delta",
+      "text": " Status to u8 with a com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment st"
+    },
+    {
+      "type": "text_delta",
+      "text": "ating existing peers store these"
+    },
+    {
+      "type": "text_delta",
+      "text": " values. The reorder ther"
+    },
+    {
+      "type": "text_delta",
+      "text": "efore changes the b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ytes for"
+    },
+    {
+      "type": "text_delta",
+      "text": " Busy and Failed.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 6411,
+      "output_tokens": 918,
+      "cost_usd": 0.0011001
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

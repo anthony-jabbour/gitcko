@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The increment now happens under one lock acquisition (lines 4-7), the guard is dropped at the closing brace, and the value is re-read under a second acquisition at line 8. Another thread can increment between those two points, so the returned value can be one produced by a different call. Two concurrent callers can then receive the same value, and a value can be skipped.\n\nTrigger: Two threads call bump on the same Mutex<u64> at roughly the same time, so one thread's increment lands between the other thread's unlock at line 7 and its re-lock at line 8.\n\nImpact: Callers of bump that rely on it returning a unique, sequential value (for example as an ID or ticket counter) can get duplicate or skipped values under concurrency. The original single critical section guaranteed the returned value was the one this call produced.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.9,
+      "end_line": 8,
+      "evidence": [
+        {
+          "end_line": 9,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_ddc43bea71712cc4",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 4,
+      "suggestion": "Restore the single critical section: let mut v = value.lock().unwrap(); *v += 1; *v",
+      "title": "bump's returned value is read outside the increment's critical section",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "medium",
+    "reason": "The change reorders mutex locking in bump; it releases the lock before re-acquiring it to read the value, which is a small but concurrency-sensitive edit with a possible race window between increment and read-back.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "c51518410ab7e4185802d4a8d5a5fbe8ef1c7899",
+    "head_sha": "0ebaeb39b76fe54bc5ce60f88892f1afeb2e908c",
+    "local_changes": false,
+    "merge_base": "c51518410ab7e4185802d4a8d5a5fbe8ef1c7899"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

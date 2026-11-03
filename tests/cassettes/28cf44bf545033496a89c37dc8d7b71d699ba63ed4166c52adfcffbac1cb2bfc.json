@@ -1,0 +1,100 @@
+{
+  "v": 1,
+  "key": "28cf44bf545033496a89c37dc8d7b71d699ba63ed4166c52adfcffbac1cb2bfc",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " is a small ref"
+    },
+    {
+      "type": "text_delta",
+      "text": "actor of first"
+    },
+    {
+      "type": "text_delta",
+      "text": "_or_zero that pre"
+    },
+    {
+      "type": "text_delta",
+      "text": "serves beh"
+    },
+    {
+      "type": "text_delta",
+      "text": "avior,"
+    },
+    {
+      "type": "text_delta",
+      "text": " since the unwrap is gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "arded by the"
+    },
+    {
+      "type": "text_delta",
+      "text": " is_empty check,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so only a"
+    },
+    {
+      "type": "text_delta",
+      "text": " minor review"
+    },
+    {
+      "type": "text_delta",
+      "text": " of"
+    },
+    {
+      "type": "text_delta",
+      "text": " the new"
+    },
+    {
+      "type": "text_delta",
+      "text": " unwrap is needed.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 879,
+      "output_tokens": 87,
+      "cost_usd": 0.0001314
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

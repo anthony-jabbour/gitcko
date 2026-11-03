@@ -1,0 +1,344 @@
+{
+  "v": 1,
+  "key": "75bab4f7aa5345ade9dea370f973325a5d309499b9e968e9e72cb767f520e5d7",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"The early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " for empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed. With an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice, samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "len() is 0, so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics in"
+    },
+    {
+      "type": "text_delta",
+      "text": " release"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " debug builds instead of retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ning the"
+    },
+    {
+      "type": "text_delta",
+      "text": " documented 0. Tr"
+    },
+    {
+      "type": "text_delta",
+      "text": "igger: any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "ing an empty slice, such"
+    },
+    {
+      "type": "text_delta",
+      "text": " as report"
+    },
+    {
+      "type": "text_delta",
+      "text": "() on an empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " one"
+    },
+    {
+      "type": "text_delta",
+      "text": " external"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller of"
+    },
+    {
+      "type": "text_delta",
+      "text": " average."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"title\":\"Emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty slice now"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ides by zero\""
+    },
+    {
+      "type": "text_delta",
+      "text": "},"
+    },
+    {
+      "type": "text_delta",
+      "text": "{\"category\":\"correctness"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " sum::"
+    },
+    {
+      "type": "text_delta",
+      "text": "<u32>"
+    },
+    {
+      "type": "text_delta",
+      "text": "() can"
+    },
+    {
+      "type": "text_delta",
+      "text": " overflow for"
+    },
+    {
+      "type": "text_delta",
+      "text": " large samples."
+    },
+    {
+      "type": "text_delta",
+      "text": " Previously the"
+    },
+    {
+      "type": "text_delta",
+      "text": " same overflow exist"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed, but"
+    },
+    {
+      "type": "text_delta",
+      "text": " the removed"
+    },
+    {
+      "type": "text_delta",
+      "text": " guard is un"
+    },
+    {
+      "type": "text_delta",
+      "text": "related; still"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "irm the s"
+    },
+    {
+      "type": "text_delta",
+      "text": "um w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ra"
+    },
+    {
+      "type": "text_delta",
+      "text": "ps or"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics the"
+    },
+    {
+      "type": "text_delta",
+      "text": " same way as before and that"
+    },
+    {
+      "type": "text_delta",
+      "text": " the external"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller does"
+    },
+    {
+      "type": "text_delta",
+      "text": " not rely on the"
+    },
+    {
+      "type": "text_delta",
+      "text": " emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-"
+    },
+    {
+      "type": "text_delta",
+      "text": "case"
+    },
+    {
+      "type": "text_delta",
+      "text": " result.\",\"end_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed over"
+    },
+    {
+      "type": "text_delta",
+      "text": "flow beh"
+    },
+    {
+      "type": "text_delta",
+      "text": "aviour on"
+    },
+    {
+      "type": "text_delta",
+      "text": " sum"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " confirm ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ectations"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1615,
+      "output_tokens": 301,
+      "cost_usd": 0.000312
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

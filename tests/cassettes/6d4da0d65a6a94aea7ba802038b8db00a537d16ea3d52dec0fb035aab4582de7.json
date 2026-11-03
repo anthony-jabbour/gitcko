@@ -1,0 +1,172 @@
+{
+  "v": 1,
+  "key": "6d4da0d65a6a94aea7ba802038b8db00a537d16ea3d52dec0fb035aab4582de7",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[],\"outc"
+    },
+    {
+      "type": "text_delta",
+      "text": "ome\":\"refuted\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " repo has three"
+    },
+    {
+      "type": "text_delta",
+      "text": " files,"
+    },
+    {
+      "type": "text_delta",
+      "text": " and src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": " only declares `pub mod"
+    },
+    {
+      "type": "text_delta",
+      "text": " table;`. No importers"
+    },
+    {
+      "type": "text_delta",
+      "text": " of src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/table.rs were found,"
+    },
+    {
+      "type": "text_delta",
+      "text": " ident"
+    },
+    {
+      "type": "text_delta",
+      "text": "ifier search for A"
+    },
+    {
+      "type": "text_delta",
+      "text": "0 mat"
+    },
+    {
+      "type": "text_delta",
+      "text": "ched only its"
+    },
+    {
+      "type": "text_delta",
+      "text": " own definition, and the re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ference l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ookup on A"
+    },
+    {
+      "type": "text_delta",
+      "text": "0's symbol returned n"
+    },
+    {
+      "type": "text_delta",
+      "text": "othing. I"
+    },
+    {
+      "type": "text_delta",
+      "text": " found"
+    },
+    {
+      "type": "text_delta",
+      "text": " no in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-repo caller that"
+    },
+    {
+      "type": "text_delta",
+      "text": " dep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends on the"
+    },
+    {
+      "type": "text_delta",
+      "text": " old values,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the h"
+    },
+    {
+      "type": "text_delta",
+      "text": "ypothesis has no causal"
+    },
+    {
+      "type": "text_delta",
+      "text": " path"
+    },
+    {
+      "type": "text_delta",
+      "text": " here"
+    },
+    {
+      "type": "text_delta",
+      "text": ". External"
+    },
+    {
+      "type": "text_delta",
+      "text": " consumers of this"
+    },
+    {
+      "type": "text_delta",
+      "text": " public crate would be outside what"
+    },
+    {
+      "type": "text_delta",
+      "text": " I"
+    },
+    {
+      "type": "text_delta",
+      "text": " could check"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 20911,
+      "output_tokens": 603,
+      "cost_usd": 0.0023926
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

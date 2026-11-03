@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "key": "08722d57246f89fc4eed9c44d08b2c5721090eb73be78bfea0948abc9344c72f",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"web/app."
+    },
+    {
+      "type": "text_delta",
+      "text": "ts\"],\"reason\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change only"
+    },
+    {
+      "type": "text_delta",
+      "text": " adds a sim"
+    },
+    {
+      "type": "text_delta",
+      "text": "ple ex"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported subtraction function with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no side"
+    },
+    {
+      "type": "text_delta",
+      "text": " effects or"
+    },
+    {
+      "type": "text_delta",
+      "text": " integ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ration ris"
+    },
+    {
+      "type": "text_delta",
+      "text": "k.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 797,
+      "output_tokens": 54,
+      "cost_usd": 0.0001067
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

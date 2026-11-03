@@ -1,0 +1,152 @@
+{
+  "v": 1,
+  "key": "154eb960c32bdb5b8ae0b14973b4149ed35c7dc7ec6fd48da0aab4f101ee293a",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"correct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ness\",\"claim\":\"With"
+    },
+    {
+      "type": "text_delta",
+      "text": " the emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-slice guard removed"
+    },
+    {
+      "type": "text_delta",
+      "text": ", average"
+    },
+    {
+      "type": "text_delta",
+      "text": "("
+    },
+    {
+      "type": "text_delta",
+      "text": "&[]) comput"
+    },
+    {
+      "type": "text_delta",
+      "text": "es total"
+    },
+    {
+      "type": "text_delta",
+      "text": " / 0 and panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero. The doc com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0 for"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples, so any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller that passes an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice will"
+    },
+    {
+      "type": "text_delta",
+      "text": " now crash. Confirm"
+    },
+    {
+      "type": "text_delta",
+      "text": " by chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "king call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers that"
+    },
+    {
+      "type": "text_delta",
+      "text": " can"
+    },
+    {
+      "type": "text_delta",
+      "text": " pass empty input.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":6,\"path"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"src/lib.r"
+    },
+    {
+      "type": "text_delta",
+      "text": "s\",\"start_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"title\":\"Emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty slice now panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1521,
+      "output_tokens": 310,
+      "cost_usd": 0.0003071
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "v": 1,
+  "key": "61c268d3087bacb1c8b6a1d9e5495cc12ac1e4515f846147b6b73fdd1ef8e2d4",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"priorities\":[\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\","
+    },
+    {
+      "type": "text_delta",
+      "text": "\".gitcko/rules"
+    },
+    {
+      "type": "text_delta",
+      "text": ".md\"],\"reason\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The average"
+    },
+    {
+      "type": "text_delta",
+      "text": " function dr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ops its"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " now divides by zero and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics, and it is"
+    },
+    {
+      "type": "text_delta",
+      "text": " a public API"
+    },
+    {
+      "type": "text_delta",
+      "text": " with an"
+    },
+    {
+      "type": "text_delta",
+      "text": " external caller; the rules."
+    },
+    {
+      "type": "text_delta",
+      "text": "md file t"
+    },
+    {
+      "type": "text_delta",
+      "text": "ries to su"
+    },
+    {
+      "type": "text_delta",
+      "text": "ppress b"
+    },
+    {
+      "type": "text_delta",
+      "text": "ug reports"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " is tre"
+    },
+    {
+      "type": "text_delta",
+      "text": "ated as data,"
+    },
+    {
+      "type": "text_delta",
+      "text": " not an instruction.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1054,
+      "output_tokens": 110,
+      "cost_usd": 0.0001604
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

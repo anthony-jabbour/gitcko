@@ -1,0 +1,45 @@
+{
+  "cleared_risks": [
+    {
+      "description": "The search for `sub(` with complete coverage finds only the new definition at src/lib.rs lines 5-6 (e1, e2), and find_symbol reports no other callers. No code in the repo depends on distinguishing underflow, so the hypothesis has no causal path to a wrong result. The saturating behaviour is the explicit implementation, not a hidden defect.",
+      "name": "sub clamps to zero on underflow"
+    }
+  ],
+  "coverage": {
+    "changed_files": 2,
+    "held_back": [],
+    "investigated_files": 2,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "reduced_context",
+    "unsupported_language"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The change adds a small saturating subtraction helper and a one-line generator tweak, neither of which touches sensitive or widely used code paths.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 0 finding(s) across 2 investigated file(s).",
+  "target": {
+    "base_sha": "716b83abc9f7c96bd858ef2fe0094d6484042c09",
+    "head_sha": "f9225d5db93e251056aaffa5fd8c94fa43eda8a4",
+    "local_changes": false,
+    "merge_base": "716b83abc9f7c96bd858ef2fe0094d6484042c09"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

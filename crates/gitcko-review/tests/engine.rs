@@ -237,9 +237,36 @@ async fn review_case(suite: &str, case: &str, provider: Arc<Scripted>) -> Outcom
     review_repo(dir.path(), provider, run_with_budget(base_budget())).await
 }
 
-/// `fault_crate`, the change every Suite F case reviews.
+/// Suite F's change without its caller: one function, so the graph seeds no hypothesis
+/// and these tests count only the calls their script asks for.
 async fn review_fault_crate(provider: Arc<Scripted>, run: Run) -> Outcome {
-    let dir = fixture("f", "timeout_plan");
+    let scripts = TempDir::new("one-function");
+    let lib = workspace_root().join("tests/fixtures/review/lib.sh");
+    std::fs::copy(lib, scripts.path().join("lib.sh")).unwrap();
+    let script = scripts.path().join("make.sh");
+    let body = r#"#!/usr/bin/env bash
+set -euo pipefail
+. "${0%[/\\]*}/lib.sh"
+start_crate
+cat > src/lib.rs <<'GITCKO'
+pub fn average(samples: &[u32]) -> u32 {
+    if samples.is_empty() {
+        return 0;
+    }
+    samples.iter().sum::<u32>() / samples.len() as u32
+}
+GITCKO
+commit_base
+cat > src/lib.rs <<'GITCKO'
+pub fn average(samples: &[u32]) -> u32 {
+    let total: u32 = samples.iter().sum();
+    total / samples.len() as u32
+}
+GITCKO
+commit_head "Simplify average"
+"#;
+    std::fs::write(&script, body).unwrap();
+    let dir = script_repo(&script, "one-function");
     review_repo(dir.path(), provider, run).await
 }
 

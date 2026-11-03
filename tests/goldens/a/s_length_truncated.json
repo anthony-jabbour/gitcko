@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The new header is `vec![body.len() as u8]`. The `as u8` cast keeps only the low 8 bits of the length, so any body of 256 or more bytes gets a length byte that does not match its real size (for example, 256 bytes yields 0). The old 4-byte u32 header did not have this limit.\n\nTrigger: Calling frame() with a body of 256 or more bytes, such as any normal-sized payload.\n\nImpact: Any caller that frames a body longer than 255 bytes produces a corrupt frame with no error or panic. A decoder reading the length byte gets the wrong length and misparses the body and everything after it. Callers have no way to detect this from the return value.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.85,
+      "end_line": 2,
+      "evidence": [
+        {
+          "end_line": 5,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_2843922570ae19d3",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P1",
+      "side": "new",
+      "start_line": 2,
+      "suggestion": "Either return an error (or use Result) when body.len() > u8::MAX, or keep a wider length prefix such as the original u32 big-endian header.",
+      "title": "Length byte silently truncates bodies over 255 bytes",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The frame header shrinks from a 4-byte u32 to a single byte via `body.len() as u8`, which silently truncates the length for bodies over 255 bytes and breaks the wire format for existing readers.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "c4655e1bb25a58925e1b70aa6571240e76d05127",
+    "head_sha": "d2b767d3ac6dd1a846b780cc0dd6f1cd7d422811",
+    "local_changes": false,
+    "merge_base": "c4655e1bb25a58925e1b70aa6571240e76d05127"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

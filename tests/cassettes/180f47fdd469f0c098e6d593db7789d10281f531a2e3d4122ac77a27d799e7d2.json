@@ -1,0 +1,424 @@
+{
+  "v": 1,
+  "key": "180f47fdd469f0c098e6d593db7789d10281f531a2e3d4122ac77a27d799e7d2",
+  "role": "judge",
+  "binding": {
+    "provider": "openrouter",
+    "model": "openai/gpt-6-luna",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "judge",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": "96"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "missing"
+    },
+    {
+      "type": "text_delta",
+      "text": "_fact"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "null"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "The"
+    },
+    {
+      "type": "text_delta",
+      "text": " cited"
+    },
+    {
+      "type": "text_delta",
+      "text": " code"
+    },
+    {
+      "type": "text_delta",
+      "text": " makes"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": "_exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ired"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " true"
+    },
+    {
+      "type": "text_delta",
+      "text": " while"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " at"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " before"
+    },
+    {
+      "type": "text_delta",
+      "text": " expires"
+    },
+    {
+      "type": "text_delta",
+      "text": "_at"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " allow"
+    },
+    {
+      "type": "text_delta",
+      "text": " neg"
+    },
+    {
+      "type": "text_delta",
+      "text": "ates"
+    },
+    {
+      "type": "text_delta",
+      "text": " that"
+    },
+    {
+      "type": "text_delta",
+      "text": " result"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " Consequently"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " allow"
+    },
+    {
+      "type": "text_delta",
+      "text": " denies"
+    },
+    {
+      "type": "text_delta",
+      "text": " sessions"
+    },
+    {
+      "type": "text_delta",
+      "text": " before"
+    },
+    {
+      "type": "text_delta",
+      "text": " expiry"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " accepts"
+    },
+    {
+      "type": "text_delta",
+      "text": " them"
+    },
+    {
+      "type": "text_delta",
+      "text": " after"
+    },
+    {
+      "type": "text_delta",
+      "text": " expiry"
+    },
+    {
+      "type": "text_delta",
+      "text": " ("
+    },
+    {
+      "type": "text_delta",
+      "text": "including"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " equality"
+    },
+    {
+      "type": "text_delta",
+      "text": " boundary"
+    },
+    {
+      "type": "text_delta",
+      "text": ")."
+    },
+    {
+      "type": "text_delta",
+      "text": " That"
+    },
+    {
+      "type": "text_delta",
+      "text": " contradict"
+    },
+    {
+      "type": "text_delta",
+      "text": "s"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " evident"
+    },
+    {
+      "type": "text_delta",
+      "text": " expiry"
+    },
+    {
+      "type": "text_delta",
+      "text": " and"
+    },
+    {
+      "type": "text_delta",
+      "text": " authorization"
+    },
+    {
+      "type": "text_delta",
+      "text": "-g"
+    },
+    {
+      "type": "text_delta",
+      "text": "ating"
+    },
+    {
+      "type": "text_delta",
+      "text": " contract"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " The"
+    },
+    {
+      "type": "text_delta",
+      "text": " evidence"
+    },
+    {
+      "type": "text_delta",
+      "text": " supports"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " security"
+    },
+    {
+      "type": "text_delta",
+      "text": " defect"
+    },
+    {
+      "type": "text_delta",
+      "text": ","
+    },
+    {
+      "type": "text_delta",
+      "text": " but"
+    },
+    {
+      "type": "text_delta",
+      "text": " not"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " proposed"
+    },
+    {
+      "type": "text_delta",
+      "text": " P"
+    },
+    {
+      "type": "text_delta",
+      "text": "0"
+    },
+    {
+      "type": "text_delta",
+      "text": " severity"
+    },
+    {
+      "type": "text_delta",
+      "text": ";"
+    },
+    {
+      "type": "text_delta",
+      "text": " P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": " is"
+    },
+    {
+      "type": "text_delta",
+      "text": " appropriate"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "severity"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "P"
+    },
+    {
+      "type": "text_delta",
+      "text": "1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "ver"
+    },
+    {
+      "type": "text_delta",
+      "text": "dict"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "accept"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 985,
+      "output_tokens": 716,
+      "cost_usd": 0.0004565
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

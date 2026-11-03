@@ -1,0 +1,71 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The post-change src/lib.rs has `pub fn add` opened on line 1 closed by a single `}` on line 3 followed by an extra `}` (line 3 is `}}`), leaving an unmatched closing brace at file scope. Rust rejects an unmatched `}` at top level, so compilation fails.\n\nTrigger: Any compile of the crate (cargo build/test) after this change.\n\nImpact: The crate does not compile, breaking the build for every consumer and CI run.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "syntax",
+      "confidence": 0.97,
+      "end_line": 3,
+      "evidence": [
+        {
+          "end_line": 3,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_c3305b6991220924",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P0",
+      "side": "new",
+      "start_line": 3,
+      "suggestion": "Replace `}}` on line 3 with a single `}`.",
+      "title": "Stray extra closing brace in src/lib.rs breaks compilation",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "reduced_context",
+    "parse_failed"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "Single-file change to a trivial add function; the diff appears to introduce a stray closing brace, which would likely break compilation rather than cause a subtle runtime defect.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "862d4d389bcacc6f317192ec2073164175efffef",
+    "head_sha": "6ea1421ad480a20016e3929f550e48b8fe0adb28",
+    "local_changes": false,
+    "merge_base": "862d4d389bcacc6f317192ec2073164175efffef"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

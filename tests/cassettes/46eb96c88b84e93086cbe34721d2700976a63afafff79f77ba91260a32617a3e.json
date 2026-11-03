@@ -1,0 +1,444 @@
+{
+  "v": 1,
+  "key": "46eb96c88b84e93086cbe34721d2700976a63afafff79f77ba91260a32617a3e",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"cand"
+    },
+    {
+      "type": "text_delta",
+      "text": "idates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"data"
+    },
+    {
+      "type": "text_delta",
+      "text": "_integrity\",\"cause\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"`frame` now"
+    },
+    {
+      "type": "text_delta",
+      "text": " writ"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the"
+    },
+    {
+      "type": "text_delta",
+      "text": " length"
+    },
+    {
+      "type": "text_delta",
+      "text": " as `body.len() as u"
+    },
+    {
+      "type": "text_delta",
+      "text": "8`."
+    },
+    {
+      "type": "text_delta",
+      "text": " R"
+    },
+    {
+      "type": "text_delta",
+      "text": "ust's"
+    },
+    {
+      "type": "text_delta",
+      "text": " `as` c"
+    },
+    {
+      "type": "text_delta",
+      "text": "ast silently keeps only"
+    },
+    {
+      "type": "text_delta",
+      "text": " the low 8 bits,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so a "
+    },
+    {
+      "type": "text_delta",
+      "text": "256-byte body gets"
+    },
+    {
+      "type": "text_delta",
+      "text": " header"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0 and a"
+    },
+    {
+      "type": "text_delta",
+      "text": " 300"
+    },
+    {
+      "type": "text_delta",
+      "text": "-byte body gets header "
+    },
+    {
+      "type": "text_delta",
+      "text": "44. The function accepts any"
+    },
+    {
+      "type": "text_delta",
+      "text": " `&[u8]` length"
+    },
+    {
+      "type": "text_delta",
+      "text": " and returns no"
+    },
+    {
+      "type": "text_delta",
+      "text": " error"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so the frame's header"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " longer matches its"
+    },
+    {
+      "type": "text_delta",
+      "text": " pay"
+    },
+    {
+      "type": "text_delta",
+      "text": "load.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.6,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":2,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":[\"e1\"],"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"impact\":\"Any cons"
+    },
+    {
+      "type": "text_delta",
+      "text": "umer that"
+    },
+    {
+      "type": "text_delta",
+      "text": " decodes the fr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ame by"
+    },
+    {
+      "type": "text_delta",
+      "text": " reading the length byte will read"
+    },
+    {
+      "type": "text_delta",
+      "text": " the wrong number"
+    },
+    {
+      "type": "text_delta",
+      "text": " of bytes and mis"
+    },
+    {
+      "type": "text_delta",
+      "text": "frame the st"
+    },
+    {
+      "type": "text_delta",
+      "text": "ream. Bodies over "
+    },
+    {
+      "type": "text_delta",
+      "text": "255 bytes are cor"
+    },
+    {
+      "type": "text_delta",
+      "text": "rupted with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no error"
+    },
+    {
+      "type": "text_delta",
+      "text": " ra"
+    },
+    {
+      "type": "text_delta",
+      "text": "ised. The previous "
+    },
+    {
+      "type": "text_delta",
+      "text": "4-byte u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 pr"
+    },
+    {
+      "type": "text_delta",
+      "text": "efix sup"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported these"
+    },
+    {
+      "type": "text_delta",
+      "text": " s"
+    },
+    {
+      "type": "text_delta",
+      "text": "izes.\",\"path\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Reject bodies longer"
+    },
+    {
+      "type": "text_delta",
+      "text": " than u"
+    },
+    {
+      "type": "text_delta",
+      "text": "8::MAX,"
+    },
+    {
+      "type": "text_delta",
+      "text": " or restore a"
+    },
+    {
+      "type": "text_delta",
+      "text": " wider length prefix such"
+    },
+    {
+      "type": "text_delta",
+      "text": " as the previ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ous u32 big"
+    },
+    {
+      "type": "text_delta",
+      "text": "-endian header.\",\"title\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"Single-byte length header"
+    },
+    {
+      "type": "text_delta",
+      "text": " silently truncates bodies"
+    },
+    {
+      "type": "text_delta",
+      "text": " over 255 bytes\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling fr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ame()"
+    },
+    {
+      "type": "text_delta",
+      "text": " with a body of"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "256 or more bytes."
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}"
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"outcome\":\"sup"
+    },
+    {
+      "type": "text_delta",
+      "text": "ported\",\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " line-"
+    },
+    {
+      "type": "text_delta",
+      "text": "2"
+    },
+    {
+      "type": "text_delta",
+      "text": " cast tru"
+    },
+    {
+      "type": "text_delta",
+      "text": "ncates l"
+    },
+    {
+      "type": "text_delta",
+      "text": "engths above"
+    },
+    {
+      "type": "text_delta",
+      "text": " 255 with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no check"
+    },
+    {
+      "type": "text_delta",
+      "text": ", and"
+    },
+    {
+      "type": "text_delta",
+      "text": " fr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ame() accepts any sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice length ("
+    },
+    {
+      "type": "text_delta",
+      "text": "e1). No ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the repo passes large"
+    },
+    {
+      "type": "text_delta",
+      "text": " bodies and"
+    },
+    {
+      "type": "text_delta",
+      "text": " no in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-repo decoder was"
+    },
+    {
+      "type": "text_delta",
+      "text": " found, so reachability dep"
+    },
+    {
+      "type": "text_delta",
+      "text": "ends on external callers of"
+    },
+    {
+      "type": "text_delta",
+      "text": " this"
+    },
+    {
+      "type": "text_delta",
+      "text": " public function, which l"
+    },
+    {
+      "type": "text_delta",
+      "text": "owers confidence.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5808,
+      "output_tokens": 913,
+      "cost_usd": 0.0010373
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

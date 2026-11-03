@@ -1,0 +1,120 @@
+{
+  "v": 1,
+  "key": "07cdb93cb3ee8f3e0797af6b6204c57279ab621995271963afa8d8446779a3e5",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"priorities\":[\"src/"
+    },
+    {
+      "type": "text_delta",
+      "text": "lib.rs\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " public tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eout() return"
+    },
+    {
+      "type": "text_delta",
+      "text": " value changed units"
+    },
+    {
+      "type": "text_delta",
+      "text": " from seconds to millise"
+    },
+    {
+      "type": "text_delta",
+      "text": "conds (30 to"
+    },
+    {
+      "type": "text_delta",
+      "text": " 30_000)"
+    },
+    {
+      "type": "text_delta",
+      "text": " while call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers elsewhere still"
+    },
+    {
+      "type": "text_delta",
+      "text": " lik"
+    },
+    {
+      "type": "text_delta",
+      "text": "ely ass"
+    },
+    {
+      "type": "text_delta",
+      "text": "ume seconds, so they"
+    },
+    {
+      "type": "text_delta",
+      "text": " may w"
+    },
+    {
+      "type": "text_delta",
+      "text": "ait "
+    },
+    {
+      "type": "text_delta",
+      "text": "1000"
+    },
+    {
+      "type": "text_delta",
+      "text": " "
+    },
+    {
+      "type": "text_delta",
+      "text": "times long"
+    },
+    {
+      "type": "text_delta",
+      "text": "er or"
+    },
+    {
+      "type": "text_delta",
+      "text": " misconfigure tim"
+    },
+    {
+      "type": "text_delta",
+      "text": "eouts.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 946,
+      "output_tokens": 99,
+      "cost_usd": 0.0001441
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

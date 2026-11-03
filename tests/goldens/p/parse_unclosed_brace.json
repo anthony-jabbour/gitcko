@@ -1,0 +1,77 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The hunk removes the closing `}` of `add` (old line 3). The head file ends at line 2 with `    a + b` and no closing brace, so the function body is unterminated and the crate fails to parse.\n\nTrigger: Any build of the crate (cargo build or cargo test) after this change.\n\nImpact: src/lib.rs does not compile, so the crate and any build or test depending on it fail.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "syntax",
+      "confidence": 0.97,
+      "end_line": 2,
+      "evidence": [
+        {
+          "end_line": 2,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        },
+        {
+          "end_line": 3,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_f8b182ab2edc95e6",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P0",
+      "side": "new",
+      "start_line": 1,
+      "suggestion": "Restore the closing brace: add a line `}` after `    a + b`.",
+      "title": "Closing brace of add() removed, leaving unterminated function",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "reduced_context",
+    "parse_failed"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The diff touches only src/lib.rs with a tiny change to a simple add function, though the removed closing brace suggests a possible syntax error worth checking.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "862d4d389bcacc6f317192ec2073164175efffef",
+    "head_sha": "239b69f2354169d0d0c47f18a20aba0647276480",
+    "local_changes": false,
+    "merge_base": "862d4d389bcacc6f317192ec2073164175efffef"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

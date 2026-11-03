@@ -1,0 +1,372 @@
+{
+  "v": 1,
+  "key": "8883fa577031fe3a4a3c209cb4c2639e6e9dc7448ad76d651d7b8e4bc6cd7cf2",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff removes the early `"
+    },
+    {
+      "type": "text_delta",
+      "text": "if"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples.is_empty()"
+    },
+    {
+      "type": "text_delta",
+      "text": " { return 0; }` gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard. With an empty slice"
+    },
+    {
+      "type": "text_delta",
+      "text": ", `samples.iter()."
+    },
+    {
+      "type": "text_delta",
+      "text": "sum()` y"
+    },
+    {
+      "type": "text_delta",
+      "text": "ields 0 and `samples"
+    },
+    {
+      "type": "text_delta",
+      "text": ".len() as u32` is"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0, so line"
+    },
+    {
+      "type": "text_delta",
+      "text": " 4 bec"
+    },
+    {
+      "type": "text_delta",
+      "text": "omes `0 / 0"
+    },
+    {
+      "type": "text_delta",
+      "text": "`, an integer division by z"
+    },
+    {
+      "type": "text_delta",
+      "text": "ero that"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics in"
+    },
+    {
+      "type": "text_delta",
+      "text": " both debug and release builds."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.9,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":4,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"evidence\":[\"e1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"],\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Callers that"
+    },
+    {
+      "type": "text_delta",
+      "text": " pass an empty s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ample set"
+    },
+    {
+      "type": "text_delta",
+      "text": " (the"
+    },
+    {
+      "type": "text_delta",
+      "text": " doc comment on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1 promises "
+    },
+    {
+      "type": "text_delta",
+      "text": "0 in"
+    },
+    {
+      "type": "text_delta",
+      "text": " that case) now get a panic"
+    },
+    {
+      "type": "text_delta",
+      "text": " instead of "
+    },
+    {
+      "type": "text_delta",
+      "text": "0. Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " ca"
+    },
+    {
+      "type": "text_delta",
+      "text": "ller on a hot path with"
+    },
+    {
+      "type": "text_delta",
+      "text": " poss"
+    },
+    {
+      "type": "text_delta",
+      "text": "ibly empty input can"
+    },
+    {
+      "type": "text_delta",
+      "text": " crash.\",\"path\":\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/lib.rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard: `if samples.is"
+    },
+    {
+      "type": "text_delta",
+      "text": "_empty() { return 0"
+    },
+    {
+      "type": "text_delta",
+      "text": "; }` before the division.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": "() panics on"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " after"
+    },
+    {
+      "type": "text_delta",
+      "text": " removing the empty check"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling average(&[]) with"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice."
+    },
+    {
+      "type": "text_delta",
+      "text": "{}\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The u"
+    },
+    {
+      "type": "text_delta",
+      "text": "32 overflow hypoth"
+    },
+    {
+      "type": "text_delta",
+      "text": "esis is not supported as"
+    },
+    {
+      "type": "text_delta",
+      "text": " a reg"
+    },
+    {
+      "type": "text_delta",
+      "text": "ression: the old code also"
+    },
+    {
+      "type": "text_delta",
+      "text": " summ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed into"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 (`sum::"
+    },
+    {
+      "type": "text_delta",
+      "text": "<u32>()`), so"
+    },
+    {
+      "type": "text_delta",
+      "text": " the overflow is pre-"
+    },
+    {
+      "type": "text_delta",
+      "text": "existing and unchanged by"
+    },
+    {
+      "type": "text_delta",
+      "text": " this diff. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff does introduce a real"
+    },
+    {
+      "type": "text_delta",
+      "text": " defect:"
+    },
+    {
+      "type": "text_delta",
+      "text": " removing the emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty-slice guard mak"
+    },
+    {
+      "type": "text_delta",
+      "text": "es the division by zero re"
+    },
+    {
+      "type": "text_delta",
+      "text": "achable,"
+    },
+    {
+      "type": "text_delta",
+      "text": " as shown in the"
+    },
+    {
+      "type": "text_delta",
+      "text": " new lines 3-4.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5401,
+      "output_tokens": 1369,
+      "cost_usd": 0.0012246
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

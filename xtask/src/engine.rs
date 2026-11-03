@@ -67,7 +67,9 @@ fn providers(
     let mut out: BTreeMap<String, Arc<dyn ModelProvider>> = BTreeMap::new();
     for (name, binding) in &resolved.bindings {
         let provider: Arc<dyn ModelProvider> = match models {
-            Models::Replay => Arc::new(Cassette::replay(root().join(CASSETTES), binding)),
+            Models::Replay | Models::ReplayAs(_) => {
+                Arc::new(Cassette::replay(root().join(CASSETTES), binding))
+            }
             Models::Record(_) | Models::Live(_) => {
                 if binding.provider != Provider::Openrouter {
                     return Err(format!("{name}: evals run OpenRouter bindings"));
@@ -99,11 +101,13 @@ fn router(models: &Models, fault: Option<&Injector>) -> Result<Router> {
         .map_err(|_| format!("{MODELS} can't be read"))?;
     let binding = match models {
         Models::Replay => None,
-        Models::Record(binding) | Models::Live(binding) => Some(binding.as_str()),
+        Models::ReplayAs(binding) | Models::Record(binding) | Models::Live(binding) => {
+            Some(binding.as_str())
+        }
     };
     let config = models_config(&text, binding)?;
     // Replay never looks for a key, not even in `.env`.
-    let env = if *models == Models::Replay {
+    let env = if models.is_replay() {
         let mut env: BTreeMap<String, String> = std::env::vars().collect();
         env.insert(API_KEY.to_string(), "replay-needs-no-key".to_string());
         env
@@ -163,20 +167,14 @@ impl Engine for ReviewEngine {
     fn review(&self, case: &Case, repo: &Path, models: &Models) -> Result<Outcome> {
         let injector = case.expect.fault.as_ref().map(Injector::new);
         let router = router(models, injector.as_ref())?;
-        execute(
-            case,
-            repo,
-            &router,
-            injector.as_ref(),
-            *models != Models::Replay,
-        )
+        execute(case, repo, &router, injector.as_ref(), !models.is_replay())
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::eval::{Suite, load, run_case};
+    use crate::eval::{Suite, load};
     use gitcko_protocol::review::ReviewStatus;
 
     fn committed() -> String {
@@ -220,8 +218,29 @@ mod tests {
     }
 
     #[test]
-    fn the_shipped_placeholder_ids_never_reach_a_provider() {
-        let config = models_config(&committed(), None).unwrap();
+    fn every_candidate_can_serve_the_review_roles() {
+        for binding in ["review", "review-sonnet"] {
+            let config = models_config(&committed(), Some(binding)).unwrap();
+            let resolved = resolve(&config, &fake_env()).unwrap();
+            let record = Models::Record(binding.into());
+            assert!(
+                providers(&resolved, &record, &fake_env(), None).is_ok(),
+                "{binding}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_placeholder_id_never_reaches_a_provider() {
+        // The committed file with its ids put back to the placeholders it shipped with.
+        let unchosen: String = committed()
+            .lines()
+            .map(|l| match l.starts_with("model = ") {
+                true => format!("model = \"{UNCHOSEN}a-pinned-model\"\n"),
+                false => format!("{l}\n"),
+            })
+            .collect();
+        let config = models_config(&unchosen, None).unwrap();
         let resolved = resolve(&config, &fake_env()).unwrap();
         for models in [
             Models::Live("review".into()),
@@ -232,8 +251,11 @@ mod tests {
                 .unwrap();
             assert!(err.contains("pinned model id"), "{err}");
         }
-        // Positive control: replay builds, since it reaches no provider at all.
+        // Positive controls: replay builds, since it reaches no provider at all, and the
+        // committed ids are accepted for a recording.
         assert!(providers(&resolved, &Models::Replay, &fake_env(), None).is_ok());
+        let chosen = resolve(&models_config(&committed(), None).unwrap(), &fake_env()).unwrap();
+        assert!(providers(&chosen, &Models::Record("review".into()), &fake_env(), None).is_ok());
     }
 
     /// The review of a Suite F case over an inner provider that answers nothing (every
@@ -310,6 +332,11 @@ mod tests {
             let mut reasons = got.review.reason_codes.clone();
             reasons.sort();
             let mut want = case.expect.reason_codes.clone();
+            // An invalid plan still runs the graph-seeded hypotheses (`report` calls the
+            // changed function); here the fake answers nothing, so that call fails too.
+            if name == "invalid_repair_plan" {
+                want.extend(["provider_failure".into(), "review_failed".into()]);
+            }
             want.sort();
             assert_eq!(reasons, want, "{name}");
             // Positive control: with nothing injected the run is the baseline failure, so
@@ -368,17 +395,11 @@ mod tests {
         );
     }
 
+    /// Also the proof that replay never falls back to a live call: a request nobody
+    /// recorded fails loudly. (Real cases can't show it once their cassettes exist.)
     #[test]
     #[should_panic(expected = "no cassette")]
     fn a_call_before_the_fault_still_reads_its_cassette() {
         let _ = faulted_replay_call(2);
-    }
-
-    #[test]
-    #[should_panic(expected = "no cassette")]
-    fn replay_without_a_cassette_fails_loudly() {
-        let cases = load(&root().join(crate::eval::ROOT), Suite::A).unwrap();
-        let case = cases.iter().find(|c| c.expect.fault.is_none()).unwrap();
-        let _ = run_case(&ReviewEngine, case, &Models::Replay);
     }
 }

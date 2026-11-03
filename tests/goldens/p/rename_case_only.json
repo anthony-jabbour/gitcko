@@ -1,0 +1,46 @@
+{
+  "cleared_risks": [
+    {
+      "description": "Literal searches for `Name::`, `crate::Name`, and `use Name` over the head commit returned complete coverage with zero hits, and src/lib.rs now declares only `pub mod name;` (e1). No remaining references to the old capitalised path were found.",
+      "name": "Callers still use the old capitalised module path"
+    },
+    {
+      "description": "At the head commit src/name.rs exists (e2) and src/Name.rs returns not_found, so the module file matches the new declaration `pub mod name;` (e1). The git log entry 'Lower-case the module file' indicates the file was renamed alongside the declaration change, so no missing-module build failure follows.",
+      "name": "Module declaration renamed without a matching file rename"
+    }
+  ],
+  "coverage": {
+    "changed_files": 2,
+    "held_back": [],
+    "investigated_files": 2,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The change only renames the module declaration from Name to name to match the lower-case file, a mechanical fix with little defect risk.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 2 investigated file(s).",
+  "target": {
+    "base_sha": "3f9a26538867e4cae91aaf9f85c3188c43dea71c",
+    "head_sha": "a996cb4ade611303e40c6bc4474debf9297c27e1",
+    "local_changes": false,
+    "merge_base": "3f9a26538867e4cae91aaf9f85c3188c43dea71c"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

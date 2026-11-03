@@ -1,0 +1,440 @@
+{
+  "v": 1,
+  "key": "81497bd0a5b4b00dfb98c9c35f59f39c25eca283c54914ab3b69b079949f7a02",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"candidates\":[{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"category\":\"correctness\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "cause\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " change"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed the `"
+    },
+    {
+      "type": "text_delta",
+      "text": "samples.is_empty()"
+    },
+    {
+      "type": "text_delta",
+      "text": "` gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard in `average`"
+    },
+    {
+      "type": "text_delta",
+      "text": " (src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": " lines 3-4 "
+    },
+    {
+      "type": "text_delta",
+      "text": "now comp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ute `total / samples.len"
+    },
+    {
+      "type": "text_delta",
+      "text": "() as u32`"
+    },
+    {
+      "type": "text_delta",
+      "text": " direct"
+    },
+    {
+      "type": "text_delta",
+      "text": "ly). For an empty slice"
+    },
+    {
+      "type": "text_delta",
+      "text": ", both"
+    },
+    {
+      "type": "text_delta",
+      "text": " total"
+    },
+    {
+      "type": "text_delta",
+      "text": " and len are 0, so the"
+    },
+    {
+      "type": "text_delta",
+      "text": " integer division pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ide-"
+    },
+    {
+      "type": "text_delta",
+      "text": "by-zero instead of retur"
+    },
+    {
+      "type": "text_delta",
+      "text": "ning 0 "
+    },
+    {
+      "type": "text_delta",
+      "text": "as the doc comment on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1 promises. The"
+    },
+    {
+      "type": "text_delta",
+      "text": " only in"
+    },
+    {
+      "type": "text_delta",
+      "text": "-file"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller, `report`"
+    },
+    {
+      "type": "text_delta",
+      "text": " (line 8), pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "es its"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples straight through with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no guard, so `report("
+    },
+    {
+      "type": "text_delta",
+      "text": "&[])` now panics where"
+    },
+    {
+      "type": "text_delta",
+      "text": " it previ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ously returned \\"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"mean=0\\\".\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "comment_type\":\"log"
+    },
+    {
+      "type": "text_delta",
+      "text": "ic\",\"conf"
+    },
+    {
+      "type": "text_delta",
+      "text": "idence\":0.9"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"counterevidence\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[],\"end_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"evidence\":[\"e"
+    },
+    {
+      "type": "text_delta",
+      "text": "1\",\"e3\"],\"imp"
+    },
+    {
+      "type": "text_delta",
+      "text": "act\":\"Any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller of `f"
+    },
+    {
+      "type": "text_delta",
+      "text": "ixture::report"
+    },
+    {
+      "type": "text_delta",
+      "text": "` ("
+    },
+    {
+      "type": "text_delta",
+      "text": "or `fixture::average`"
+    },
+    {
+      "type": "text_delta",
+      "text": ") with an empty s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ample set"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics."
+    },
+    {
+      "type": "text_delta",
+      "text": " Callers that rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ied on the docum"
+    },
+    {
+      "type": "text_delta",
+      "text": "ented 0 result"
+    },
+    {
+      "type": "text_delta",
+      "text": " for empty input will"
+    },
+    {
+      "type": "text_delta",
+      "text": " crash or ab"
+    },
+    {
+      "type": "text_delta",
+      "text": "ort, and the"
+    },
+    {
+      "type": "text_delta",
+      "text": " do"
+    },
+    {
+      "type": "text_delta",
+      "text": "c comment no"
+    },
+    {
+      "type": "text_delta",
+      "text": " longer matches beh"
+    },
+    {
+      "type": "text_delta",
+      "text": "aviour.\",\"path\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":3"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard: `if samples"
+    },
+    {
+      "type": "text_delta",
+      "text": ".is_empty() { return"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0; }` before the division"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\",\"title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " divide-by-zero on"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": ", bre"
+    },
+    {
+      "type": "text_delta",
+      "text": "aking report()"
+    },
+    {
+      "type": "text_delta",
+      "text": " and the documented cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "ract\",\"trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling report(&[]) or"
+    },
+    {
+      "type": "text_delta",
+      "text": " average(&[]),"
+    },
+    {
+      "type": "text_delta",
+      "text": " e.g. with a"
+    },
+    {
+      "type": "text_delta",
+      "text": " window"
+    },
+    {
+      "type": "text_delta",
+      "text": " that"
+    },
+    {
+      "type": "text_delta",
+      "text": " contains no samples."
+    },
+    {
+      "type": "text_delta",
+      "text": "\"}],\"out"
+    },
+    {
+      "type": "text_delta",
+      "text": "come\":\"supported\",\"re"
+    },
+    {
+      "type": "text_delta",
+      "text": "ason\":\"The remov"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty guard makes average"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ide by zero for"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input."
+    },
+    {
+      "type": "text_delta",
+      "text": " Its only in-file caller,"
+    },
+    {
+      "type": "text_delta",
+      "text": " report, passes input"
+    },
+    {
+      "type": "text_delta",
+      "text": " through"
+    },
+    {
+      "type": "text_delta",
+      "text": " unguarded, so a previ"
+    },
+    {
+      "type": "text_delta",
+      "text": "ously saf"
+    },
+    {
+      "type": "text_delta",
+      "text": "e call now panics.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5995,
+      "output_tokens": 784,
+      "cost_usd": 0.0009915
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

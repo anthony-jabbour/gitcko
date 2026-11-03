@@ -1,0 +1,88 @@
+{
+  "v": 1,
+  "key": "998b144ce6fb829da5815793e77b8d9e6a34eb1290d594cab43d4ead6e72be62",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty-sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice guard was removed, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " average"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " divides by zero and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics on empty input, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the"
+    },
+    {
+      "type": "text_delta",
+      "text": " public function has"
+    },
+    {
+      "type": "text_delta",
+      "text": " at"
+    },
+    {
+      "type": "text_delta",
+      "text": " least one caller elsewh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ere.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 991,
+      "output_tokens": 73,
+      "cost_usd": 0.0001356
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "v": 1,
+  "key": "660c89bcea499a99f09bd523683cb99c7f3bc679233c395c64fac47c78ca4b66",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"hypotheses\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "[{\"category\":\"security\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed check"
+    },
+    {
+      "type": "text_delta",
+      "text": " rejected abs"
+    },
+    {
+      "type": "text_delta",
+      "text": "olute paths, par"
+    },
+    {
+      "type": "text_delta",
+      "text": "ent"
+    },
+    {
+      "type": "text_delta",
+      "text": "-"
+    },
+    {
+      "type": "text_delta",
+      "text": "directory components and pr"
+    },
+    {
+      "type": "text_delta",
+      "text": "efixes; without"
+    },
+    {
+      "type": "text_delta",
+      "text": " it, a name"
+    },
+    {
+      "type": "text_delta",
+      "text": " such"
+    },
+    {
+      "type": "text_delta",
+      "text": " as '../"
+    },
+    {
+      "type": "text_delta",
+      "text": "sec"
+    },
+    {
+      "type": "text_delta",
+      "text": "ret' or '"
+    },
+    {
+      "type": "text_delta",
+      "text": "/etc/passwd'"
+    },
+    {
+      "type": "text_delta",
+      "text": " pass"
+    },
+    {
+      "type": "text_delta",
+      "text": "ed"
+    },
+    {
+      "type": "text_delta",
+      "text": " to resolve() escapes"
+    },
+    {
+      "type": "text_delta",
+      "text": " root,"
+    },
+    {
+      "type": "text_delta",
+      "text": " since"
+    },
+    {
+      "type": "text_delta",
+      "text": " Path::"
+    },
+    {
+      "type": "text_delta",
+      "text": "join repl"
+    },
+    {
+      "type": "text_delta",
+      "text": "aces the"
+    },
+    {
+      "type": "text_delta",
+      "text": " base when given"
+    },
+    {
+      "type": "text_delta",
+      "text": " an absolute path. Call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers that p"
+    },
+    {
+      "type": "text_delta",
+      "text": "ass unt"
+    },
+    {
+      "type": "text_delta",
+      "text": "rusted names would"
+    },
+    {
+      "type": "text_delta",
+      "text": " read"
+    },
+    {
+      "type": "text_delta",
+      "text": " or"
+    },
+    {
+      "type": "text_delta",
+      "text": " write out"
+    },
+    {
+      "type": "text_delta",
+      "text": "side root.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":4,\"title\":\"res"
+    },
+    {
+      "type": "text_delta",
+      "text": "olve no"
+    },
+    {
+      "type": "text_delta",
+      "text": " longer rejects path travers"
+    },
+    {
+      "type": "text_delta",
+      "text": "al or"
+    },
+    {
+      "type": "text_delta",
+      "text": " absolute names\"}"
+    },
+    {
+      "type": "text_delta",
+      "text": "]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1526,
+      "output_tokens": 169,
+      "cost_usd": 0.0002371
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

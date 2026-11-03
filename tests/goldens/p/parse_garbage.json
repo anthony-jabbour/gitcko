@@ -1,0 +1,71 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The head commit's src/lib.rs now contains `pub fn add(a: u32 b u32 -> {{{ a + ` followed by `)))`. The parameter list lacks a comma between `a: u32` and `b: u32`, the return arrow is malformed, the braces are unbalanced and invalid, and the function body is truncated. This is not parseable Rust, so cargo build of the crate fails.\n\nTrigger: Any compilation of the crate (cargo build, cargo test, or a dependent crate build).\n\nImpact: The crate fails to compile, so the build is broken for every consumer and any test or CI job that builds the crate.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "syntax",
+      "confidence": 0.98,
+      "end_line": 2,
+      "evidence": [
+        {
+          "end_line": 2,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_6a54f308ea761688",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P0",
+      "side": "new",
+      "start_line": 1,
+      "suggestion": "Restore the original body: `pub fn add(a: u32, b: u32) -> u32 {` / `    a + b` / `}`.",
+      "title": "src/lib.rs no longer parses: add function is malformed and will not compile",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "reduced_context",
+    "parse_failed"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The diff replaces the add function with malformed Rust syntax (missing comma, unbalanced braces and parentheses), so the file will not compile and the change looks broken or accidental.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "862d4d389bcacc6f317192ec2073164175efffef",
+    "head_sha": "be53a4fb09e49507b0756d252789745e37ae1da5",
+    "local_changes": false,
+    "merge_base": "862d4d389bcacc6f317192ec2073164175efffef"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

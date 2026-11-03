@@ -1,0 +1,37 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The change flips an authorization check from requiring both active and admin to either one, which widens who can delete and is a likely security defect despite the commit message calling it a rewrite.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "462c2534f7e9ef49e9bd6d7739ba0910e83ffd1c",
+    "head_sha": "6ede16d46080a885fd4ab61aa48291879b731ff9",
+    "local_changes": false,
+    "merge_base": "462c2534f7e9ef49e9bd6d7739ba0910e83ffd1c"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

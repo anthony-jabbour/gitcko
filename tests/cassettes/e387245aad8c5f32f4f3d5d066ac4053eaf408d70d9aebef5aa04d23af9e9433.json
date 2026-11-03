@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "key": "e387245aad8c5f32f4f3d5d066ac4053eaf408d70d9aebef5aa04d23af9e9433",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " di"
+    },
+    {
+      "type": "text_delta",
+      "text": "ff only"
+    },
+    {
+      "type": "text_delta",
+      "text": " flattens an"
+    },
+    {
+      "type": "text_delta",
+      "text": " if/else into"
+    },
+    {
+      "type": "text_delta",
+      "text": " an early return;"
+    },
+    {
+      "type": "text_delta",
+      "text": " the logic for"
+    },
+    {
+      "type": "text_delta",
+      "text": " negative,"
+    },
+    {
+      "type": "text_delta",
+      "text": " zero, and positive input"
+    },
+    {
+      "type": "text_delta",
+      "text": "s is un"
+    },
+    {
+      "type": "text_delta",
+      "text": "changed and the file"
+    },
+    {
+      "type": "text_delta",
+      "text": " is small"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 868,
+      "output_tokens": 72,
+      "cost_usd": 0.0001228
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

@@ -1,0 +1,404 @@
+{
+  "v": 1,
+  "key": "cef838ad8cf38f4dec3a8f58e0eb70bbcbe07ffefdabeed8b2048e57e90001b7",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "investigate",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "candidates\":[{\"category"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"correctness\",\"cause"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed."
+    },
+    {
+      "type": "text_delta",
+      "text": " With an empty sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice, the"
+    },
+    {
+      "type": "text_delta",
+      "text": " sum is 0 and sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() as"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 is 0, so"
+    },
+    {
+      "type": "text_delta",
+      "text": " the exp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ression `total / samples.len"
+    },
+    {
+      "type": "text_delta",
+      "text": "() as u32` evalu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ates `"
+    },
+    {
+      "type": "text_delta",
+      "text": "0 / 0` on"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32. R"
+    },
+    {
+      "type": "text_delta",
+      "text": "ust pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics on integer division by zero"
+    },
+    {
+      "type": "text_delta",
+      "text": " regardless of the numerator"
+    },
+    {
+      "type": "text_delta",
+      "text": "."
+    },
+    {
+      "type": "text_delta",
+      "text": " report"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " calls average()"
+    },
+    {
+      "type": "text_delta",
+      "text": " directly, so it"
+    },
+    {
+      "type": "text_delta",
+      "text": " in"
+    },
+    {
+      "type": "text_delta",
+      "text": "herits the"
+    },
+    {
+      "type": "text_delta",
+      "text": " panic.\",\"com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment_type\":\"logic\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "confidence\":0.95,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"counterevidence\":["
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"end_line\":4,"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"evidence\":[\"e1"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"],\"impact\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Any caller passing an empty"
+    },
+    {
+      "type": "text_delta",
+      "text": " slice to"
+    },
+    {
+      "type": "text_delta",
+      "text": " average("
+    },
+    {
+      "type": "text_delta",
+      "text": "), including"
+    },
+    {
+      "type": "text_delta",
+      "text": " report(), pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of returning 0 "
+    },
+    {
+      "type": "text_delta",
+      "text": "as the"
+    },
+    {
+      "type": "text_delta",
+      "text": " doc comment on"
+    },
+    {
+      "type": "text_delta",
+      "text": " line 1 promises. This"
+    },
+    {
+      "type": "text_delta",
+      "text": " is a crash on a pl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ausible input."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"path\":\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\",\"sever"
+    },
+    {
+      "type": "text_delta",
+      "text": "ity\":\"P1\",\"side\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"new\",\"start_line\":2"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"suggestion\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Restore the gu"
+    },
+    {
+      "type": "text_delta",
+      "text": "ard: `if samples.is"
+    },
+    {
+      "type": "text_delta",
+      "text": "_empty() { return 0"
+    },
+    {
+      "type": "text_delta",
+      "text": "; }` before the division.\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\"average"
+    },
+    {
+      "type": "text_delta",
+      "text": "()"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " div"
+    },
+    {
+      "type": "text_delta",
+      "text": "ide-"
+    },
+    {
+      "type": "text_delta",
+      "text": "by-zero on empty sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice\",\"trigger\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Cal"
+    },
+    {
+      "type": "text_delta",
+      "text": "ling average(&[]"
+    },
+    {
+      "type": "text_delta",
+      "text": ") or report(&[]),"
+    },
+    {
+      "type": "text_delta",
+      "text": " for"
+    },
+    {
+      "type": "text_delta",
+      "text": " example with"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " s"
+    },
+    {
+      "type": "text_delta",
+      "text": "ample set that has"
+    },
+    {
+      "type": "text_delta",
+      "text": " no ent"
+    },
+    {
+      "type": "text_delta",
+      "text": "ries yet.\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}],\"outcome\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "supported\",\"reason\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " head code"
+    },
+    {
+      "type": "text_delta",
+      "text": " at lines 2-4 "
+    },
+    {
+      "type": "text_delta",
+      "text": "divides by"
+    },
+    {
+      "type": "text_delta",
+      "text": " sam"
+    },
+    {
+      "type": "text_delta",
+      "text": "ples.len() with"
+    },
+    {
+      "type": "text_delta",
+      "text": " no emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty check"
+    },
+    {
+      "type": "text_delta",
+      "text": ", so an"
+    },
+    {
+      "type": "text_delta",
+      "text": " empty slice yields 0"
+    },
+    {
+      "type": "text_delta",
+      "text": "/0 on"
+    },
+    {
+      "type": "text_delta",
+      "text": " u32 and panics,"
+    },
+    {
+      "type": "text_delta",
+      "text": " cont"
+    },
+    {
+      "type": "text_delta",
+      "text": "radicting the doc comment"
+    },
+    {
+      "type": "text_delta",
+      "text": " that"
+    },
+    {
+      "type": "text_delta",
+      "text": " prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 5527,
+      "output_tokens": 674,
+      "cost_usd": 0.0008897
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

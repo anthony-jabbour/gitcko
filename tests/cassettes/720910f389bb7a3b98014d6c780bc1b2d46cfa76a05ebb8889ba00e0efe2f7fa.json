@@ -1,0 +1,104 @@
+{
+  "v": 1,
+  "key": "720910f389bb7a3b98014d6c780bc1b2d46cfa76a05ebb8889ba00e0efe2f7fa",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"low\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/big."
+    },
+    {
+      "type": "text_delta",
+      "text": "rs\"],\"reason\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " diff only"
+    },
+    {
+      "type": "text_delta",
+      "text": " adds gener"
+    },
+    {
+      "type": "text_delta",
+      "text": "ated,"
+    },
+    {
+      "type": "text_delta",
+      "text": " trivially const"
+    },
+    {
+      "type": "text_delta",
+      "text": "ant decl"
+    },
+    {
+      "type": "text_delta",
+      "text": "arations to"
+    },
+    {
+      "type": "text_delta",
+      "text": " one"
+    },
+    {
+      "type": "text_delta",
+      "text": " file,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so"
+    },
+    {
+      "type": "text_delta",
+      "text": " a real"
+    },
+    {
+      "type": "text_delta",
+      "text": " defect is unlikely,"
+    },
+    {
+      "type": "text_delta",
+      "text": " though the file"
+    },
+    {
+      "type": "text_delta",
+      "text": " gr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ows to 40000 l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ines.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 29257,
+      "output_tokens": 73,
+      "cost_usd": 0.0029622
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

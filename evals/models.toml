@@ -3,16 +3,28 @@
 # make a recording mean nothing. `--model <binding>` serves `review` and `risk-classifier`;
 # the judge keeps its own binding, from another family (MODEL_ROUTING §5).
 #
-# Set the two `model` values below before recording. The key comes from
-# OPENROUTER_API_KEY in your environment and never goes in this file.
+# The key comes from OPENROUTER_API_KEY in your environment (or the git-ignored .env)
+# and never goes in this file. Chosen 2026-11-02 for the Base tier as Cloud will run it:
+# a Base review must cost about $0.08 in model spend to keep a 70% margin on a $0.40
+# credit. Claude Haiku 5.5 reviews (the stronger cheap agentic coder); GPT-6 Luna judges
+# from another family. Both are $0.10/$0.50 per 1M tokens, and prompts stay under the
+# 100k-token price step. Each id names one dated release (claude-haiku-5.5-20261007,
+# gpt-6-luna-20260922), not a moving alias. Plus and Max tiers bind Sonnet 5.5 and
+# Opus 5.5 later; they get their own recordings.
 
 [models.bindings.review]
 provider = "openrouter"
-model = "choose/a-pinned-review-model"
+model = "anthropic/claude-haiku-5.5"
+
+# Sonnet runs only on the top tier (Max): on G1 it found what Haiku found at about 20x the
+# cost. Recorded with `--model review-sonnet` as the ceiling Haiku is measured against.
+[models.bindings.review-sonnet]
+provider = "openrouter"
+model = "anthropic/claude-sonnet-5.5"
 
 [models.bindings.judge]
 provider = "openrouter"
-model = "choose/a-pinned-judge-model"
+model = "openai/gpt-6-luna"
 
 [models.roles]
 review = "review"

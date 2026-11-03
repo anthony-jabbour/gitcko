@@ -1,0 +1,68 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [
+    {
+      "body": "The empty-slice guard was removed, so average(&[]) now evaluates total / samples.len() as u32 with a divisor of 0 (lines 4-5). Integer division by zero panics in Rust, while the doc comment on line 1 promises 0 when there are no samples.\n\nTrigger: Calling average with an empty slice, e.g. average(&[]).\n\nImpact: Any caller of the public function average that passes an empty slice now panics instead of getting 0, breaking the documented contract. Callers could not be enumerated, so how often this is hit is unknown.",
+      "calibration_status": "uncalibrated",
+      "comment_type": "logic",
+      "confidence": 0.85,
+      "end_line": 5,
+      "evidence": [
+        {
+          "end_line": 6,
+          "kind": "source",
+          "path": "src/lib.rs",
+          "start_line": 1
+        }
+      ],
+      "fix_package": null,
+      "hunk": null,
+      "id": "f_0e9aae0d0337f6d8",
+      "lifecycle": "new",
+      "linked_rule": null,
+      "outside_diff": null,
+      "path": "src/lib.rs",
+      "security_issue": false,
+      "severity": "P2",
+      "side": "new",
+      "start_line": 4,
+      "suggestion": "Restore the guard: if samples.is_empty() { return 0; }",
+      "title": "average panics on empty input after guard removal",
+      "verification": "not_run",
+      "verified_evidence": null
+    }
+  ],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "high",
+    "reason": "The diff removes the empty-slice guard, so average() now divides by zero and panics when samples is empty, contradicting its documented return of 0.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "gate_closed",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "complete",
+  "summary": "Review complete: 1 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "54ab9798a685f74ee339778477518ce42f52cbc1",
+    "head_sha": "eca70edd1c7cf310aef723a711543b6f6c90233e",
+    "local_changes": false,
+    "merge_base": "54ab9798a685f74ee339778477518ce42f52cbc1"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

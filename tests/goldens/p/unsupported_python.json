@@ -1,0 +1,40 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "reduced_context",
+    "unsupported_language"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The change only adds a simple subtraction function to a single file, with no evident defect or risky interaction.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "ffb67acd475196b7bb8e2e56edb825d65747576d",
+    "head_sha": "6a7d8d5a23e2297932bfa6a7043c8abce68bd8df",
+    "local_changes": false,
+    "merge_base": "ffb67acd475196b7bb8e2e56edb825d65747576d"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

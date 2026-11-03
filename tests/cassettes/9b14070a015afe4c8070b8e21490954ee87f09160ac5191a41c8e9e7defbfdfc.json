@@ -1,0 +1,84 @@
+{
+  "v": 1,
+  "key": "9b14070a015afe4c8070b8e21490954ee87f09160ac5191a41c8e9e7defbfdfc",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"high\",\"priorities\":[\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"reason\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " inverts the filter in"
+    },
+    {
+      "type": "text_delta",
+      "text": " `pending`, so it now"
+    },
+    {
+      "type": "text_delta",
+      "text": " returns completed tasks inst"
+    },
+    {
+      "type": "text_delta",
+      "text": "ead of pending ones, and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the commit message "
+    },
+    {
+      "type": "text_delta",
+      "text": "'Simplify pending'"
+    },
+    {
+      "type": "text_delta",
+      "text": " does not dis"
+    },
+    {
+      "type": "text_delta",
+      "text": "close this beh"
+    },
+    {
+      "type": "text_delta",
+      "text": "av"
+    },
+    {
+      "type": "text_delta",
+      "text": "ioural change.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 856,
+      "output_tokens": 170,
+      "cost_usd": 0.0001706
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

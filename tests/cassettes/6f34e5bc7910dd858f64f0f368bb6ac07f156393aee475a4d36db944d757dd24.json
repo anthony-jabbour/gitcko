@@ -1,0 +1,168 @@
+{
+  "v": 1,
+  "key": "6f34e5bc7910dd858f64f0f368bb6ac07f156393aee475a4d36db944d757dd24",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "hypotheses\":[{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"category\":\"correctness\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " for emp"
+    },
+    {
+      "type": "text_delta",
+      "text": "ty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so average"
+    },
+    {
+      "type": "text_delta",
+      "text": "(&[]) now ev"
+    },
+    {
+      "type": "text_delta",
+      "text": "aluates total"
+    },
+    {
+      "type": "text_delta",
+      "text": " / 0 and"
+    },
+    {
+      "type": "text_delta",
+      "text": " panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero. The doc"
+    },
+    {
+      "type": "text_delta",
+      "text": " comment still prom"
+    },
+    {
+      "type": "text_delta",
+      "text": "ises 0 for"
+    },
+    {
+      "type": "text_delta",
+      "text": " no"
+    },
+    {
+      "type": "text_delta",
+      "text": " samples, so callers rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ying on that"
+    },
+    {
+      "type": "text_delta",
+      "text": " contract will cr"
+    },
+    {
+      "type": "text_delta",
+      "text": "ash. Verify by"
+    },
+    {
+      "type": "text_delta",
+      "text": " calling average with"
+    },
+    {
+      "type": "text_delta",
+      "text": " an empty slice."
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":5,\"path\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"src/lib.rs"
+    },
+    {
+      "type": "text_delta",
+      "text": "\",\"start_line\":2,\""
+    },
+    {
+      "type": "text_delta",
+      "text": "title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Empty slice now"
+    },
+    {
+      "type": "text_delta",
+      "text": " pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1569,
+      "output_tokens": 327,
+      "cost_usd": 0.0003204
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

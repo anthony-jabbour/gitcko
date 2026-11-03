@@ -1,0 +1,40 @@
+{
+  "cleared_risks": [],
+  "coverage": {
+    "changed_files": 1,
+    "held_back": [],
+    "investigated_files": 1,
+    "skipped_binary": []
+  },
+  "file_summaries": [],
+  "findings": [],
+  "instructions": null,
+  "questions": [],
+  "reason_codes": [
+    "reduced_context",
+    "unsupported_language"
+  ],
+  "review_id": "<normalised>",
+  "risk_level": {
+    "level": "low",
+    "reason": "The change adds a single small pure function sub and touches only one file, with no obvious defect risk.",
+    "source": "model"
+  },
+  "schema_version": "gitcko.review/1",
+  "score": null,
+  "score_availability_reason": "incomplete",
+  "score_details": null,
+  "score_reasoning": null,
+  "security_summary": null,
+  "status": "partial",
+  "summary": "Review incomplete: 0 finding(s) across 1 investigated file(s).",
+  "target": {
+    "base_sha": "f679905ead98e513d38ae30d0ba11c123a06b472",
+    "head_sha": "d9a4874f195ceeebfc3d2c7851ca6addda0a8fc4",
+    "local_changes": false,
+    "merge_base": "f679905ead98e513d38ae30d0ba11c123a06b472"
+  },
+  "tier": "base",
+  "usage": "<normalised>",
+  "versions": "<normalised>"
+}

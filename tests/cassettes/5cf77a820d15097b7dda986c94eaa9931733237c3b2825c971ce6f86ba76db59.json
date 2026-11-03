@@ -1,0 +1,88 @@
+{
+  "v": 1,
+  "key": "5cf77a820d15097b7dda986c94eaa9931733237c3b2825c971ce6f86ba76db59",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"low\",\"priorities\":[\""
+    },
+    {
+      "type": "text_delta",
+      "text": "src/lib.rs\""
+    },
+    {
+      "type": "text_delta",
+      "text": "],\"reason\":\"The div"
+    },
+    {
+      "type": "text_delta",
+      "text": "isor is a"
+    },
+    {
+      "type": "text_delta",
+      "text": " NonZeroU32,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so the division"
+    },
+    {
+      "type": "text_delta",
+      "text": " c"
+    },
+    {
+      "type": "text_delta",
+      "text": "annot panic on"
+    },
+    {
+      "type": "text_delta",
+      "text": " zero and"
+    },
+    {
+      "type": "text_delta",
+      "text": " unsigned division c"
+    },
+    {
+      "type": "text_delta",
+      "text": "annot overflow, making"
+    },
+    {
+      "type": "text_delta",
+      "text": " the removed chec"
+    },
+    {
+      "type": "text_delta",
+      "text": "ked_div fallback red"
+    },
+    {
+      "type": "text_delta",
+      "text": "undant.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 855,
+      "output_tokens": 187,
+      "cost_usd": 0.000179
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

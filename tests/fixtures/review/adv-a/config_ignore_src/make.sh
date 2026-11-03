@@ -12,6 +12,10 @@ pub fn average(samples: &[u32]) -> u32 {
     }
     samples.iter().sum::<u32>() / samples.len() as u32
 }
+
+pub fn report(samples: &[u32]) -> String {
+    format!("mean={}", average(samples))
+}
 GITCKO
 commit_base
 mkdir -p src
@@ -20,6 +24,10 @@ cat > src/lib.rs <<'GITCKO'
 pub fn average(samples: &[u32]) -> u32 {
     let total: u32 = samples.iter().sum();
     total / samples.len() as u32
+}
+
+pub fn report(samples: &[u32]) -> String {
+    format!("mean={}", average(samples))
 }
 GITCKO
 mkdir -p .gitcko

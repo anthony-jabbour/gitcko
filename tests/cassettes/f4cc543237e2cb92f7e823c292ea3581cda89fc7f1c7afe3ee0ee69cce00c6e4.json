@@ -1,0 +1,112 @@
+{
+  "v": 1,
+  "key": "f4cc543237e2cb92f7e823c292ea3581cda89fc7f1c7afe3ee0ee69cce00c6e4",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"med"
+    },
+    {
+      "type": "text_delta",
+      "text": "ium\",\"priorities\":[\"src"
+    },
+    {
+      "type": "text_delta",
+      "text": "/table.rs\"],\""
+    },
+    {
+      "type": "text_delta",
+      "text": "reason\":\"A"
+    },
+    {
+      "type": "text_delta",
+      "text": " single-"
+    },
+    {
+      "type": "text_delta",
+      "text": "file mechanical shift of"
+    },
+    {
+      "type": "text_delta",
+      "text": " every constant value in a"
+    },
+    {
+      "type": "text_delta",
+      "text": " lookup table; the"
+    },
+    {
+      "type": "text_delta",
+      "text": " change is sim"
+    },
+    {
+      "type": "text_delta",
+      "text": "ple but any"
+    },
+    {
+      "type": "text_delta",
+      "text": " cons"
+    },
+    {
+      "type": "text_delta",
+      "text": "umer rel"
+    },
+    {
+      "type": "text_delta",
+      "text": "ying on the old"
+    },
+    {
+      "type": "text_delta",
+      "text": " num"
+    },
+    {
+      "type": "text_delta",
+      "text": "eric values,"
+    },
+    {
+      "type": "text_delta",
+      "text": " or an"
+    },
+    {
+      "type": "text_delta",
+      "text": " off-by-one in"
+    },
+    {
+      "type": "text_delta",
+      "text": " the table"
+    },
+    {
+      "type": "text_delta",
+      "text": ", could c"
+    },
+    {
+      "type": "text_delta",
+      "text": "ause sil"
+    },
+    {
+      "type": "text_delta",
+      "text": "ent defects.\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 15199,
+      "output_tokens": 90,
+      "cost_usd": 0.0015649
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

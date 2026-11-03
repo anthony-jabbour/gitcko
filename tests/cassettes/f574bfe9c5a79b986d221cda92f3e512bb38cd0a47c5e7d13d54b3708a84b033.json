@@ -1,0 +1,108 @@
+{
+  "v": 1,
+  "key": "f574bfe9c5a79b986d221cda92f3e512bb38cd0a47c5e7d13d54b3708a84b033",
+  "role": "risk-classifier",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "risk",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\"level\":\"high\",\"pri"
+    },
+    {
+      "type": "text_delta",
+      "text": "orities\":[\"src/lib"
+    },
+    {
+      "type": "text_delta",
+      "text": ".rs\"],\"reason"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":\"The change"
+    },
+    {
+      "type": "text_delta",
+      "text": " removes the path component"
+    },
+    {
+      "type": "text_delta",
+      "text": " valid"
+    },
+    {
+      "type": "text_delta",
+      "text": "ation in"
+    },
+    {
+      "type": "text_delta",
+      "text": " resolve,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so names"
+    },
+    {
+      "type": "text_delta",
+      "text": " with absolute paths or"
+    },
+    {
+      "type": "text_delta",
+      "text": " '"
+    },
+    {
+      "type": "text_delta",
+      "text": "..' can"
+    },
+    {
+      "type": "text_delta",
+      "text": " now"
+    },
+    {
+      "type": "text_delta",
+      "text": " escape the"
+    },
+    {
+      "type": "text_delta",
+      "text": " root directory ("
+    },
+    {
+      "type": "text_delta",
+      "text": "path traversal), and"
+    },
+    {
+      "type": "text_delta",
+      "text": " the commit message does not mention"
+    },
+    {
+      "type": "text_delta",
+      "text": " a"
+    },
+    {
+      "type": "text_delta",
+      "text": " security change"
+    },
+    {
+      "type": "text_delta",
+      "text": ".\"}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 927,
+      "output_tokens": 82,
+      "cost_usd": 0.0001337
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}

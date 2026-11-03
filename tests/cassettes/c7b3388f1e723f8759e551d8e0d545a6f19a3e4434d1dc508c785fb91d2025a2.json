@@ -1,0 +1,172 @@
+{
+  "v": 1,
+  "key": "c7b3388f1e723f8759e551d8e0d545a6f19a3e4434d1dc508c785fb91d2025a2",
+  "role": "review",
+  "binding": {
+    "provider": "openrouter",
+    "model": "anthropic/claude-haiku-5.5",
+    "reasoning_effort": null,
+    "data_policy": "deny_collection",
+    "context": null
+  },
+  "prompt": {
+    "id": "plan",
+    "version": "1"
+  },
+  "events": [
+    {
+      "type": "text_delta",
+      "text": "{\""
+    },
+    {
+      "type": "text_delta",
+      "text": "hypotheses\":[{"
+    },
+    {
+      "type": "text_delta",
+      "text": "\"category\":\"correctness\",\""
+    },
+    {
+      "type": "text_delta",
+      "text": "claim\":\"The"
+    },
+    {
+      "type": "text_delta",
+      "text": " early"
+    },
+    {
+      "type": "text_delta",
+      "text": " return"
+    },
+    {
+      "type": "text_delta",
+      "text": " for empty input"
+    },
+    {
+      "type": "text_delta",
+      "text": " was"
+    },
+    {
+      "type": "text_delta",
+      "text": " removed,"
+    },
+    {
+      "type": "text_delta",
+      "text": " so average"
+    },
+    {
+      "type": "text_delta",
+      "text": "(&[]) now eva"
+    },
+    {
+      "type": "text_delta",
+      "text": "luates samples.len() as"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0 and pan"
+    },
+    {
+      "type": "text_delta",
+      "text": "ics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division"
+    },
+    {
+      "type": "text_delta",
+      "text": " by zero,"
+    },
+    {
+      "type": "text_delta",
+      "text": " contradicting the doc com"
+    },
+    {
+      "type": "text_delta",
+      "text": "ment "
+    },
+    {
+      "type": "text_delta",
+      "text": "'or"
+    },
+    {
+      "type": "text_delta",
+      "text": " 0 when there are none'"
+    },
+    {
+      "type": "text_delta",
+      "text": ". Tr"
+    },
+    {
+      "type": "text_delta",
+      "text": "igger: any"
+    },
+    {
+      "type": "text_delta",
+      "text": " caller passing an empty sl"
+    },
+    {
+      "type": "text_delta",
+      "text": "ice. Check"
+    },
+    {
+      "type": "text_delta",
+      "text": ": call"
+    },
+    {
+      "type": "text_delta",
+      "text": "ers of average and"
+    },
+    {
+      "type": "text_delta",
+      "text": " wh"
+    },
+    {
+      "type": "text_delta",
+      "text": "ether they can"
+    },
+    {
+      "type": "text_delta",
+      "text": " receive empty input.\",\"end"
+    },
+    {
+      "type": "text_delta",
+      "text": "_line\":4"
+    },
+    {
+      "type": "text_delta",
+      "text": ",\"path\":\"src/l"
+    },
+    {
+      "type": "text_delta",
+      "text": "ib.rs\",\"start_line"
+    },
+    {
+      "type": "text_delta",
+      "text": "\":3,\"title\":\""
+    },
+    {
+      "type": "text_delta",
+      "text": "Empty slice now panics with"
+    },
+    {
+      "type": "text_delta",
+      "text": " division by zero\""
+    },
+    {
+      "type": "text_delta",
+      "text": "}]}"
+    },
+    {
+      "type": "usage",
+      "input_tokens": 1543,
+      "output_tokens": 419,
+      "cost_usd": 0.0003638
+    },
+    {
+      "type": "finish",
+      "reason": "stop"
+    }
+  ]
+}
