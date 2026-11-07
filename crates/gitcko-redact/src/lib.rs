@@ -141,9 +141,10 @@ static SHAPES: LazyLock<Vec<Regex>> = LazyLock::new(|| {
         r"(?:AKIA|ASIA)[0-9A-Z]{16}",
         // Slack tokens, including app-level (`xapp-`) and refresh (`xoxe-`) tokens.
         r"(?:xox[abposre]|xapp)-[A-Za-z0-9-]{10,}",
-        // `Authorization: Bearer …`, any length: short tokens are still credentials. A
-        // repeated `Bearer` must not be taken for the token.
-        r"(?i)(?:bearer\s+)+(?P<secret>[A-Za-z0-9._~+/=-]+)",
+        // RFC 6750 header shape: `Bearer` plus ≥16 token chars, optional `=` padding.
+        // Prose like "bearer token" must stay readable in findings. A repeated
+        // `Bearer` must not be taken for the token.
+        r"(?i)(?:bearer\s+)+(?P<secret>[A-Za-z0-9._~+/-]{16,}={0,2})",
         // Credentials inside a URL: keep the scheme and host, hide everything up to the
         // last `@`, so an empty username, a token with no password, or a password
         // holding `/` or `@` all go. An `@` later in the path may hide part of the path.

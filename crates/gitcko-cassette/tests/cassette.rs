@@ -188,6 +188,25 @@ async fn prose_about_authorization_is_recorded() {
     only_file(dir.path());
 }
 
+/// A finding that talks about a bearer token must record. Only RFC 6750's header
+/// shape (≥16 token characters) is refused.
+#[tokio::test]
+async fn prose_about_a_bearer_token_is_recorded() {
+    let dir = tempfile::tempdir().unwrap();
+    let events = vec![
+        Ok(Event::TextDelta {
+            text: "a bearer token is not a header".to_string(),
+        }),
+        Ok(Event::Finish {
+            reason: FinishReason::Stop,
+        }),
+    ];
+    let inner = Arc::new(FakeProvider::new(vec![events.clone()]));
+    let recorder = Cassette::record(dir.path(), &binding(11434, None), inner, &no_ci()).unwrap();
+    assert_eq!(run(&recorder, request("x")).await, events);
+    only_file(dir.path());
+}
+
 /// A header in tool-call arguments is refused too: as a key, and split into a name field
 /// and a value field, where no separator follows the name.
 #[tokio::test]
@@ -271,7 +290,9 @@ async fn a_recording_with_a_secret_or_a_local_path_is_not_written() {
         "Authorization : Basic Zm9v".to_string(),
         "authorization=Basic Zm9v".to_string(),
         "'Authorization' = 'Basic Zm9v'".to_string(),
-        format!("bearer {}", "x".repeat(8)),
+        // RFC 6750: ≥16 token characters. Eight `x`s used to be refused as a
+        // Bearer secret; that also hid the prose "bearer token" in findings.
+        format!("bearer {}", "x".repeat(16)),
         format!("see {}/notes.txt", home.display()),
         format!("see {}/src/lib.rs", cwd.display()),
         format!("see {}", std::env::temp_dir().join("scratch.txt").display()),
