@@ -1,0 +1,9 @@
+color = true
+telemetry = false
+
+[privacy]
+remote_acknowledged = ["openrouter"]
+
+[models.bindings.smart]
+provider = "openrouter"
+model = "example/model-1"

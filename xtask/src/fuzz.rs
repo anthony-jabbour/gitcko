@@ -15,6 +15,7 @@ fn seeds(target: &str) -> Option<&'static str> {
         "provider_stream" => Some("tests/fixtures/providers"),
         "tool_args" => Some("tests/fixtures/tool_args"),
         "model_output" => Some("tests/fixtures/outputs"),
+        "user_config" => Some("tests/fixtures/user_config"),
         _ => None,
     }
 }
