@@ -16,14 +16,8 @@ targets = [
 ]
 
 [advisories]
-# keyring 4.2's Linux Secret Service still depends on zbus 5. The split crates
-# zvariant / zbus_names / zvariant_derive were folded into zbus 6 and rustsec
-# marks them unmaintained; there is no CVE. Drop when keyring moves to zbus 6.
-ignore = [
-    "RUSTSEC-2026-0370",
-    "RUSTSEC-2026-0371",
-    "RUSTSEC-2026-0372",
-]
+# keyring 4.2's Linux Secret Service still depends on zbus 5 (RUSTSEC-2026-0370/0371/0372).
+# The OS adapter is not linked in layer 0; ignore those ids when the CLI crate adds keyring.
 
 [licenses]
 allow = [

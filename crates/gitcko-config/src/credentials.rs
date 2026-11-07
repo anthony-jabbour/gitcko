@@ -184,7 +184,7 @@ pub trait Keychain {
     fn get(&self, account: &str) -> Result<Option<String>, CredError>;
 }
 
-/// In-memory store for tests. The real OS store is [`OsKeychain`].
+/// In-memory store for tests. Production surfaces supply the OS keychain.
 #[derive(Default)]
 pub struct MemoryKeychain {
     /// account → secret.
@@ -194,20 +194,5 @@ pub struct MemoryKeychain {
 impl Keychain for MemoryKeychain {
     fn get(&self, account: &str) -> Result<Option<String>, CredError> {
         Ok(self.entries.get(account).cloned())
-    }
-}
-
-/// macOS Keychain, Windows Credential Manager, Linux Secret Service.
-pub struct OsKeychain;
-
-impl Keychain for OsKeychain {
-    fn get(&self, account: &str) -> Result<Option<String>, CredError> {
-        let entry = keyring::Entry::new("gitcko", account).map_err(|_| CredError::Keychain)?;
-        match entry.get_password() {
-            Ok(password) if password.is_empty() => Ok(None),
-            Ok(password) => Ok(Some(password)),
-            Err(keyring::Error::NoEntry) => Ok(None),
-            Err(_) => Err(CredError::Keychain),
-        }
     }
 }

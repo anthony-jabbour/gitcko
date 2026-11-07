@@ -140,6 +140,15 @@ fn a_group_readable_credentials_file_is_refused_and_a_0600_file_is_the_control()
 }
 
 #[test]
+fn layer_zero_does_not_depend_on_the_os_keychain() {
+    let manifest = include_str!("../Cargo.toml");
+    assert!(
+        !manifest.lines().any(|line| line.contains("keyring")),
+        "gitcko-config is layer 0; the OS keychain adapter belongs in the CLI"
+    );
+}
+
+#[test]
 fn canary_invalid_toml_never_appears_in_the_error() {
     let key = canary_key();
     let err = CredentialsFile::parse(&format!("not toml {key}")).unwrap_err();

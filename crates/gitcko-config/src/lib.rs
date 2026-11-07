@@ -7,7 +7,8 @@
 //!
 //! Repo config is still text-in: callers read `.gitcko/` (from a commit or the disk)
 //! and pass the bytes. User paths are resolved from an env map. Reading
-//! `credentials.toml` and the OS keychain is explicit IO in [`credentials`].
+//! `credentials.toml` is explicit IO in [`credentials`]. The OS keychain adapter
+//! belongs in the CLI (layer 5), not here.
 //!
 //! Not here yet: org and team layers (they need a server, Phase 7+) and the base/head
 //! protection for PRs that edit `.gitcko/` (CONFIGURATION §4.2, needs code-host trust,
@@ -31,7 +32,7 @@ use gitcko_protocol::review::Tier;
 use serde_json::Value;
 
 pub use credentials::{
-    CredError, CredentialsFile, Keychain, MemoryKeychain, OsKeychain, Secret, SecretSource,
+    CredError, CredentialsFile, Keychain, MemoryKeychain, Secret, SecretSource,
     load_file as load_credentials_file, resolve_key,
 };
 pub use file::Origin;
