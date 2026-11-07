@@ -221,6 +221,15 @@ pub(crate) fn check_user_values(config: &UserConfig) -> Result<(), (&'static str
             return Err(("review.width", "must be 40 to 240"));
         }
     }
+    if let Some(privacy) = &config.privacy
+        && let Some(names) = &privacy.remote_acknowledged
+        && names.iter().any(|name| name != "openrouter")
+    {
+        return Err((
+            "privacy.remote_acknowledged",
+            "must name a remote provider this build supports",
+        ));
+    }
     Ok(())
 }
 

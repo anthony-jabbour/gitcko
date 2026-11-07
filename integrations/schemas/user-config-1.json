@@ -29,6 +29,17 @@
         }
       ]
     },
+    "privacy": {
+      "description": "One-time consent to send selected code to a remote provider (PRIVACY).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PrivacyConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "review": {
       "anyOf": [
         {
@@ -307,6 +318,23 @@
         "text",
         "json"
       ]
+    },
+    "PrivacyConfig": {
+      "description": "`[privacy]` in the user file.",
+      "type": "object",
+      "properties": {
+        "remote_acknowledged": {
+          "description": "Provider names the user has acknowledged, e.g. `[\"openrouter\"]`.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "ReasoningEffort": {
       "description": "How hard a reasoning model thinks, where the provider supports it; unset means\nthe provider's default.",

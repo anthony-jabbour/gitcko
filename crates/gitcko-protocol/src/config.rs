@@ -161,6 +161,16 @@ pub struct UserConfig {
     /// Model bindings, roles and fallbacks (MODEL_ROUTING). Keys never live here; they
     /// come from the keychain or environment.
     pub models: Option<ModelsConfig>,
+    /// One-time consent to send selected code to a remote provider (PRIVACY).
+    pub privacy: Option<PrivacyConfig>,
+}
+
+/// `[privacy]` in the user file.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PrivacyConfig {
+    /// Provider names the user has acknowledged, e.g. `["openrouter"]`.
+    pub remote_acknowledged: Option<Vec<String>>,
 }
 
 /// `[models]` (MODEL_ROUTING §3). Typed and closed, so a key field or a misspelt
