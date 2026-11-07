@@ -12,6 +12,8 @@ use tokio::time::Instant;
 pub struct Events<'a> {
     run_id: String,
     now: &'a dyn Fn() -> String,
+    /// Sees each event as it is pushed (progress for the CLI, TUI and MCP).
+    on_event: &'a dyn Fn(&RunEvent),
     events: Vec<RunEvent>,
     step_started: Instant,
 }
@@ -25,22 +27,29 @@ fn wire(value: &impl serde::Serialize) -> String {
 }
 
 impl<'a> Events<'a> {
-    pub fn new(run_id: &str, now: &'a dyn Fn() -> String) -> Events<'a> {
+    pub fn new(
+        run_id: &str,
+        now: &'a dyn Fn() -> String,
+        on_event: &'a dyn Fn(&RunEvent),
+    ) -> Events<'a> {
         Events {
             run_id: run_id.to_string(),
             now,
+            on_event,
             events: Vec::new(),
             step_started: Instant::now(),
         }
     }
 
     fn push(&mut self, kind: RunEventKind) {
-        self.events.push(RunEvent {
+        let event = RunEvent {
             run_id: self.run_id.clone(),
             seq: self.events.len() as u64 + 1,
             at: (self.now)(),
             kind,
-        });
+        };
+        (self.on_event)(&event);
+        self.events.push(event);
     }
 
     pub fn started(&mut self, step: &str) {

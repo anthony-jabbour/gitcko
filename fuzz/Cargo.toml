@@ -14,6 +14,7 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4.13"
 gitcko-config = { path = "../crates/gitcko-config" }
 gitcko-diff = { path = "../crates/gitcko-diff" }
+gitcko-protocol = { path = "../crates/gitcko-protocol" }
 gitcko-domain = { path = "../crates/gitcko-domain" }
 gitcko-model = { path = "../crates/gitcko-model" }
 gitcko-model-ollama = { path = "../crates/gitcko-model-ollama" }
@@ -63,6 +64,13 @@ bench = false
 [[bin]]
 name = "model_output"
 path = "fuzz_targets/model_output.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "user_config"
+path = "fuzz_targets/user_config.rs"
 test = false
 doc = false
 bench = false

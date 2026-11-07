@@ -161,6 +161,24 @@ pub struct UserConfig {
     /// Model bindings, roles and fallbacks (MODEL_ROUTING). Keys never live here; they
     /// come from the keychain or environment.
     pub models: Option<ModelsConfig>,
+    /// One-time consent to send selected code to a remote provider (PRIVACY).
+    pub privacy: Option<PrivacyConfig>,
+}
+
+/// A remote model provider the user can acknowledge (PRIVACY). Ollama is local and
+/// is not in this list.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum RemoteProvider {
+    Openrouter,
+}
+
+/// `[privacy]` in the user file.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PrivacyConfig {
+    /// Remote providers the user has acknowledged, e.g. `["openrouter"]`.
+    pub remote_acknowledged: Option<Vec<RemoteProvider>>,
 }
 
 /// `[models]` (MODEL_ROUTING §3). Typed and closed, so a key field or a misspelt

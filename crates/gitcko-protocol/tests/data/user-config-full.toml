@@ -32,3 +32,6 @@ fast = ["fast", "smart"]
 
 [models.inversion]
 enabled = true
+
+[privacy]
+remote_acknowledged = ["openrouter"]

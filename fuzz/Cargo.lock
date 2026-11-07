@@ -681,6 +681,7 @@ dependencies = [
  "gitcko-model-ollama",
  "gitcko-model-openai",
  "gitcko-prompts",
+ "gitcko-protocol",
  "gitcko-syntax",
  "gitcko-tools",
  "libfuzzer-sys",

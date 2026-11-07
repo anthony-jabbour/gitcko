@@ -13,7 +13,7 @@ use gitcko_git::Repo;
 use gitcko_model::{ModelProvider, ResolvedModels, Router, resolve};
 use gitcko_model_openai::OpenRouter;
 use gitcko_protocol::config::{ModelProvider as Provider, ModelRole, ModelsConfig};
-use gitcko_review::{ReviewInput, base_run, review};
+use gitcko_review::{REMOTE_DEADLINE, ReviewInput, base_run, review};
 use gitcko_test_support::workspace_root as root;
 use serde::Deserialize;
 
@@ -137,7 +137,10 @@ fn execute(
         head: at("main")?,
         now: &now,
     };
-    let mut run = base_run(format!("rv_{}", case.name), remote);
+    let mut run = base_run(
+        format!("rv_{}", case.name),
+        remote.then_some(REMOTE_DEADLINE),
+    );
     if let Some(injector) = injector {
         injector.arm(&mut run);
     }

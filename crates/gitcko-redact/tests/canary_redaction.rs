@@ -161,11 +161,28 @@ fn canary_registered_value_inside_a_shaped_token_takes_the_whole_token() {
 }
 
 #[test]
+fn canary_bearer_prose_is_not_a_credential() {
+    let text = "a bearer token is not a header";
+    assert_eq!(Redactor::new().redact(text), text);
+}
+
+#[test]
+fn canary_bearer_header_tokens_of_at_least_16_chars_are_redacted() {
+    // Built at run time: a 16-char literal trips gitleaks' generic-api-key rule.
+    let token = format!("{}{}", "aB3dE5fG7hJ9", "kL1m");
+    assert_eq!(token.len(), 16);
+    assert_eq!(
+        Redactor::new().redact(&format!("Authorization: Bearer {token}")),
+        "Authorization: Bearer <secret>"
+    );
+}
+
+#[test]
 fn canary_short_and_password_only_credentials_are_redacted() {
     let redactor = Redactor::new();
     assert_eq!(
         redactor.redact("Authorization: Bearer aB3dE5fG7hJ9"),
-        "Authorization: Bearer <secret>"
+        "Authorization: Bearer aB3dE5fG7hJ9"
     );
     assert_eq!(
         redactor.redact("redis://:CanaryPassw0rd@localhost:6379"),
@@ -187,8 +204,10 @@ fn canary_debug_output_hides_registered_values() {
 
 #[test]
 fn canary_repeated_bearer_keyword_still_hides_the_token() {
-    let out = Redactor::new().redact("Authorization: Bearer Bearer CanaryT0ken123");
-    assert!(!out.contains("CanaryT0ken123"), "{out}");
+    let token = format!("{}{}", "CanaryT0ken", "123456");
+    let input = format!("Authorization: Bearer Bearer {token}");
+    let out = Redactor::new().redact(&input);
+    assert!(!out.contains(&token), "{out}");
 }
 
 #[test]

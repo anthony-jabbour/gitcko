@@ -29,6 +29,17 @@
         }
       ]
     },
+    "privacy": {
+      "description": "One-time consent to send selected code to a remote provider (PRIVACY).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PrivacyConfig"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "review": {
       "anyOf": [
         {
@@ -308,6 +319,23 @@
         "json"
       ]
     },
+    "PrivacyConfig": {
+      "description": "`[privacy]` in the user file.",
+      "type": "object",
+      "properties": {
+        "remote_acknowledged": {
+          "description": "Remote providers the user has acknowledged, e.g. `[\"openrouter\"]`.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/RemoteProvider"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "ReasoningEffort": {
       "description": "How hard a reasoning model thinks, where the provider supports it; unset means\nthe provider's default.",
       "type": "string",
@@ -315,6 +343,13 @@
         "low",
         "medium",
         "high"
+      ]
+    },
+    "RemoteProvider": {
+      "description": "A remote model provider the user can acknowledge (PRIVACY). Ollama is local and\nis not in this list.",
+      "type": "string",
+      "enum": [
+        "openrouter"
       ]
     },
     "UserReview": {

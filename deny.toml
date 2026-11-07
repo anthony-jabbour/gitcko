@@ -16,7 +16,8 @@ targets = [
 ]
 
 [advisories]
-ignore = []
+# keyring 4.2's Linux Secret Service still depends on zbus 5 (RUSTSEC-2026-0370/0371/0372).
+# The OS adapter is not linked in layer 0; ignore those ids when the CLI crate adds keyring.
 
 [licenses]
 allow = [
@@ -56,6 +57,7 @@ exceptions = [
     { crate = "gitcko-redact", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-review", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-search", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-storage", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-syntax", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-tools", allow = ["AGPL-3.0-or-later"] },
 ]

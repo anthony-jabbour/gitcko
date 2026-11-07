@@ -47,5 +47,10 @@ expression: config
     "inversion": {
       "enabled": true
     }
+  },
+  "privacy": {
+    "remote_acknowledged": [
+      "openrouter"
+    ]
   }
 }

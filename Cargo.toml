@@ -23,6 +23,7 @@ globset = "0.4"
 http = "1"
 ignore = "0.4"
 insta = { version = "1.49", features = ["json"] }
+keyring = "4.2"
 proptest = "1.12"
 regex = "1.13"
 # HTTP for the two model adapters only: rustls with ring instead of reqwest's default

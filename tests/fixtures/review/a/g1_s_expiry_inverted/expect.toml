@@ -8,4 +8,5 @@ end_line = 7
 function = [6, 8]
 severity = "P1"
 comment_type = "logic"
+security = true
 root_cause = "The comparison is inverted, so live sessions count as expired and expired sessions are allowed"

@@ -5,18 +5,23 @@
 //! resolved value keeps where it came from (file and line, or env var, flag or
 //! default), so `gitcko config` can explain it (F-30).
 //!
-//! Pure: callers read the files (from a commit or the disk) and pass the text in. This
-//! crate never touches the filesystem, which keeps it in layer 0 and easy to test.
+//! Repo config is still text-in: callers read `.gitcko/` (from a commit or the disk)
+//! and pass the bytes. User paths are resolved from an env map. Reading
+//! `credentials.toml` is explicit IO in [`credentials`]. The OS keychain adapter
+//! belongs in the CLI (layer 5), not here.
 //!
 //! Not here yet: org and team layers (they need a server, Phase 7+) and the base/head
 //! protection for PRs that edit `.gitcko/` (CONFIGURATION §4.2, needs code-host trust,
 //! Phase 8). Ceilings are an input, so the server can pass stricter ones later.
 
+pub mod credentials;
 mod defaults;
 mod file;
 mod ignore;
+pub mod paths;
 mod pr;
 mod scope;
+mod user;
 
 use std::collections::BTreeMap;
 use std::fmt;
@@ -26,9 +31,15 @@ use gitcko_protocol::config::{RepoConfig, UserConfig};
 use gitcko_protocol::review::Tier;
 use serde_json::Value;
 
+pub use credentials::{
+    CredError, CredentialsFile, Keychain, MemoryKeychain, Secret, SecretSource,
+    load_file as load_credentials_file, resolve_key,
+};
 pub use file::Origin;
 pub use ignore::{IgnoreRules, ignore_rules};
+pub use paths::{GitckoPaths, PathError};
 pub use pr::combine_for_pr;
+pub use user::has_remote_acknowledgement;
 
 /// Which layer a value came from, lowest precedence first (CONFIGURATION §2).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
