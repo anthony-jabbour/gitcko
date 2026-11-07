@@ -46,3 +46,11 @@ fn an_unknown_provider_is_rejected_without_echoing_its_name() {
         "acknowledgement value leaked: {shown}"
     );
 }
+
+#[test]
+fn ollama_cannot_be_a_remote_acknowledgement() {
+    let err = user("[privacy]\nremote_acknowledged = [\"ollama\"]\n").expect_err("ollama is local");
+    let shown = err.to_string();
+    assert!(shown.contains("privacy.remote_acknowledged"), "{shown}");
+    assert!(!shown.contains("ollama"), "provider name leaked: {shown}");
+}

@@ -165,12 +165,20 @@ pub struct UserConfig {
     pub privacy: Option<PrivacyConfig>,
 }
 
+/// A remote model provider the user can acknowledge (PRIVACY). Ollama is local and
+/// is not in this list.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum RemoteProvider {
+    Openrouter,
+}
+
 /// `[privacy]` in the user file.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PrivacyConfig {
-    /// Provider names the user has acknowledged, e.g. `["openrouter"]`.
-    pub remote_acknowledged: Option<Vec<String>>,
+    /// Remote providers the user has acknowledged, e.g. `["openrouter"]`.
+    pub remote_acknowledged: Option<Vec<RemoteProvider>>,
 }
 
 /// `[models]` (MODEL_ROUTING §3). Typed and closed, so a key field or a misspelt

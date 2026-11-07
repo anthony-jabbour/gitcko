@@ -79,12 +79,31 @@ fn overrides_make_home_optional() {
     let p = GitckoPaths::from_env(&env(&[
         ("GITCKO_CONFIG", "/abs/config.toml"),
         ("GITCKO_CACHE_DIR", "/abs/cache"),
+        ("XDG_CONFIG_HOME", "/abs/configdir"),
         ("XDG_STATE_HOME", "/abs/state"),
     ]))
     .unwrap();
     assert_eq!(p.config_file, PathBuf::from("/abs/config.toml"));
+    assert_eq!(
+        p.credentials_file,
+        PathBuf::from("/abs/configdir/gitcko/credentials.toml")
+    );
     assert_eq!(p.cache_dir, PathBuf::from("/abs/cache"));
     assert_eq!(p.logs_dir, PathBuf::from("/abs/state/gitcko/logs"));
+}
+
+#[cfg(unix)]
+#[test]
+fn credentials_do_not_follow_a_config_override_when_home_is_unset() {
+    assert_eq!(
+        GitckoPaths::from_env(&env(&[
+            ("GITCKO_CONFIG", "/abs/config.toml"),
+            ("GITCKO_CACHE_DIR", "/abs/cache"),
+            ("XDG_STATE_HOME", "/abs/state"),
+        ]))
+        .unwrap_err(),
+        PathError::NoHome
+    );
 }
 
 #[cfg(unix)]

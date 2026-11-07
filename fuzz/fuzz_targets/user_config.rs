@@ -32,10 +32,11 @@ fuzz_target!(|data: &[u8]| {
             Some(&file),
         ) {
             let shown = format!("{secret:?}");
-            let value = secret.expose();
-            if value.len() >= 8 {
-                assert!(!shown.contains(value), "Secret Debug leaked the key");
-            }
+            assert_eq!(
+                shown,
+                format!("<secret> ({:?})", secret.source()),
+                "Secret Debug leaked the key"
+            );
         }
     }
     let mut env = BTreeMap::new();

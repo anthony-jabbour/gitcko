@@ -4,12 +4,10 @@ use std::fs::{self, File, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use gitcko_domain::ReviewId;
 use gitcko_protocol::review::{Review, ReviewStatus};
 
 use crate::StoreError;
-
-/// Crockford Base32 as used by ULIDs (no I, L, O, U).
-const ULID: &[u8] = b"0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
 /// On-disk review history for one cache root (`GITCKO_CACHE_DIR` or the XDG cache).
 pub struct ReviewStore {
@@ -223,13 +221,9 @@ fn check_repo_id(id: &str) -> Result<(), StoreError> {
 }
 
 fn check_review_id(id: &str) -> Result<(), StoreError> {
-    let rest = id.strip_prefix("rv_").ok_or(StoreError::InvalidReviewId)?;
-    let ok = rest.len() == 26 && rest.bytes().all(|b| ULID.contains(&b));
-    if ok {
-        Ok(())
-    } else {
-        Err(StoreError::InvalidReviewId)
-    }
+    id.parse::<ReviewId>()
+        .map(|_| ())
+        .map_err(|_| StoreError::InvalidReviewId)
 }
 
 fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), StoreError> {

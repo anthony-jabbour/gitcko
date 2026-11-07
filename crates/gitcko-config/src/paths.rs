@@ -93,10 +93,10 @@ fn from_env_unix(env: &BTreeMap<String, String>) -> Result<GitckoPaths, PathErro
             .ok_or(PathError::NoHome)?
             .join("config.toml"),
     };
-    let credentials_file = match &config_dir {
-        Some(dir) => dir.join("credentials.toml"),
-        None => config_file.with_file_name("credentials.toml"),
-    };
+    let credentials_file = config_dir
+        .as_ref()
+        .ok_or(PathError::NoHome)?
+        .join("credentials.toml");
     let cache_dir = match cache_override(env)? {
         Some(path) => path,
         None => match nonempty(env, "XDG_CACHE_HOME") {

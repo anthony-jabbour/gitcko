@@ -209,6 +209,22 @@ fn a_hostile_repo_id_is_rejected_before_any_path_is_joined() {
 }
 
 #[test]
+fn an_overflow_ulid_is_not_a_review_id() {
+    let (_dir, store) = store();
+    let mut review = sample();
+    // First Crockford digit > 7 does not fit in 128 bits (gitcko-domain ReviewId).
+    review.review_id = format!("rv_8{}", "0".repeat(25));
+    assert_eq!(
+        store.put(REPO, &review).unwrap_err(),
+        StoreError::InvalidReviewId
+    );
+    assert_eq!(
+        store.get(REPO, &review.review_id).unwrap_err(),
+        StoreError::InvalidReviewId
+    );
+}
+
+#[test]
 fn review_id_in_the_file_must_match_the_name() {
     let (_dir, store) = store();
     let mut review = sample();
