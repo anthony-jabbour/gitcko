@@ -18,13 +18,13 @@ use gitcko_model::{
     RunBudget, ToolCall, Usage,
 };
 use gitcko_protocol::config::{ModelFamily, ModelProvider as Provider, ModelRole};
-use gitcko_protocol::event::RunEventKind;
+use gitcko_protocol::event::{RunEvent, RunEventKind};
 use gitcko_protocol::review::{
     ReviewStatus, RiskLevel, RiskSource, ScoreAvailabilityReason, Severity,
 };
 use gitcko_review::{
-    FeedbackProvider, Outcome, ProviderStatus, ReviewInput, base_budget, base_run, review,
-    review_with,
+    FeedbackProvider, LOCAL_DEADLINE, NoFeedback, Outcome, ProviderStatus, REMOTE_DEADLINE,
+    ReviewInput, base_budget, base_run, review, review_streaming, review_with,
 };
 use gitcko_test_support::{TempDir, script_repo, workspace_root};
 use serde_json::{Value, json};
@@ -1663,7 +1663,7 @@ fn count_in(outcome: &Outcome, step_name: &str, key: &str) -> Option<u64> {
 #[tokio::test]
 async fn the_base_run_requires_the_judge_as_well_as_the_reviewer() {
     assert_eq!(
-        base_run("rv".into(), false).required,
+        base_run("rv".into(), None).required,
         [ModelRole::Review, ModelRole::Judge]
     );
 }
@@ -3399,4 +3399,65 @@ async fn a_security_report_filed_as_style_keeps_its_severity() {
     };
     // Security is `logic` (REVIEW_RULES §3), so the style cap to P2 never applies.
     assert_eq!(finding.severity, Severity::P0);
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_live_local_run_gets_fifteen_minutes_and_a_replay_none() {
+    // MODEL_ROUTING §6: the local Base deadline is three remote ones.
+    assert_eq!(LOCAL_DEADLINE, Duration::from_secs(15 * 60));
+    let start = tokio::time::Instant::now();
+    assert_eq!(
+        base_run("rv".into(), Some(LOCAL_DEADLINE)).deadline,
+        Some(start + LOCAL_DEADLINE)
+    );
+    assert_eq!(
+        base_run("rv".into(), Some(REMOTE_DEADLINE)).deadline,
+        Some(start + REMOTE_DEADLINE)
+    );
+    assert_eq!(base_run("rv".into(), None).deadline, None);
+}
+
+#[tokio::test]
+async fn every_event_reaches_the_sink_while_the_run_is_still_going() {
+    let seen = Arc::new(Mutex::new(Vec::new()));
+    // How many events the sink held when the first model reply finished.
+    let at_first_reply = Arc::new(Mutex::new(None::<usize>));
+    let provider = Arc::new(Scripted {
+        reply: Box::new(|r, _| default_reply(r)),
+        requests: Mutex::new(Vec::new()),
+        delay: Duration::ZERO,
+        at_finish: {
+            let (seen, at_first_reply) = (seen.clone(), at_first_reply.clone());
+            Arc::new(move |_| {
+                let mut first = at_first_reply.lock().unwrap();
+                first.get_or_insert(seen.lock().unwrap().len());
+            })
+        },
+    });
+    let dir = fixture("f", "timeout_plan");
+    let repo = Repo::open(dir.path()).unwrap();
+    let now = || "2026-01-01T00:00:00Z".to_string();
+    let input = ReviewInput {
+        repo: &repo,
+        base: at_rev(&repo, "base"),
+        head: at_rev(&repo, "main"),
+        now: &now,
+    };
+    let sink = |event: &RunEvent| seen.lock().unwrap().push(event.clone());
+    let outcome = review_streaming(
+        input,
+        &router(provider),
+        run_with_budget(base_budget()),
+        &NoFeedback,
+        &sink,
+    )
+    .await;
+    assert_eq!(*seen.lock().unwrap(), outcome.events);
+    // Live, not replayed at the end: the snapshot's events were out before any model answered.
+    let first = at_first_reply.lock().unwrap().expect("a model was called");
+    assert!(
+        first >= 2,
+        "the sink held {first} events at the first reply"
+    );
+    assert!(first < outcome.events.len());
 }

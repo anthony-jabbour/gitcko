@@ -67,8 +67,11 @@ pub const MAX_DIFF_LINES: usize = 4000;
 /// Set aside for validation, the judge and assembly: investigation stops here.
 pub const RESERVE_PERCENT: u64 = 25;
 
-/// How long a remote review may take. Local runs get 15 minutes when the CLI brings them.
+/// How long a remote review may take.
 pub const REMOTE_DEADLINE: Duration = Duration::from_secs(5 * 60);
+/// How long a local review may take: three remote ones, because a local model is slower
+/// and investigators run one at a time (MODEL_ROUTING §6).
+pub const LOCAL_DEADLINE: Duration = Duration::from_secs(15 * 60);
 
 /// The token ceilings for one Base review.
 pub fn base_budget() -> BudgetLimits {
@@ -81,14 +84,12 @@ pub fn base_budget() -> BudgetLimits {
 
 /// A fresh run under Base's bounds. `review` and `judge` are required: a candidate the
 /// judge never answered for is never published, so losing it must fail the run, not hide
-/// it. A remote run gets the deadline, and a replay runs without one so it never races a
-/// clock.
-pub fn base_run(id: String, remote: bool) -> Run {
+/// it. A live run passes [`REMOTE_DEADLINE`] or [`LOCAL_DEADLINE`]; a replay passes `None`
+/// so it never races a clock.
+pub fn base_run(id: String, deadline: Option<Duration>) -> Run {
     let mut run = Run::new(id, RunBudget::new(base_budget()));
     run.required = vec![ModelRole::Review, ModelRole::Judge];
-    if remote {
-        run.deadline = Some(Instant::now() + REMOTE_DEADLINE);
-    }
+    run.deadline = deadline.map(|d| Instant::now() + d);
     run
 }
 
@@ -132,10 +133,23 @@ pub async fn review(input: ReviewInput<'_>, router: &Router, run: Run) -> Outcom
 pub async fn review_with(
     input: ReviewInput<'_>,
     router: &Router,
-    mut run: Run,
+    run: Run,
     feedback: &dyn FeedbackProvider,
 ) -> Outcome {
-    let mut events = events::Events::new(&run.id, input.now);
+    review_streaming(input, router, run, feedback, &|_| {}).await
+}
+
+/// [`review_with`] that also hands each event to `on_event` the moment it happens, so a
+/// terminal or an agent can show progress while the run is going. `Outcome.events` still
+/// holds the same events in the same order.
+pub async fn review_streaming(
+    input: ReviewInput<'_>,
+    router: &Router,
+    mut run: Run,
+    feedback: &dyn FeedbackProvider,
+    on_event: &dyn Fn(&RunEvent),
+) -> Outcome {
+    let mut events = events::Events::new(&run.id, input.now, on_event);
     let mut ledger = complete::Completeness::default();
     // Reserve a share of the deadline; the token share is checked against spend.
     let investigate_until = run.deadline.map(|deadline| {
