@@ -56,6 +56,7 @@ exceptions = [
     { crate = "gitcko-redact", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-review", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-search", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-storage", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-syntax", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-tools", allow = ["AGPL-3.0-or-later"] },
 ]

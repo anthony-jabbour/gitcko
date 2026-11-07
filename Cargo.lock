@@ -1127,6 +1127,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-storage"
+version = "0.0.0"
+dependencies = [
+ "gitcko-protocol",
+ "gitcko-redact",
+ "gitcko-test-support",
+ "proptest",
+ "rustix",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "gitcko-syntax"
 version = "0.0.0"
 dependencies = [
