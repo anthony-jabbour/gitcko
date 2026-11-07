@@ -1732,7 +1732,7 @@ pub(crate) mod tests {
             .flat_map(|c| &c.expect.findings)
             .filter(|f| f.security)
             .count();
-        assert_eq!(security, 4);
+        assert_eq!(security, 5);
         let cross = a.iter().filter(|c| c.name.starts_with("s_cross_")).count();
         assert_eq!(cross, 4);
         let spike: Vec<&Case> = a.iter().filter(|c| c.name.starts_with("g1_")).collect();
