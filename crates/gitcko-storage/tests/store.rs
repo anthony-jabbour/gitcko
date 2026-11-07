@@ -3,7 +3,6 @@
 //! Review history on disk: permissions, atomic writes, running markers, typed errors.
 
 use std::fs;
-use std::path::Path;
 
 use gitcko_protocol::review::Review;
 use gitcko_redact::canaries;
@@ -36,6 +35,7 @@ fn put_then_get_round_trips_the_review() {
 #[test]
 fn folders_are_0700_and_files_0600() {
     use std::os::unix::fs::PermissionsExt;
+    use std::path::Path;
     let (_dir, store) = store();
     store.put(REPO, &sample()).unwrap();
     fn walk(p: &Path) {

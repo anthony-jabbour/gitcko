@@ -3,7 +3,9 @@
 //! Config, cache, credentials and log paths from an env map (LOCAL_DEPLOYMENT §5).
 
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
+#[cfg(not(windows))]
+use std::path::Path;
+use std::path::PathBuf;
 
 /// Config, credentials, cache and log locations (LOCAL_DEPLOYMENT §5).
 #[derive(Debug, Clone, PartialEq, Eq)]

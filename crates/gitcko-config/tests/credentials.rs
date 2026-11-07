@@ -3,14 +3,12 @@
 //! Env > keychain > 0600 file. Errors never carry the secret.
 
 use std::collections::BTreeMap;
-use std::fs;
 
 use gitcko_config::credentials::{
-    CredError, CredentialsFile, MemoryKeychain, SecretSource, load_file, resolve_key,
+    CredError, CredentialsFile, MemoryKeychain, SecretSource, resolve_key,
 };
 use gitcko_protocol::config::ModelProvider;
 use gitcko_redact::canaries;
-use gitcko_test_support::TempDir;
 
 fn canary_key() -> String {
     canaries()[3].clone()
@@ -114,6 +112,9 @@ fn unknown_credentials_key_is_named_and_the_value_is_not() {
 #[cfg(unix)]
 #[test]
 fn a_group_readable_credentials_file_is_refused_and_a_0600_file_is_the_control() {
+    use gitcko_config::credentials::load_file;
+    use gitcko_test_support::TempDir;
+    use std::fs;
     use std::os::unix::fs::PermissionsExt;
     let key = canary_key();
     let dir = TempDir::new("creds");
