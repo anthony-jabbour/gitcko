@@ -1,0 +1,20 @@
+[package]
+name = "gitcko-render"
+version = "0.0.0"
+description = "Text rendering of gitcko.review/1 for the CLI, TUI and MCP"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+insta.workspace = true
+
+[lints]
+workspace = true

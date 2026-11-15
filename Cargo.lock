@@ -1088,6 +1088,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "gitcko-render"
+version = "0.0.0"
+dependencies = [
+ "gitcko-protocol",
+ "insta",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "gitcko-review"
 version = "0.0.0"
 dependencies = [
