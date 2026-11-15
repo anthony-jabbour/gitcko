@@ -2,31 +2,48 @@
 
 //! Local MCP server (MCP_SPEC §1–2, Server A).
 //!
-//! Stdio only. There is no HTTP listener and this crate does not depend on an HTTP
-//! client. The protocol framing is the official SDK
+//! Stdio only. There is no HTTP listener and this crate does not name an HTTP client
+//! of its own. The protocol framing is the official SDK
 //! (<https://docs.rs/rmcp/3.10.0/rmcp/transport/io/fn.stdio.html>).
 //!
 //! stdout carries protocol messages only. Anything a person should read goes to stderr.
 
-use std::path::Path;
+mod args;
+mod clock;
+mod paths;
+mod present;
+mod run;
+mod schema;
+
+use std::collections::BTreeMap;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use rmcp::ServiceExt;
 use rmcp::model::{
-    CallToolRequestParams, CallToolResponse, Implementation, ListToolsResult,
-    PaginatedRequestParams, ServerCapabilities, ServerConfig,
+    CallToolRequestMethod, CallToolRequestParams, CallToolResponse, Implementation,
+    ListToolsResult, PaginatedRequestParams, ServerCapabilities, ServerConfig,
 };
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::{ErrorData as McpError, ServerHandler};
+use serde_json::Value;
+
+pub use args::{ArgError, TOOLS, check_mcp_args, validate};
+pub use paths::root_id;
+pub use run::{Engine, ProviderMap, ReviewJob, Script};
+
+use paths::startup_root;
+use present::tool_error;
+use run::Fail;
 
 /// Speak MCP on the process stdin and stdout until the client disconnects.
 ///
-/// `cwd` is the authorized repository root (MCP_SPEC §2). It is canonicalized when
-/// a tool needs it. A client that closes the pipe is a normal exit.
-pub fn serve_stdio(cwd: &Path, _env: &std::collections::BTreeMap<String, String>) -> u8 {
-    let server = GitckoServer {
-        _cwd: cwd.to_path_buf(),
-    };
+/// `cwd` is the authorized repository root (MCP_SPEC §2). A client that closes the
+/// pipe is a normal exit.
+pub fn serve_stdio(cwd: &Path, env: &BTreeMap<String, String>) -> u8 {
+    let server = GitckoServer::live(cwd.to_path_buf(), env.clone());
     let runtime = match tokio::runtime::Builder::new_multi_thread()
         .worker_threads(2)
         .enable_all()
@@ -58,14 +75,77 @@ pub fn serve_stdio(cwd: &Path, _env: &std::collections::BTreeMap<String, String>
 
 /// The local server. Tests build one and drive it over an in-memory pipe.
 pub struct GitckoServer {
-    _cwd: std::path::PathBuf,
+    root: PathBuf,
+    env: BTreeMap<String, String>,
+    engine: Engine,
+    stderr: Stderr,
+}
+
+enum Stderr {
+    Process,
+    Buffer(Arc<Mutex<Vec<u8>>>),
+}
+
+impl GitckoServer {
+    /// The process server: real model adapters from the user config.
+    pub fn live(cwd: PathBuf, env: BTreeMap<String, String>) -> GitckoServer {
+        GitckoServer::build(cwd, env, Engine::Live(None), Stderr::Process)
+    }
+
+    /// Like [`live`], but each binding name maps to a test provider.
+    pub fn with_providers(
+        cwd: PathBuf,
+        env: BTreeMap<String, String>,
+        providers: ProviderMap,
+        stderr: Arc<Mutex<Vec<u8>>>,
+    ) -> GitckoServer {
+        GitckoServer::build(
+            cwd,
+            env,
+            Engine::Live(Some(providers)),
+            Stderr::Buffer(stderr),
+        )
+    }
+
+    /// Skip the engine and return the scripted outcome. Setup checks still run.
+    pub fn with_script(
+        cwd: PathBuf,
+        env: BTreeMap<String, String>,
+        script: Script,
+        stderr: Arc<Mutex<Vec<u8>>>,
+    ) -> GitckoServer {
+        GitckoServer::build(cwd, env, Engine::Script(script), Stderr::Buffer(stderr))
+    }
+
+    fn build(
+        cwd: PathBuf,
+        env: BTreeMap<String, String>,
+        engine: Engine,
+        stderr: Stderr,
+    ) -> GitckoServer {
+        GitckoServer {
+            root: startup_root(&cwd),
+            env,
+            engine,
+            stderr,
+        }
+    }
+}
+
+/// Parse tool arguments without a repository root (path symlink checks skipped).
+pub fn parse_call(name: &str, value: &Value) -> Result<args::ToolArgs, ArgError> {
+    let map = value.as_object().ok_or(ArgError {
+        code: "INVALID_REQUEST",
+        message: "the arguments do not match the tool schema",
+        retryable: false,
+    })?;
+    validate(name, map, None)
 }
 
 /// A server rooted at the process directory, for tests that only check the handshake.
 pub fn test_server() -> GitckoServer {
-    GitckoServer {
-        _cwd: std::env::current_dir().unwrap_or_else(|_| Path::new(".").into()),
-    }
+    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    GitckoServer::live(cwd, BTreeMap::new())
 }
 
 enum ServeFail {
@@ -101,21 +181,81 @@ impl ServerHandler for GitckoServer {
             .with_server_info(Implementation::new("gitcko", env!("CARGO_PKG_VERSION")))
     }
 
+    fn get_tool(&self, name: &str) -> Option<rmcp::model::Tool> {
+        schema::tool_list()
+            .into_iter()
+            .find(|tool| tool.name == name)
+    }
+
     async fn list_tools(
         &self,
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
     ) -> Result<ListToolsResult, McpError> {
-        Ok(ListToolsResult::default())
+        Ok(ListToolsResult::with_all_items(schema::tool_list()))
     }
 
     async fn call_tool(
         &self,
-        _request: CallToolRequestParams,
-        _context: RequestContext<RoleServer>,
+        request: CallToolRequestParams,
+        context: RequestContext<RoleServer>,
     ) -> Result<CallToolResponse, McpError> {
-        Err(McpError::method_not_found::<
-            rmcp::model::CallToolRequestMethod,
-        >())
+        if !TOOLS.contains(&request.name.as_ref()) {
+            return Err(McpError::method_not_found::<CallToolRequestMethod>());
+        }
+        let arguments = request.arguments.unwrap_or_default();
+        let parsed = match validate(&request.name, &arguments, Some(&self.root)) {
+            Ok(parsed) => parsed,
+            Err(err) => {
+                return Ok(tool_error(err.code, err.message, err.retryable).into());
+            }
+        };
+        // `Repo` and the log callback are not `Send`. The SDK spawns this handler,
+        // so the call runs on a blocking thread with its own runtime. Cancellation
+        // still shares `context.ct`. Progress notifications are attached next.
+        let cancel = context.ct.clone();
+        let root = self.root.clone();
+        let env = self.env.clone();
+        let engine = self.engine.clone();
+        let buffer = match &self.stderr {
+            Stderr::Process => None,
+            Stderr::Buffer(buffer) => Some(Arc::clone(buffer)),
+        };
+        let result =
+            tokio::task::spawn_blocking(move || -> Result<rmcp::model::CallToolResult, ()> {
+                let runtime = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .map_err(|_| ())?;
+                runtime.block_on(async move {
+                    let mut log = |line: &str| match &buffer {
+                        None => eprintln!("{line}"),
+                        Some(buffer) => {
+                            let mut guard = buffer.lock().unwrap_or_else(|err| err.into_inner());
+                            let _ = writeln!(guard, "{line}");
+                        }
+                    };
+                    Ok(
+                        match run::dispatch(
+                            &root,
+                            &env,
+                            &engine,
+                            parsed,
+                            &cancel,
+                            &|_| {},
+                            &mut log,
+                        )
+                        .await
+                        {
+                            Ok(result) => result,
+                            Err(Fail::Tool(result)) => result,
+                        },
+                    )
+                })
+            })
+            .await
+            .map_err(|_| McpError::internal_error("tool call failed", None))?
+            .map_err(|_| McpError::internal_error("tool call failed", None))?;
+        Ok(result.into())
     }
 }

@@ -1684,9 +1684,23 @@ dependencies = [
 name = "gitcko-mcp"
 version = "0.0.0"
 dependencies = [
+ "futures-util",
+ "gitcko-config",
+ "gitcko-domain",
+ "gitcko-git",
+ "gitcko-model",
+ "gitcko-model-ollama",
+ "gitcko-model-openai",
+ "gitcko-protocol",
+ "gitcko-render",
+ "gitcko-review",
+ "gitcko-storage",
+ "gitcko-test-support",
  "rmcp",
  "serde_json",
+ "sha2",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]
