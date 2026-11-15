@@ -515,7 +515,7 @@ fn commit_replace(tmp: &Path, target: &Path) -> Result<(), UpdateError> {
         if had {
             let _ = fs::remove_file(&old);
         }
-        return Ok(());
+        Ok(())
     }
     #[cfg(not(windows))]
     {

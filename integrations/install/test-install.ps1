@@ -98,8 +98,8 @@ try {
 
     $spaced = Join-Path $tmp 'dir with spaces\bin'
     $data = Join-Path $tmp 'data with spaces'
-    $home = Join-Path $tmp 'home-ok'
-    $result = Invoke-Install $good $spaced $home $data $clean
+    $testHome = Join-Path $tmp 'home-ok'
+    $result = Invoke-Install $good $spaced $testHome $data $clean
     if ($result.Code -ne 0) { Fail "good checksum should install: $($result.Err)" }
     if ($result.Out -notmatch '(?m)^installed:') { Fail 'missing installed line' }
     if ($result.Err -notmatch 'signature: not checked') { Fail 'should say the signature was not checked' }

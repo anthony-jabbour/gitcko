@@ -67,7 +67,7 @@ chmod 755 "$PAYLOAD"
 CLEAN=$TMP/clean-path
 mkdir -p "$CLEAN"
 ORIG_PATH=$PATH
-for tool in sha256sum shasum tar cp mkdir mv chmod awk uname rm mktemp cat find wc; do
+for tool in sha256sum shasum tar gzip dirname cp mkdir mv chmod awk uname rm mktemp cat find wc sort; do
   if command -v "$tool" >/dev/null 2>&1; then
     ln -s "$(command -v "$tool")" "$CLEAN/$tool"
   fi
