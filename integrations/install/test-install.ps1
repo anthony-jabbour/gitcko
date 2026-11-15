@@ -47,7 +47,7 @@ function Flip-Last([string]$Path) {
     [System.IO.File]::WriteAllBytes($Path, $bytes)
 }
 
-function Invoke-Install([string]$Url, [string]$Dest, [string]$Home, [string]$Data, [string]$PathValue) {
+function Invoke-Install([string]$Url, [string]$Dest, [string]$TestHome, [string]$Data, [string]$PathValue) {
     $saved = @{
         URL = $env:GITCKO_DOWNLOAD_URL
         DEST = $env:GITCKO_INSTALL_DIR
@@ -57,7 +57,7 @@ function Invoke-Install([string]$Url, [string]$Dest, [string]$Home, [string]$Dat
     }
     $env:GITCKO_DOWNLOAD_URL = $Url
     $env:GITCKO_INSTALL_DIR = $Dest
-    $env:USERPROFILE = $Home
+    $env:USERPROFILE = $TestHome
     $env:LOCALAPPDATA = $Data
     $env:PATH = $PathValue
     $id = [guid]::NewGuid().ToString('n')

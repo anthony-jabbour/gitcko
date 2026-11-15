@@ -783,11 +783,10 @@ mod tests {
         assert_eq!(fs::read(&exe).unwrap(), b"old-gitcko-bytes");
         assert!(!install.join("gitcko.new").exists());
 
-        let link = install.join("linked");
-        #[cfg(unix)]
-        std::os::unix::fs::symlink(&exe, &link).unwrap();
         #[cfg(unix)]
         {
+            let link = install.join("linked");
+            std::os::unix::fs::symlink(&exe, &link).unwrap();
             let err = replace_executable(&link, b"nope", true).unwrap_err();
             assert_eq!(err, UpdateError::Swap);
             assert_eq!(fs::read(&exe).unwrap(), b"old-gitcko-bytes");
