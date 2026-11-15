@@ -39,6 +39,7 @@ tokio-util.workspace = true
 
 [dev-dependencies]
 gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
+gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
 gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
 gitcko-redact = { path = "../gitcko-redact", version = "0.0.0" }
 gitcko-review = { path = "../gitcko-review", version = "0.0.0" }

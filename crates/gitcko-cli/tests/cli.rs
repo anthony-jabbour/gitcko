@@ -33,6 +33,7 @@ fn run(args: &[&str]) -> (u8, String, String) {
             stdin_is_tty: false,
             tui: None,
             keychain: None,
+            answers: None,
         },
         &io,
     );

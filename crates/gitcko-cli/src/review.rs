@@ -12,7 +12,7 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use gitcko_config::{
-    Ceilings, FolderConfig, GitckoPaths, RepoFiles, RunFlags, has_remote_acknowledgement,
+    Ceilings, FolderConfig, GitckoPaths, Keychain, RepoFiles, RunFlags, has_remote_acknowledgement,
     resolve_repo, resolve_user,
 };
 use gitcko_domain::{RepoPath, ReviewId};
@@ -167,6 +167,7 @@ pub fn run<O, E>(
     args: &ReviewArgs,
     cwd: &Path,
     env: &BTreeMap<String, String>,
+    keychain: &dyn Keychain,
     runner: Option<&dyn ReviewRunner>,
     tty: bool,
     io: &Io<O, E>,
@@ -178,7 +179,7 @@ where
     if let Some(code) = debug_seam(args, env, tty, io) {
         return code;
     }
-    match run_inner(args, cwd, env, runner, tty, io) {
+    match run_inner(args, cwd, env, keychain, runner, tty, io) {
         Ok(code) => code,
         Err(err) => {
             let _ = writeln!(lock(&io.stderr), "{}", err.message);
@@ -191,6 +192,7 @@ fn run_inner<O, E>(
     args: &ReviewArgs,
     cwd: &Path,
     env: &BTreeMap<String, String>,
+    keychain: &dyn Keychain,
     runner: Option<&dyn ReviewRunner>,
     tty: bool,
     io: &Io<O, E>,
@@ -222,7 +224,7 @@ where
     let only_paths = parse_paths(&args.paths)?;
     let include_paths = parse_paths(&args.include)?;
     reject_repo_models(cwd)?;
-    let loaded = load_models(env)?;
+    let loaded = load_models(env, keychain)?;
     if let Some(provider) = loaded.unacked {
         return Err(RunError::new(
             2,
@@ -310,18 +312,23 @@ struct Loaded {
     unacked: Option<&'static str>,
 }
 
-fn load_models(env: &BTreeMap<String, String>) -> Result<Loaded, RunError> {
-    let paths = GitckoPaths::from_env(env).map_err(|err| RunError::new(2, err.to_string()))?;
+fn load_models(
+    env: &BTreeMap<String, String>,
+    keychain: &dyn Keychain,
+) -> Result<Loaded, RunError> {
+    let env = crate::config::env_with_openrouter(env, keychain)
+        .map_err(|message| RunError::new(2, message))?;
+    let paths = GitckoPaths::from_env(&env).map_err(|err| RunError::new(2, err.to_string()))?;
     let text = match fs::read_to_string(&paths.config_file) {
         Ok(text) => Some(text),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => None,
         Err(_) => return Err(RunError::new(2, "could not read the user config")),
     };
-    let resolved = resolve_user(text.as_deref(), env, &RunFlags::default())
+    let resolved = resolve_user(text.as_deref(), &env, &RunFlags::default())
         .map_err(|err| RunError::new(2, err.to_string()))?;
     let user = resolved.user_config();
     let models = user.models.clone().unwrap_or_default();
-    let models = resolve(&models, env).map_err(|_| RunError::new(2, "run `gitcko setup`"))?;
+    let models = resolve(&models, &env).map_err(|_| RunError::new(2, "run `gitcko setup`"))?;
     if models
         .require(&[ModelRole::Review, ModelRole::Judge])
         .is_err()

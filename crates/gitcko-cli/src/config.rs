@@ -463,7 +463,7 @@ fn load_table(text: &str, env: &BTreeMap<String, String>) -> Result<toml::Table,
     toml::from_str(text).map_err(|_| Fail::new(2, format!("{USER_LABEL}: could not be read")))
 }
 
-fn set_dotted(table: &mut toml::Table, key: &str, value: toml::Value) -> Result<(), ()> {
+pub(crate) fn set_dotted(table: &mut toml::Table, key: &str, value: toml::Value) -> Result<(), ()> {
     let mut parts = key.split('.');
     let Some(head) = parts.next().filter(|part| !part.is_empty()) else {
         return Err(());
@@ -692,6 +692,31 @@ pub(crate) fn openrouter_secret(
         Err(err) => return Err(err),
     };
     resolve_key(ModelProvider::Openrouter, env, keychain, file.as_ref())
+}
+
+/// A copy of `env` with `OPENROUTER_API_KEY` filled from the keychain or the
+/// credentials file when the variable is unset. The returned map is for the model
+/// resolver; callers must not print it.
+pub(crate) fn env_with_openrouter(
+    env: &BTreeMap<String, String>,
+    keychain: &dyn Keychain,
+) -> Result<BTreeMap<String, String>, String> {
+    let mut copy = env.clone();
+    if copy
+        .get("OPENROUTER_API_KEY")
+        .is_some_and(|value| !value.is_empty())
+    {
+        return Ok(copy);
+    }
+    let paths = gitcko_paths(env)?;
+    match openrouter_secret(env, &paths, keychain) {
+        Ok(Some(secret)) => {
+            copy.insert("OPENROUTER_API_KEY".into(), secret.expose().to_string());
+            Ok(copy)
+        }
+        Ok(None) => Ok(copy),
+        Err(err) => Err(err.to_string()),
+    }
 }
 
 /// What `config` and `doctor` print for a key. The value is not in here.

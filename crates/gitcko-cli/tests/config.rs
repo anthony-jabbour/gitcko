@@ -56,6 +56,7 @@ fn go(world: &World, args: &[&str], keychain: Option<&dyn Keychain>) -> (u8, Str
             stdout_is_tty: false,
             stdin_is_tty: false,
             keychain,
+            answers: None,
         },
         &io,
     );
@@ -102,6 +103,7 @@ fn canary_a_relative_config_path_is_refused_without_its_value() {
             stdout_is_tty: false,
             stdin_is_tty: false,
             keychain: None,
+            answers: None,
         },
         &io,
     );

@@ -27,14 +27,16 @@ pub struct Cli {
     pub command: Option<Command>,
 }
 
-/// Top-level commands this build ships. Later batches add setup, doctor, update and
-/// mcp on this enum.
+/// Top-level commands this build ships. Later batches add doctor, update and mcp
+/// on this enum.
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// Review committed changes, or look at a stored review.
     Review(ReviewArgs),
     /// Print resolved settings, or change user settings.
     Config(ConfigArgs),
+    /// Choose a model and record remote acknowledgement.
+    Setup(SetupArgs),
     /// Build or refresh this repository's local index.
     Index(IndexArgs),
     /// Show or delete local cache data.
@@ -236,6 +238,32 @@ pub enum ConfigCmd {
     },
     /// Print the user config file path.
     Path,
+}
+
+/// `gitcko setup`. `--no-input` never prompts; a missing answer exits 2.
+#[derive(Debug, Args)]
+pub struct SetupArgs {
+    /// Where the model runs.
+    #[arg(long, value_enum)]
+    pub provider: Option<SetupProvider>,
+    /// Exact model id. Ollama is `name:tag`; OpenRouter is `vendor/model`.
+    #[arg(long)]
+    pub model: Option<String>,
+    /// Record consent to send selected code to this remote provider.
+    #[arg(long)]
+    pub accept_remote: Option<String>,
+    /// Never prompt. Missing answers exit 2.
+    #[arg(long)]
+    pub no_input: bool,
+}
+
+/// Providers `setup` can bind in this build.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum SetupProvider {
+    /// A loopback Ollama endpoint.
+    Ollama,
+    /// OpenRouter. Needs `OPENROUTER_API_KEY` and `--accept-remote openrouter`.
+    Openrouter,
 }
 
 /// `cache purge`. `--repo` and `--all` cannot be combined.

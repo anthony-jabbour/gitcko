@@ -191,6 +191,7 @@ fn go(
             stdin_is_tty: false,
             tui: None,
             keychain: None,
+            answers: None,
         },
         &io,
     );
