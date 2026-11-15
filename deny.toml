@@ -44,6 +44,7 @@ unused-allowed-license = "allow"
 # edit this file.
 exceptions = [
     { crate = "gitcko-cassette", allow = ["AGPL-3.0-or-later"] },
+    { crate = "gitcko-cli", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-config", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-diff", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-domain", allow = ["AGPL-3.0-or-later"] },

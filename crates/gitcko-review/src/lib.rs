@@ -51,6 +51,10 @@ pub use validate::Dropped;
 /// Base's bounds (REVIEW_ENGINE §9). Versioned as `review_policy@2`, recorded in the
 /// result, and not user config.
 pub const POLICY: &str = "review_policy@2";
+
+/// This crate's version. `gitcko version` prints it as the engine version so the
+/// line tracks the crate that produced the review, not a copy in the CLI.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Hypotheses one review investigates.
 pub const MAX_HYPOTHESES: usize = 8;
 /// Tool calls one hypothesis may run; then the model answers from what it has.

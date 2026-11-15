@@ -1,0 +1,23 @@
+[package]
+name = "gitcko-cli"
+version = "0.0.0"
+description = "The gitcko binary: review a repository and print what was stored"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "gitcko"
+path = "src/main.rs"
+
+[dependencies]
+# Parser derive: https://docs.rs/clap/4.6.7/clap/_features/index.html
+clap = { workspace = true }
+gitcko-review = { path = "../gitcko-review", version = "0.0.0" }
+
+[dev-dependencies]
+gitcko-review = { path = "../gitcko-review", version = "0.0.0" }
+
+[lints]
+workspace = true
