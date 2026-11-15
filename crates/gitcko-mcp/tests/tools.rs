@@ -238,7 +238,7 @@ async fn a_local_review_reaches_the_engine_and_query_tools_do_not() {
 async fn rejected_arguments_do_not_start_a_review_and_a_good_path_does() {
     let world = prepare(LOCAL);
     let outside = TempDir::new("canary_outside");
-    std::os::unix::fs::symlink(outside.path(), world.repo.path().join("canary_link")).unwrap();
+    link_outside(outside.path(), &world.repo.path().join("canary_link"));
     let made = scripted(&world, ReviewStatus::Partial, 0);
     let calls = [
         ("gitcko_review", json!({"model": "canary_model"})),
@@ -579,5 +579,21 @@ fn later_than(existing: &str) -> String {
         if id.as_str() > existing {
             return id;
         }
+    }
+}
+
+/// A directory link outside the repo: symlink on Unix, junction on Windows.
+fn link_outside(target: &Path, link: &Path) {
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(target, link).unwrap();
+    #[cfg(windows)]
+    {
+        let status = std::process::Command::new("cmd")
+            .args(["/C", "mklink", "/J"])
+            .arg(link)
+            .arg(target)
+            .status()
+            .unwrap();
+        assert!(status.success(), "mklink /J failed");
     }
 }
