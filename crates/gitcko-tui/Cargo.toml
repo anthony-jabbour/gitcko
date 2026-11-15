@@ -1,0 +1,30 @@
+[package]
+name = "gitcko-tui"
+version = "0.0.0"
+description = "Full-screen terminal UI: Review, Findings, History and a plain code view"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+# Events and the real terminal. The same major ratatui's crossterm backend uses.
+# https://docs.rs/crossterm/0.29.0/crossterm/
+crossterm = { workspace = true }
+gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
+gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
+gitcko-index = { path = "../gitcko-index", version = "0.0.0" }
+gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+# Frame snapshots use TestBackend. Default features pull the calendar widget; the
+# crossterm backend is the one the spec names.
+# https://docs.rs/ratatui/0.30.2/ratatui/
+ratatui = { workspace = true }
+sha2.workspace = true
+
+[dev-dependencies]
+gitcko-test-support = { path = "../gitcko-test-support", version = "0.0.0" }
+insta.workspace = true
+
+[lints]
+workspace = true

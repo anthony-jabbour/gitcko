@@ -107,6 +107,7 @@ fn go(world: &World, args: &[&str]) -> (u8, String, String) {
             runner: None,
             stdout_is_tty: false,
             stdin_is_tty: false,
+            tui: None,
         },
         &io,
     );

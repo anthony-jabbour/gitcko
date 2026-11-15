@@ -5,8 +5,9 @@
 use std::collections::BTreeMap;
 use std::io::Write;
 use std::process::Command;
+use std::sync::atomic::{AtomicBool, Ordering};
 
-use gitcko_cli::{Io, RunEnv, execute_at, version_line};
+use gitcko_cli::{Io, RunEnv, TuiSession, execute_at, version_line};
 
 fn run(args: &[&str]) -> (u8, String, String) {
     let io = Io::capture();
@@ -30,6 +31,7 @@ fn run(args: &[&str]) -> (u8, String, String) {
             runner: None,
             stdout_is_tty: false,
             stdin_is_tty: false,
+            tui: None,
         },
         &io,
     );
@@ -196,6 +198,64 @@ fn the_binary_version_and_bare_help_match_the_library() {
     assert!(bare.stdout.is_empty(), "non-tty help stays off stdout");
     let err = String::from_utf8(bare.stderr).unwrap();
     assert!(err.contains("Usage:"), "{err}");
+}
+
+struct RecordingTui(AtomicBool);
+
+impl TuiSession for RecordingTui {
+    fn run(&self, _cwd: &std::path::Path, _env: &BTreeMap<String, String>) -> u8 {
+        self.0.store(true, Ordering::SeqCst);
+        0
+    }
+}
+
+#[test]
+fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
+    let dir = std::env::temp_dir();
+    let env = BTreeMap::new();
+    let session = RecordingTui(AtomicBool::new(false));
+    let io = Io::capture();
+    let code = execute_at(
+        &[],
+        &RunEnv {
+            cwd: &dir,
+            env: &env,
+            runner: None,
+            stdout_is_tty: true,
+            stdin_is_tty: true,
+            tui: Some(&session),
+        },
+        &io,
+    );
+    assert_eq!(code, 0, "{}", io.stderr_text());
+    assert!(session.0.load(Ordering::SeqCst), "the TUI session ran");
+    assert!(
+        !io.stderr_text().contains("Usage:"),
+        "a TTY does not dump help: {}",
+        io.stderr_text()
+    );
+
+    let session = RecordingTui(AtomicBool::new(false));
+    let io = Io::capture();
+    let code = execute_at(
+        &[],
+        &RunEnv {
+            cwd: &dir,
+            env: &env,
+            runner: None,
+            stdout_is_tty: true,
+            stdin_is_tty: false,
+            tui: Some(&session),
+        },
+        &io,
+    );
+    assert_eq!(code, 2, "stdout alone is not a TUI session");
+    assert!(
+        !session.0.load(Ordering::SeqCst),
+        "the control does not launch"
+    );
+    assert!(io.stderr_text().contains("Usage:"), "{}", io.stderr_text());
+    assert!(io.stdout_text().is_empty(), "{}", io.stdout_text());
 }
 
 #[cfg(unix)]

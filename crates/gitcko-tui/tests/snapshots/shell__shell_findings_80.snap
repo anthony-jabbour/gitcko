@@ -1,0 +1,8 @@
+---
+source: crates/gitcko-tui/tests/shell.rs
+expression: frame
+---
+Gitcko acme/api feat/auth→main idx:ready qwen3-coder local
+1 Review  [2 Findings]  3 History
+Findings
+? help   q quit

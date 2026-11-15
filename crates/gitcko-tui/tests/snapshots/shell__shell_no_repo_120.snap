@@ -1,0 +1,10 @@
+---
+source: crates/gitcko-tui/tests/shell.rs
+expression: frame
+---
+▄▀▄ Gitcko  repo: /work/notes  branch: feat/auth → main  index: ready  model: qwen3-coder (local)
+[1 Review]  2 Findings  3 History
+No repository
+/work/notes
+Change to a git repository and run gitcko again.
+? help   q quit
