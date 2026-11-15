@@ -1,0 +1,96 @@
+# Install scripts against a local release directory, on the three desktop OSes.
+# The repo is private, so this does not download from gitcko.dev. A real minisign
+# is installed only for the signature cases; the checksum-only cases clear PATH.
+name: install
+
+on:
+  pull_request:
+    paths:
+      - "dist-workspace.toml"
+      - "integrations/install/**"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/install-matrix.yml"
+      - "crates/gitcko-cli/src/update.rs"
+      - "crates/gitcko-cli/src/verify.rs"
+      - "crates/gitcko-cli/src/cli.rs"
+      - "crates/gitcko-cli/src/lib.rs"
+      - "crates/gitcko-cli/Cargo.toml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: install-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  install:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - name: Build
+        run: cargo build -p gitcko-cli --release --locked
+      - name: Install minisign (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            curl -fsSL -o minisign.tar.gz https://github.com/jedisct1/minisign/releases/download/0.12/minisign-0.12-linux.tar.gz
+            echo "9a599b48ba6eb7b1e80f12f36b94ceca7c00b7a5173c95c3efc88d9822957e73  minisign.tar.gz" | sha256sum -c -
+            tar -xzf minisign.tar.gz
+            sudo install minisign-linux/x86_64/minisign /usr/local/bin/minisign
+          else
+            curl -fsSL -o minisign.zip https://github.com/jedisct1/minisign/releases/download/0.12/minisign-0.12-macos.zip
+            echo "89000b19535765f9cffc65a65d64a820f433ef6db8020667f7570e06bf6aac63  minisign.zip" | shasum -a 256 -c -
+            unzip -o minisign.zip
+            sudo install minisign /usr/local/bin/minisign
+          fi
+      - name: Install minisign (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          curl.exe -fsSL -o minisign.zip https://github.com/jedisct1/minisign/releases/download/0.12/minisign-0.12-win64.zip
+          $hash = (Get-FileHash -Algorithm SHA256 minisign.zip).Hash.ToLower()
+          if ($hash -ne '37b600344e20c19314b2e82813db2bfdcc408b77b876f7727889dbd46d539479') {
+            throw 'minisign checksum mismatch'
+          }
+          Expand-Archive minisign.zip -DestinationPath minisign-dist
+          $dest = Join-Path $env:RUNNER_TEMP 'minisign-bin'
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item minisign-dist\minisign-win64\x86_64\minisign.exe $dest
+          Add-Content $env:GITHUB_PATH $dest
+      - name: Install script (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export GITCKO_REAL_MINISIGN=1
+          export GITCKO_TEST_BIN="${GITHUB_WORKSPACE}/target/release/gitcko"
+          integrations/install/test-install.sh
+      - name: Install script (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:GITCKO_REAL_MINISIGN = '1'
+          $env:GITCKO_TEST_BIN = Join-Path (Get-Location) 'target\release\gitcko.exe'
+          & .\integrations\install\test-install.ps1
