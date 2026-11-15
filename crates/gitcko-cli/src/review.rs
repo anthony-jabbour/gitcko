@@ -570,17 +570,19 @@ where
         Ok(runtime) => runtime,
         Err(_) => return 1,
     };
-    runtime.block_on(async {
+    // `false` means the handler never armed or the stream closed without a signal.
+    // That must not look like a clean Ctrl-C (exit 130).
+    let caught = runtime.block_on(async {
         #[cfg(unix)]
         {
             use tokio::signal::unix::{SignalKind, signal};
             let mut interrupt = match signal(SignalKind::interrupt()) {
                 Ok(stream) => stream,
-                Err(_) => return,
+                Err(_) => return false,
             };
             let _ = writeln!(lock(&io.stderr), "waiting for cancel");
             let _ = lock(&io.stderr).flush();
-            let _ = interrupt.recv().await;
+            interrupt.recv().await.is_some()
         }
         #[cfg(not(unix))]
         {
@@ -599,8 +601,12 @@ where
             let _ = writeln!(lock(&io.stderr), "waiting for cancel");
             let _ = lock(&io.stderr).flush();
             cancel.cancelled().await;
+            true
         }
     });
+    if !caught {
+        return 1;
+    }
     let _ = writeln!(lock(&io.stderr), "status: canceled");
     130
 }
