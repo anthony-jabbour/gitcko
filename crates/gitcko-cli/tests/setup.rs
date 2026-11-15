@@ -718,7 +718,7 @@ fn a_setup_config_can_run_a_review_and_a_stored_key_is_not_printed() {
     assert_eq!(code, 0, "{err}{out}");
     assert_eq!(*remote.0.lock().unwrap(), Some(false));
     assert!(!err.contains(&key) && !out.contains(&key));
-    let remote_at = err.find("remote:").expect("disclosure");
+    let remote_at = err.find("selected code is sent to").expect("disclosure");
     let stage_at = err.find("stage:").expect("progress");
     assert!(remote_at < stage_at, "{err}");
 }

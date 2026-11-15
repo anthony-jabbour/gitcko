@@ -516,6 +516,8 @@ fn a_broken_stdout_during_present_is_exit_1() {
             stdout_is_tty: false,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
+            answers: None,
         },
         &io,
     );
@@ -547,6 +549,8 @@ fn store_put_failure_clears_the_marker_and_exits_1() {
             stdout_is_tty: false,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
+            answers: None,
         },
         &io,
     );
@@ -656,7 +660,9 @@ model = "example/model-1"
     let (code, out, err) = go_prompt(&world, &["--json"], &runner, true, Some(&yes));
     assert_eq!(code, 2, "{err}");
     assert!(runner.seen.lock().unwrap().is_none());
-    assert!(!err.contains("selected code is sent to") && !out.contains(&key) && !err.contains(&key));
+    assert!(
+        !err.contains("selected code is sent to") && !out.contains(&key) && !err.contains(&key)
+    );
     world.env.remove("CI");
 
     let runner = Fake::status(ReviewStatus::Complete);
