@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, TcpStream};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::Duration;
 
@@ -122,10 +122,15 @@ fn collect(cwd: &Path, env: &BTreeMap<String, String>, keychain: &dyn Keychain) 
 }
 
 fn git_check(env: &BTreeMap<String, String>) -> Check {
-    let mut cmd = Command::new("git");
+    let mut cmd = match git_in_path(env) {
+        Some(path) => Command::new(path),
+        None if path_var(env).is_some() => return fail("git", "git is not installed"),
+        None => Command::new("git"),
+    };
     cmd.arg("--version");
-    if let Some(path) = env.get("PATH") {
-        cmd.env("PATH", path);
+    cmd.env_clear();
+    for (key, value) in env {
+        cmd.env(key, value);
     }
     match cmd.output() {
         Ok(output) if output.status.success() => Check {
@@ -135,6 +140,34 @@ fn git_check(env: &BTreeMap<String, String>) -> Check {
         },
         _ => fail("git", "git is not installed"),
     }
+}
+
+fn path_var(env: &BTreeMap<String, String>) -> Option<&str> {
+    env.get("PATH")
+        .or_else(|| env.get("Path"))
+        .map(String::as_str)
+        .filter(|s| !s.is_empty())
+}
+
+fn git_in_path(env: &BTreeMap<String, String>) -> Option<PathBuf> {
+    let path_var = path_var(env)?;
+    for dir in std::env::split_paths(path_var) {
+        #[cfg(windows)]
+        for name in ["git.exe", "git.cmd", "git.bat", "git"] {
+            let candidate = dir.join(name);
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
+        #[cfg(not(windows))]
+        {
+            let candidate = dir.join("git");
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
+    }
+    None
 }
 
 fn git_detail(stdout: &[u8]) -> String {
