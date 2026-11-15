@@ -16,8 +16,13 @@ targets = [
 ]
 
 [advisories]
-# keyring 4.2's Linux Secret Service still depends on zbus 5 (RUSTSEC-2026-0370/0371/0372).
-# The OS adapter is not linked in layer 0; ignore those ids when the CLI crate adds keyring.
+# keyring 4.2's Linux Secret Service still depends on zbus 5. The OS adapter is linked
+# from gitcko-cli only, not from layer 0.
+ignore = [
+    { id = "RUSTSEC-2026-0370", reason = "keyring 4.2's Linux store still depends on unmaintained zvariant" },
+    { id = "RUSTSEC-2026-0371", reason = "keyring 4.2's Linux store still depends on unmaintained zbus_names" },
+    { id = "RUSTSEC-2026-0372", reason = "keyring 4.2's Linux store still depends on unmaintained zvariant_derive" },
+]
 
 [licenses]
 allow = [

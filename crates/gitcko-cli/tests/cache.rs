@@ -77,6 +77,7 @@ fn go(world: &World, args: &[&str]) -> (u8, String, String) {
             stdout_is_tty: false,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
         },
         &io,
     );
@@ -183,6 +184,7 @@ fn index_cancel_via_debug_seam_is_130() {
             stdout_is_tty: false,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
         },
         &io,
     );
@@ -204,6 +206,7 @@ fn index_needs_a_repository() {
             stdout_is_tty: false,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
         },
         &io,
     );

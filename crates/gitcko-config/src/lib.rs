@@ -230,6 +230,18 @@ impl Resolved {
         self.entries.get(key)
     }
 
+    /// Every dotted key in order, with the value and the sources that produced it.
+    pub fn entries(&self) -> impl Iterator<Item = (&str, &Entry)> {
+        self.entries
+            .iter()
+            .map(|(key, entry)| (key.as_str(), entry))
+    }
+
+    /// The resolved document, defaults included. `gitcko config --json` prints this.
+    pub fn values(&self) -> Value {
+        self.nested()
+    }
+
     /// The resolved repository config as its public type.
     pub fn repo_config(&self) -> RepoConfig {
         serde_json::from_value(self.nested()).expect("validated while resolving")

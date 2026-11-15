@@ -6,8 +6,10 @@
 mod cache;
 mod cli;
 mod clock;
+mod config;
 mod exit;
 mod history;
+mod keychain;
 mod launch;
 mod review;
 
@@ -17,8 +19,10 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use clap::{CommandFactory, FromArgMatches};
+use gitcko_config::Keychain;
 
 use crate::cli::Cli;
+use crate::keychain::OsKeychain;
 pub use crate::launch::TuiSession;
 pub use crate::review::{ReviewJob, ReviewRunner, RunError, repo_cache_id};
 
@@ -84,6 +88,9 @@ pub struct RunEnv<'a> {
     /// When both streams are a terminal and there is no subcommand, bare `gitcko`
     /// calls this. The binary sets it; a test that leaves it empty stays on help.
     pub tui: Option<&'a dyn TuiSession>,
+    /// Credential store. `None` is empty, so a test never opens the OS keychain.
+    /// The binary passes the OS store.
+    pub keychain: Option<&'a dyn Keychain>,
 }
 
 /// Copy the process environment without assuming every value is valid UTF-8.
@@ -109,6 +116,7 @@ pub fn run_from_env() -> u8 {
         stderr: Arc::new(Mutex::new(StdErr)),
     };
     let live = launch::LiveTui;
+    let keychain = OsKeychain;
     let run = RunEnv {
         cwd: &cwd,
         env: &env,
@@ -116,6 +124,7 @@ pub fn run_from_env() -> u8 {
         stdout_is_tty: io::stdout().is_terminal(),
         stdin_is_tty: io::stdin().is_terminal(),
         tui: Some(&live),
+        keychain: Some(&keychain),
     };
     execute_at(&refs, &run, &io)
 }
@@ -132,6 +141,7 @@ pub fn execute(args: &[&str], io: &Io<Vec<u8>, Vec<u8>>) -> u8 {
         stdout_is_tty: false,
         stdin_is_tty: false,
         tui: None,
+        keychain: None,
     };
     execute_at(args, &run, io)
 }
@@ -171,6 +181,9 @@ where
             Some(cli::ReviewCmd::Status(status)) => history::status(&status, run.cwd, run.env, io),
             None => review::run(&args, run.cwd, run.env, run.runner, run.stdout_is_tty, io),
         },
+        Some(cli::Command::Config(args)) => {
+            config::run(&args, run.cwd, run.env, keychain_or_empty(run.keychain), io)
+        }
         Some(cli::Command::Index(args)) => cache::index(&args, run.cwd, run.env, io),
         Some(cli::Command::Cache(args)) => {
             cache::cache(&args, run.cwd, run.env, run.stdin_is_tty, io)
@@ -191,6 +204,20 @@ where
         }
     }
 }
+
+struct EmptyKeychain;
+
+impl Keychain for EmptyKeychain {
+    fn get(&self, _account: &str) -> Result<Option<String>, gitcko_config::CredError> {
+        Ok(None)
+    }
+}
+
+fn keychain_or_empty(keychain: Option<&dyn Keychain>) -> &dyn Keychain {
+    keychain.unwrap_or(&EMPTY_KEYCHAIN)
+}
+
+static EMPTY_KEYCHAIN: EmptyKeychain = EmptyKeychain;
 
 fn write_version<O: Write, E>(io: &Io<O, E>) -> u8 {
     let _ = writeln!(lock(&io.stdout), "{}", version_line());
