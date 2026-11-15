@@ -287,8 +287,9 @@ where
             return Err(err);
         }
     };
-    if store.put(&repo_id, &outcome.review).is_err() {
-        let _ = writeln!(lock(&io.stderr), "could not store the review");
+    if test_force_put_fail(env) || store.put(&repo_id, &outcome.review).is_err() {
+        let _ = store.clear_running(&repo_id, &review_id);
+        return Err(RunError::new(1, "could not store the review"));
     }
     let _ = store.clear_running(&repo_id, &review_id);
     write_events(&store, &repo_id, &outcome.review.review_id, &outcome.events);
@@ -411,24 +412,27 @@ where
     O: Write,
     E: Write,
 {
-    let remote = models
-        .bindings
-        .values()
-        .any(|binding| binding.destination.class == DestinationClass::CustomerRemote);
-    if !remote {
-        let _ = writeln!(lock(&io.stderr), "local: code stays on this machine");
-        return;
-    }
-    if let Some(binding) = models.binding_for(ModelRole::Review) {
+    let mut disclosed = false;
+    for (role, binding_name) in &models.roles {
+        let Some(binding) = models.bindings.get(binding_name) else {
+            continue;
+        };
+        if binding.destination.class != DestinationClass::CustomerRemote {
+            continue;
+        }
+        disclosed = true;
         let provider = match binding.provider {
             ModelProvider::Openrouter => "openrouter",
             ModelProvider::Ollama => "ollama",
         };
         let _ = writeln!(
             lock(&io.stderr),
-            "remote: selected code is sent to {provider} ({})",
+            "remote ({role:?}): selected code is sent to {provider} ({})",
             binding.model
         );
+    }
+    if !disclosed {
+        let _ = writeln!(lock(&io.stderr), "local: code stays on this machine");
     }
 }
 
@@ -450,11 +454,13 @@ where
     if args.json {
         let json = serde_json::to_string(review)
             .map_err(|_| RunError::new(1, "could not encode the review"))?;
-        let _ = writeln!(stdout, "{json}");
+        writeln!(stdout, "{json}").map_err(|_| RunError::new(1, "could not write the review"))?;
     } else if args.text || args.agent || !tty {
-        let _ = write!(stdout, "{}", text(review));
+        write!(stdout, "{}", text(review))
+            .map_err(|_| RunError::new(1, "could not write the review"))?;
     } else {
-        let _ = write!(stdout, "{}", boxed(review, width));
+        write!(stdout, "{}", boxed(review, width))
+            .map_err(|_| RunError::new(1, "could not write the review"))?;
     }
     Ok(())
 }
@@ -508,6 +514,17 @@ fn write_events(store: &ReviewStore, repo_id: &str, review_id: &str, events: &[R
 
 fn lock<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     mutex.lock().unwrap_or_else(|err| err.into_inner())
+}
+
+/// Debug builds only. Simulates a failed `put` after a successful run.
+#[cfg(debug_assertions)]
+fn test_force_put_fail(env: &BTreeMap<String, String>) -> bool {
+    env.get("GITCKO_TEST_PUT_FAIL").map(String::as_str) == Some("1")
+}
+
+#[cfg(not(debug_assertions))]
+fn test_force_put_fail(_env: &BTreeMap<String, String>) -> bool {
+    false
 }
 
 /// Debug builds only. `GITCKO_TEST_SEAM=1` plus a review file or a cancel wait lets
