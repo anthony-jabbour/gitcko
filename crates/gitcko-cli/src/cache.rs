@@ -7,7 +7,10 @@
 use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::Path;
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use std::thread::JoinHandle;
+use std::time::Duration;
 
 use gitcko_config::GitckoPaths;
 use gitcko_git::Repo;
@@ -89,23 +92,12 @@ where
         }
     };
     let cancel = CancellationToken::new();
-    if index_cancel_requested(env) {
+    let _ctrl_c = if index_cancel_requested(env) {
         cancel.cancel();
+        None
     } else {
-        let flag = cancel.clone();
-        std::thread::spawn(move || {
-            if let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-            {
-                runtime.block_on(async move {
-                    if tokio::signal::ctrl_c().await.is_ok() {
-                        flag.cancel();
-                    }
-                });
-            }
-        });
-    }
+        Some(spawn_index_ctrl_c_listener(cancel.clone()))
+    };
     let mut keep_going = |step: gitcko_index::PublishStep| {
         let _ = writeln!(lock(&io.stderr), "stage: {}", step_name(step));
         !cancel.is_cancelled()
@@ -129,6 +121,60 @@ fn step_name(step: gitcko_index::PublishStep) -> &'static str {
         gitcko_index::PublishStep::Sync => "sync",
         gitcko_index::PublishStep::Rename => "rename",
         gitcko_index::PublishStep::Activate => "activate",
+    }
+}
+
+/// Stops the Ctrl-C listener and joins its thread when dropped.
+struct IndexCtrlCListener {
+    stop: Arc<AtomicBool>,
+    thread: Option<JoinHandle<()>>,
+}
+
+impl IndexCtrlCListener {
+    fn shutdown(&mut self) {
+        self.stop.store(true, Ordering::Relaxed);
+        if let Some(thread) = self.thread.take() {
+            let _ = thread.join();
+        }
+    }
+}
+
+impl Drop for IndexCtrlCListener {
+    fn drop(&mut self) {
+        self.shutdown();
+    }
+}
+
+fn spawn_index_ctrl_c_listener(cancel: CancellationToken) -> IndexCtrlCListener {
+    let stop = Arc::new(AtomicBool::new(false));
+    let stop_flag = Arc::clone(&stop);
+    let thread = std::thread::spawn(move || {
+        if let Ok(runtime) = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+        {
+            runtime.block_on(async move {
+                loop {
+                    tokio::select! {
+                        res = tokio::signal::ctrl_c() => {
+                            if res.is_ok() {
+                                cancel.cancel();
+                            }
+                            break;
+                        }
+                        () = tokio::time::sleep(Duration::from_millis(50)) => {
+                            if stop_flag.load(Ordering::Relaxed) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+    IndexCtrlCListener {
+        stop,
+        thread: Some(thread),
     }
 }
 
