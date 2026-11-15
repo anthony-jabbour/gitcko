@@ -81,12 +81,24 @@ pub struct RunEnv<'a> {
     pub stdin_is_tty: bool,
 }
 
+/// Copy the process environment without assuming every value is valid UTF-8.
+pub fn collect_env() -> BTreeMap<String, String> {
+    std::env::vars_os()
+        .map(|(key, value)| {
+            (
+                key.to_string_lossy().into_owned(),
+                value.to_string_lossy().into_owned(),
+            )
+        })
+        .collect()
+}
+
 /// Run `gitcko` with the process arguments, environment and working directory.
 pub fn run_from_env() -> u8 {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let refs: Vec<&str> = args.iter().map(String::as_str).collect();
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let env: BTreeMap<String, String> = std::env::vars().collect();
+    let env = collect_env();
     let io = Io {
         stdout: Arc::new(Mutex::new(StdOut)),
         stderr: Arc::new(Mutex::new(StdErr)),
@@ -105,7 +117,7 @@ pub fn run_from_env() -> u8 {
 /// program name. Review tests should use [`execute_at`] with a temp env.
 pub fn execute(args: &[&str], io: &Io<Vec<u8>, Vec<u8>>) -> u8 {
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let env: BTreeMap<String, String> = std::env::vars().collect();
+    let env = collect_env();
     let run = RunEnv {
         cwd: &cwd,
         env: &env,
