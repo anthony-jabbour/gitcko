@@ -27,7 +27,7 @@ pub struct Cli {
     pub command: Option<Command>,
 }
 
-/// Top-level commands this build ships. Later batches add mcp on this enum.
+/// Top-level commands this build ships.
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// Review committed changes, or look at a stored review.
@@ -42,6 +42,8 @@ pub enum Command {
     Index(IndexArgs),
     /// Show or delete local cache data.
     Cache(CacheArgs),
+    /// Speak the local MCP server on stdio.
+    Mcp(McpArgs),
     /// Print the binary version and the schema ids it writes.
     Version,
     /// Replace a script install after verifying the signed checksums.
@@ -54,6 +56,20 @@ pub struct UpdateArgs {
     /// Only report whether a newer signed release is available.
     #[arg(long)]
     pub check: bool,
+}
+
+/// `gitcko mcp`. The only subcommand in this build is `serve`.
+#[derive(Debug, Args)]
+pub struct McpArgs {
+    #[command(subcommand)]
+    pub command: McpCmd,
+}
+
+/// MCP subcommands.
+#[derive(Debug, Subcommand)]
+pub enum McpCmd {
+    /// Speak MCP on stdio. This build has no HTTP listener; logs stay on stderr.
+    Serve,
 }
 
 /// `gitcko review` and its flags (CLI_SPEC §3). `show` and `status` are subcommands.

@@ -1,0 +1,26 @@
+[package]
+name = "gitcko-mcp"
+version = "0.0.0"
+description = "Local MCP server: four review tools on stdio, no listener and no HTTP client"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+# `server` + `transport-io` only. HTTP transports and rmcp's reqwest feature stay off.
+# https://docs.rs/rmcp/3.10.0/rmcp/#feature-flags
+rmcp = { workspace = true }
+serde_json.workspace = true
+# The runtime this crate owns for `serve_stdio`. `io-std` is the stdio transport.
+# https://docs.rs/tokio/1.54.1/tokio/#feature-flags
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "sync", "io-std", "io-util"] }
+
+[dev-dependencies]
+# The client speaks the same duplex the server does. No reqwest feature.
+rmcp = { workspace = true, features = ["client"] }
+serde_json.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "io-util"] }
+
+[lints]
+workspace = true

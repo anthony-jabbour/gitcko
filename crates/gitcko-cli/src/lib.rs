@@ -230,6 +230,9 @@ where
         Some(cli::Command::Cache(args)) => {
             cache::cache(&args, run.cwd, run.env, run.stdin_is_tty, io)
         }
+        Some(cli::Command::Mcp(args)) => match args.command {
+            cli::McpCmd::Serve => gitcko_mcp::serve_stdio(run.cwd, run.env),
+        },
         Some(cli::Command::Update(args)) => update::run(&args, run.exe, run.env, io),
         None => {
             if run.stdin_is_tty

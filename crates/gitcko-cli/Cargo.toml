@@ -21,6 +21,7 @@ keyring = { workspace = true }
 gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
 gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
 gitcko-index = { path = "../gitcko-index", version = "0.0.0" }
+gitcko-mcp = { path = "../gitcko-mcp", version = "0.0.0" }
 gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
 gitcko-model-ollama = { path = "../gitcko-model-ollama", version = "0.0.0" }
 gitcko-model-openai = { path = "../gitcko-model-openai", version = "0.0.0" }
