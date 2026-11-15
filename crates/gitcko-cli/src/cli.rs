@@ -43,6 +43,7 @@ pub enum Command {
 
 /// `gitcko review` and its flags (CLI_SPEC §3). `show` and `status` are subcommands.
 #[derive(Debug, Args)]
+#[command(args_conflicts_with_subcommands = true)]
 pub struct ReviewArgs {
     #[command(subcommand)]
     pub action: Option<ReviewCmd>,
