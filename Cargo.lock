@@ -1456,6 +1456,7 @@ dependencies = [
  "gitcko-tui",
  "jsonschema",
  "keyring",
+ "serde",
  "serde_json",
  "sha2",
  "tokio",

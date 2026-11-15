@@ -29,6 +29,7 @@ gitcko-render = { path = "../gitcko-render", version = "0.0.0" }
 gitcko-review = { path = "../gitcko-review", version = "0.0.0" }
 gitcko-storage = { path = "../gitcko-storage", version = "0.0.0" }
 gitcko-tui = { path = "../gitcko-tui", version = "0.0.0" }
+serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 toml.workspace = true

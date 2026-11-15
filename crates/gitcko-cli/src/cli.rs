@@ -37,6 +37,8 @@ pub enum Command {
     Config(ConfigArgs),
     /// Choose a model and record remote acknowledgement.
     Setup(SetupArgs),
+    /// Check git, config, bindings and cache without running a review.
+    Doctor(DoctorArgs),
     /// Build or refresh this repository's local index.
     Index(IndexArgs),
     /// Show or delete local cache data.
@@ -238,6 +240,14 @@ pub enum ConfigCmd {
     },
     /// Print the user config file path.
     Path,
+}
+
+/// `gitcko doctor`.
+#[derive(Debug, Args)]
+pub struct DoctorArgs {
+    /// One JSON object on stdout.
+    #[arg(long)]
+    pub json: bool,
 }
 
 /// `gitcko setup`. `--no-input` never prompts; a missing answer exits 2.

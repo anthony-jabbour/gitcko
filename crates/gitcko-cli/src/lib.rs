@@ -7,6 +7,7 @@ mod cache;
 mod cli;
 mod clock;
 mod config;
+mod doctor;
 mod exit;
 mod history;
 mod keychain;

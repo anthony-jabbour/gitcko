@@ -164,6 +164,10 @@ fn index_and_cache_are_in_the_tree() {
     assert!(out.contains("stats"), "{out}");
     assert!(out.contains("purge"), "{out}");
 
+    let (code, out, err) = run(&["doctor", "--help"]);
+    assert_eq!(code, 0, "{err}");
+    assert!(out.contains("--json"), "{out}");
+
     let (code, out, err) = run(&["cache", "purge", "--help"]);
     assert_eq!(code, 0, "{err}");
     assert!(out.contains("--repo"), "{out}");

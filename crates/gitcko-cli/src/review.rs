@@ -167,6 +167,7 @@ pub fn progress_line(event: &RunEvent) -> Option<String> {
 }
 
 /// Run `gitcko review` (not `show` or `status`).
+#[allow(clippy::too_many_arguments)]
 pub fn run<O, E>(
     args: &ReviewArgs,
     cwd: &Path,
@@ -204,6 +205,7 @@ where
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn run_inner<O, E>(
     args: &ReviewArgs,
     cwd: &Path,
