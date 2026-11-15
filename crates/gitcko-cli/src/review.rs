@@ -558,8 +558,10 @@ where
     O: Write + Send,
     E: Write + Send,
 {
-    let _ = writeln!(lock(&io.stderr), "waiting for cancel");
-    let _ = lock(&io.stderr).flush();
+    // Register the SIGINT handler before announcing readiness. Printing first let
+    // macOS CI deliver the test's kill between the line and the handler install,
+    // so the process died on the default disposition (`ExitStatus::code() == None`)
+    // instead of exiting 130.
     let runtime = match tokio::runtime::Builder::new_multi_thread()
         .worker_threads(2)
         .enable_all()
@@ -569,14 +571,35 @@ where
         Err(_) => return 1,
     };
     runtime.block_on(async {
-        let cancel = CancellationToken::new();
-        let flag = cancel.clone();
-        tokio::spawn(async move {
-            if tokio::signal::ctrl_c().await.is_ok() {
-                flag.cancel();
-            }
-        });
-        cancel.cancelled().await;
+        #[cfg(unix)]
+        {
+            use tokio::signal::unix::{SignalKind, signal};
+            let mut interrupt = match signal(SignalKind::interrupt()) {
+                Ok(stream) => stream,
+                Err(_) => return,
+            };
+            let _ = writeln!(lock(&io.stderr), "waiting for cancel");
+            let _ = lock(&io.stderr).flush();
+            let _ = interrupt.recv().await;
+        }
+        #[cfg(not(unix))]
+        {
+            let cancel = CancellationToken::new();
+            let flag = cancel.clone();
+            let (ready_tx, ready_rx) = tokio::sync::oneshot::channel();
+            tokio::spawn(async move {
+                let ctrl = tokio::signal::ctrl_c();
+                tokio::pin!(ctrl);
+                let _ = ready_tx.send(());
+                if ctrl.await.is_ok() {
+                    flag.cancel();
+                }
+            });
+            let _ = ready_rx.await;
+            let _ = writeln!(lock(&io.stderr), "waiting for cancel");
+            let _ = lock(&io.stderr).flush();
+            cancel.cancelled().await;
+        }
     });
     let _ = writeln!(lock(&io.stderr), "status: canceled");
     130

@@ -485,5 +485,11 @@ fn the_binary_turns_ctrl_c_into_130() {
         .expect("kill");
     assert!(status.success());
     let finished = child.wait().expect("wait");
-    assert_eq!(finished.code(), Some(130));
+    // A raw SIGINT kill (handler not yet installed) yields `code() == None`. The
+    // product must convert Ctrl-C into exit 130 instead.
+    assert_eq!(
+        finished.code(),
+        Some(130),
+        "expected exit 130, got {finished:?} (signal kill means the handler raced)"
+    );
 }
