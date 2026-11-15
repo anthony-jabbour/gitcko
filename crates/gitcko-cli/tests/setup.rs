@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use gitcko_cli::{Io, ReviewJob, ReviewRunner, RunEnv, RunError, execute_at};
-use gitcko_config::{CredError, Keychain};
+use gitcko_config::{CredError, GitckoPaths, Keychain};
 use gitcko_model::resolve;
 use gitcko_protocol::config::{ModelRole, UserConfig};
 use gitcko_protocol::event::{RunEvent, RunEventKind};
@@ -132,11 +132,9 @@ fn user_file(world: &World) -> UserConfig {
 }
 
 fn credentials_path(world: &World) -> PathBuf {
-    world
-        .home
-        .join(".config")
-        .join("gitcko")
-        .join("credentials.toml")
+    GitckoPaths::from_env(&world.env)
+        .expect("paths")
+        .credentials_file
 }
 
 #[test]

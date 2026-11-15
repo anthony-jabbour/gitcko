@@ -3,7 +3,7 @@
 //! `gitcko config`: sources, user get/set/unset, and the refusal to store a secret.
 
 use gitcko_cli::{Io, RunEnv, execute_at};
-use gitcko_config::{Keychain, MemoryKeychain};
+use gitcko_config::{GitckoPaths, Keychain, MemoryKeychain};
 use gitcko_redact::canaries;
 use gitcko_test_support::{TempDir, empty_repo};
 use std::collections::BTreeMap;
@@ -281,10 +281,9 @@ fn a_secret_in_every_store_is_shown_as_secret_and_the_env_wins() {
     let chain = MemoryKeychain {
         entries: BTreeMap::from([("openrouter".into(), chain_key.clone())]),
     };
-    let creds = PathBuf::from(world.env["HOME"].clone())
-        .join(".config")
-        .join("gitcko")
-        .join("credentials.toml");
+    let creds = GitckoPaths::from_env(&world.env)
+        .expect("paths")
+        .credentials_file;
     std::fs::create_dir_all(creds.parent().unwrap()).unwrap();
     std::fs::write(
         &creds,

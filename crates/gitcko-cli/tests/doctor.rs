@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use gitcko_cli::{Io, RunEnv, execute_at};
-use gitcko_config::{CredError, Keychain};
+use gitcko_config::{CredError, GitckoPaths, Keychain};
 use gitcko_redact::canaries;
 use gitcko_test_support::{TempDir, empty_repo};
 
@@ -181,7 +181,16 @@ fn git_and_cache_and_config_failures_stay_free_of_paths() {
     let canary = canaries()[1].clone();
     let empty = TempDir::new("doctor-no-git");
     let mut env = world.env.clone();
-    env.insert("PATH".into(), empty.path().display().to_string());
+    #[cfg(windows)]
+    {
+        let shim = empty.path().join("git.cmd");
+        std::fs::write(&shim, "@echo off\nexit /b 1\n").unwrap();
+        env.insert("PATH".into(), empty.path().display().to_string());
+    }
+    #[cfg(not(windows))]
+    {
+        env.insert("PATH".into(), empty.path().display().to_string());
+    }
     env.insert(
         "GITCKO_CACHE_DIR".into(),
         world.home.join(&canary).display().to_string(),
@@ -272,11 +281,9 @@ model = \"anthropic/claude-haiku-5.5\"
     let store = Store {
         entries: Mutex::new(BTreeMap::from([("openrouter".into(), chain_key.clone())])),
     };
-    let cred = world
-        .home
-        .join(".config")
-        .join("gitcko")
-        .join("credentials.toml");
+    let cred = GitckoPaths::from_env(&world.env)
+        .expect("paths")
+        .credentials_file;
     std::fs::create_dir_all(cred.parent().unwrap()).unwrap();
     std::fs::write(
         &cred,
