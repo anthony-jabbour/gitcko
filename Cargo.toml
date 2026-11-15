@@ -26,6 +26,9 @@ globset = "0.4"
 http = "1"
 ignore = "0.4"
 insta = { version = "1.49", features = ["json"] }
+# Verifies a minisign signature with no C library and no network (P5_PLAN §5.4).
+# https://docs.rs/minisign-verify
+minisign-verify = "0.2"
 keyring = "4.2"
 proptest = "1.12"
 regex = "1.13"

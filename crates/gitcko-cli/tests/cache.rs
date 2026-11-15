@@ -76,6 +76,7 @@ fn go(world: &World, args: &[&str]) -> (u8, String, String) {
             runner: None,
             stdout_is_tty: false,
             stdin_is_tty: false,
+            exe: None,
         },
         &io,
     );
@@ -176,6 +177,7 @@ fn index_publishes_a_revision_and_a_cancel_is_130() {
             runner: None,
             stdout_is_tty: false,
             stdin_is_tty: false,
+            exe: None,
         },
         &io,
     );
@@ -192,6 +194,7 @@ fn index_publishes_a_revision_and_a_cancel_is_130() {
             runner: None,
             stdout_is_tty: false,
             stdin_is_tty: false,
+            exe: None,
         },
         &io,
     );

@@ -30,6 +30,7 @@ fn run(args: &[&str]) -> (u8, String, String) {
             runner: None,
             stdout_is_tty: false,
             stdin_is_tty: false,
+            exe: None,
         },
         &io,
     );
@@ -72,6 +73,13 @@ fn bare_gitcko_writes_help_to_stderr_and_exits_2() {
     assert!(err.contains("Usage:"), "{err}");
     assert!(err.contains("review"), "{err}");
     assert!(err.contains("version"), "{err}");
+}
+
+#[test]
+fn update_help_names_check() {
+    let (code, out, err) = run(&["update", "--help"]);
+    assert_eq!(code, 0, "{err}");
+    assert!(out.contains("--check"), "{out}");
 }
 
 #[test]

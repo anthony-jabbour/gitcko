@@ -188,6 +188,7 @@ fn go(
             runner,
             stdout_is_tty: tty,
             stdin_is_tty: false,
+            exe: None,
         },
         &io,
     );

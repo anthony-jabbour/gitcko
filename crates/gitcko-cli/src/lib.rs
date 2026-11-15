@@ -9,6 +9,8 @@ mod clock;
 mod exit;
 mod history;
 mod review;
+mod update;
+mod verify;
 
 use std::collections::BTreeMap;
 use std::io::{self, IsTerminal, Write};
@@ -19,6 +21,7 @@ use clap::{CommandFactory, FromArgMatches};
 
 use crate::cli::Cli;
 pub use crate::review::{ReviewJob, ReviewRunner, RunError, repo_cache_id};
+pub use crate::verify::{DoctorSignature, doctor_signature_check};
 
 /// Where a command writes. Tests pass buffers; the binary passes the real terminal.
 /// The handles are shared so a progress callback can write while the command runs.
@@ -79,6 +82,8 @@ pub struct RunEnv<'a> {
     pub stdout_is_tty: bool,
     /// True when stdin is a terminal. This build still requires `-f` to purge.
     pub stdin_is_tty: bool,
+    /// The binary `update` replaces. `None` is the running process.
+    pub exe: Option<&'a Path>,
 }
 
 /// Run `gitcko` with the process arguments, environment and working directory.
@@ -87,6 +92,7 @@ pub fn run_from_env() -> u8 {
     let refs: Vec<&str> = args.iter().map(String::as_str).collect();
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let env: BTreeMap<String, String> = std::env::vars().collect();
+    let exe = std::env::current_exe().ok();
     let io = Io {
         stdout: Arc::new(Mutex::new(StdOut)),
         stderr: Arc::new(Mutex::new(StdErr)),
@@ -97,6 +103,7 @@ pub fn run_from_env() -> u8 {
         runner: None,
         stdout_is_tty: io::stdout().is_terminal(),
         stdin_is_tty: io::stdin().is_terminal(),
+        exe: exe.as_deref(),
     };
     execute_at(&refs, &run, &io)
 }
@@ -112,6 +119,7 @@ pub fn execute(args: &[&str], io: &Io<Vec<u8>, Vec<u8>>) -> u8 {
         runner: None,
         stdout_is_tty: false,
         stdin_is_tty: false,
+        exe: None,
     };
     execute_at(args, &run, io)
 }
@@ -155,6 +163,7 @@ where
         Some(cli::Command::Cache(args)) => {
             cache::cache(&args, run.cwd, run.env, run.stdin_is_tty, io)
         }
+        Some(cli::Command::Update(args)) => update::run(&args, run.exe, run.env, io),
         None => {
             let mut command = Cli::command();
             let mut help = Vec::new();

@@ -27,8 +27,8 @@ pub struct Cli {
     pub command: Option<Command>,
 }
 
-/// Top-level commands this build ships. Later batches add config, setup, doctor,
-/// update and mcp on this enum.
+/// Top-level commands this build ships. Later batches add config, setup, doctor
+/// and mcp on this enum.
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// Review committed changes, or look at a stored review.
@@ -39,6 +39,16 @@ pub enum Command {
     Cache(CacheArgs),
     /// Print the binary version and the schema ids it writes.
     Version,
+    /// Replace a script install after verifying the signed checksums.
+    Update(UpdateArgs),
+}
+
+/// `gitcko update [--check]`.
+#[derive(Debug, Args)]
+pub struct UpdateArgs {
+    /// Only report whether a newer signed release is available.
+    #[arg(long)]
+    pub check: bool,
 }
 
 /// `gitcko review` and its flags (CLI_SPEC §3). `show` and `status` are subcommands.
