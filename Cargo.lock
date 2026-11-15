@@ -1484,14 +1484,23 @@ version = "0.0.0"
 dependencies = [
  "crossterm",
  "gitcko-config",
+ "gitcko-domain",
  "gitcko-git",
  "gitcko-index",
  "gitcko-model",
+ "gitcko-model-ollama",
+ "gitcko-model-openai",
  "gitcko-protocol",
+ "gitcko-render",
+ "gitcko-review",
+ "gitcko-storage",
  "gitcko-test-support",
  "insta",
  "ratatui",
+ "serde_json",
  "sha2",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]

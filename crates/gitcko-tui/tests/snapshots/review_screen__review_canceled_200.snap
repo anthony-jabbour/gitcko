@@ -1,0 +1,20 @@
+---
+source: crates/gitcko-tui/tests/review_screen.rs
+expression: frame
+---
+▄▀▄ Gitcko  repo: acme/api  branch: feat/auth → main  index: ready  model: qwen3-coder (local)
+[1 Review]  2 Findings  3 History
+target
+> branch vs base
+canceled
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| status: canceled                                                                                                                                                                                     |
+| Review incomplete: nothing was concluded about the changed paths.                                                                                                                                    |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|  snapshot
+investigators: 1
+files: 0
+model calls: 0
+tokens: in 0 out 0
+spend: not reported
+canceled

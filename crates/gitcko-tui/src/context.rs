@@ -15,7 +15,7 @@ use gitcko_model::{DestinationClass, ResolveError, resolve};
 use gitcko_protocol::config::{ModelProvider, ModelRole, ModelsConfig};
 use sha2::{Digest, Sha256};
 
-use crate::app::App;
+use crate::app::{App, RepoContext};
 use crate::header::{Header, IndexState, Locality};
 use crate::theme::{self};
 
@@ -29,6 +29,7 @@ pub fn repo_cache_id(cwd: &Path) -> Option<String> {
 
 pub fn assemble(cwd: &Path, env: &BTreeMap<String, String>) -> App {
     let mut app = App::preview();
+    app.can_review = false;
     app.color = false;
     app.header = Header {
         repo: repo_label(cwd),
@@ -46,6 +47,7 @@ pub fn assemble(cwd: &Path, env: &BTreeMap<String, String>) -> App {
         Err(_) => {
             app.no_repo = Some(cwd.display().to_string());
             app.header.repo = cwd.display().to_string();
+            app.can_review = false;
         }
     }
     app
@@ -56,6 +58,13 @@ fn fill_repo(app: &mut App, cwd: &Path, env: &BTreeMap<String, String>, repo: &R
     app.header.branch = branch;
     app.header.base = base_name(repo);
     app.header.index = index_state(env, repo, cwd, head.as_deref());
+    if let (Ok(paths), Some(cache_id)) = (GitckoPaths::from_env(env), repo_cache_id(cwd)) {
+        app.repo = Some(RepoContext {
+            root: cwd.to_path_buf(),
+            cache_id,
+            cache_dir: paths.cache_dir,
+        });
+    }
     if app.status.is_empty()
         && let Some(banner) = app.header.index.banner()
     {
@@ -107,6 +116,9 @@ fn model_and_color(env: &BTreeMap<String, String>, app: &mut App) -> Option<bool
                 && !has_remote_acknowledgement(&user, binding.provider)
             {
                 app.status = "run `gitcko setup --accept-remote openrouter`".into();
+                app.can_review = false;
+            } else {
+                app.can_review = true;
             }
         }
         Err(ResolveError::MissingBinding(_)) => {

@@ -7,16 +7,26 @@
 //! [`run`], and a panic while it is up restores the user's terminal.
 
 mod app;
+mod code;
 mod context;
 mod draw;
+mod drive;
+mod findings;
 mod header;
+mod history;
+mod progress;
 mod session;
 mod theme;
 
-pub use app::{App, Effect, Screen, key};
+pub use app::{
+    App, Effect, RepoContext, Screen, key, load_history_fixture, preview_partial,
+    preview_with_review,
+};
 pub use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 pub use header::{Header, IndexState, Locality};
+pub use progress::Phase;
 pub use ratatui::style::Color;
+pub use session::apply_effect;
 pub use session::{Guard, Restorer, run};
 
 /// Cache key for this checkout: SHA-256 of the canonical working directory. The CLI

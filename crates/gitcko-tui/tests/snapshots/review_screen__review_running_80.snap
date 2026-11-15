@@ -1,0 +1,15 @@
+---
+source: crates/gitcko-tui/tests/review_screen.rs
+expression: frame
+---
+Gitcko acme/api feat/auth→main idx:ready qwen3-coder local
+[1 Review]  2 Findings  3 History
+target
+> branch vs base
+done  snapshot  12ms  candidates 4  dropped 1  paths 3
+investigators: 0
+files: 3
+model calls: 1
+tokens: in 20 out 5
+spend: not reported
+? help   q quit

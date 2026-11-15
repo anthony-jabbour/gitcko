@@ -12,19 +12,33 @@ repository.workspace = true
 # https://docs.rs/crossterm/0.29.0/crossterm/
 crossterm = { workspace = true }
 gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
 gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
 gitcko-index = { path = "../gitcko-index", version = "0.0.0" }
 gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
+gitcko-model-ollama = { path = "../gitcko-model-ollama", version = "0.0.0" }
+gitcko-model-openai = { path = "../gitcko-model-openai", version = "0.0.0" }
 gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+gitcko-render = { path = "../gitcko-render", version = "0.0.0" }
+gitcko-review = { path = "../gitcko-review", version = "0.0.0" }
+gitcko-storage = { path = "../gitcko-storage", version = "0.0.0" }
 # Frame snapshots use TestBackend. Default features pull the calendar widget; the
 # crossterm backend is the one the spec names.
 # https://docs.rs/ratatui/0.30.2/ratatui/
 ratatui = { workspace = true }
+serde_json.workspace = true
 sha2.workspace = true
+# The review thread owns a two-worker runtime, the same shape the CLI uses.
+# https://docs.rs/tokio/1.54.1/tokio/#feature-flags
+tokio = { workspace = true, features = ["rt-multi-thread"] }
+tokio-util.workspace = true
 
 [dev-dependencies]
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+gitcko-render = { path = "../gitcko-render", version = "0.0.0" }
 gitcko-test-support = { path = "../gitcko-test-support", version = "0.0.0" }
 insta.workspace = true
+serde_json.workspace = true
 
 [lints]
 workspace = true

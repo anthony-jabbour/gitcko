@@ -10,11 +10,18 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Wrap};
 
 use crate::app::{App, Screen};
+use crate::code;
+use crate::findings::{self, LineSpec};
 use crate::header::{self, Piece};
+use crate::history;
 use crate::theme::{self, Role};
 
 pub fn draw(frame: &mut Frame<'_>, app: &App) {
     let area = frame.area();
+    if app.too_small() {
+        frame.render_widget(paragraph(small_terminal_lines(), true), area);
+        return;
+    }
     let rows = Layout::vertical([
         Constraint::Length(1),
         Constraint::Length(1),
@@ -24,7 +31,10 @@ pub fn draw(frame: &mut Frame<'_>, app: &App) {
     .split(area);
     frame.render_widget(paragraph(header_line(app, rows[0].width), false), rows[0]);
     frame.render_widget(paragraph(tab_line(app), false), rows[1]);
-    frame.render_widget(paragraph(body_lines(app, rows[2].width), true), rows[2]);
+    frame.render_widget(
+        paragraph(body_lines(app, rows[2].width, rows[2].height), true),
+        rows[2],
+    );
     frame.render_widget(
         paragraph(vec![footer_line(app, rows[3].width)], false),
         rows[3],
@@ -77,21 +87,54 @@ fn tab_line(app: &App) -> Vec<Line<'static>> {
     vec![Line::from(spans)]
 }
 
-fn body_lines(app: &App, width: u16) -> Vec<Line<'static>> {
-    let lines = if app.help {
-        help_lines()
-    } else if let Some(path) = &app.no_repo {
-        no_repo_lines(path)
-    } else {
-        match app.screen {
-            Screen::Review => vec!["Review".into()],
-            Screen::Findings => vec!["Findings".into()],
-            Screen::History => vec!["History".into()],
-        }
+fn body_lines(app: &App, width: u16, height: u16) -> Vec<Line<'static>> {
+    if app.help {
+        return styled_lines(help_lines(), app.color);
+    }
+    if let Some(path) = &app.no_repo {
+        return styled_lines(no_repo_lines(path), app.color);
+    }
+    if let Some(view) = &app.code {
+        return from_specs(
+            code::lines(view, usize::from(height), usize::from(width)),
+            app.color,
+        );
+    }
+    let specs = match app.screen {
+        Screen::Review => app
+            .review_lines(usize::from(width))
+            .into_iter()
+            .map(|line| LineSpec {
+                text: line,
+                role: None,
+            })
+            .collect(),
+        Screen::Findings => findings::lines(
+            &app.findings,
+            app.active_review(),
+            usize::from(width),
+            app.color,
+        ),
+        Screen::History => history::lines(&app.history),
     };
+    from_specs(specs, app.color)
+}
+
+fn styled_lines(lines: Vec<String>, color: bool) -> Vec<Line<'static>> {
     lines
         .into_iter()
-        .map(|line| Line::from(fit(&line, usize::from(width))))
+        .map(|line| Line::from(Span::styled(line, theme::style(color, Role::Normal))))
+        .collect()
+}
+
+fn from_specs(specs: Vec<LineSpec>, color: bool) -> Vec<Line<'static>> {
+    specs
+        .into_iter()
+        .map(|spec| {
+            let text = fit(&spec.text, 10_000);
+            let role = spec.role.unwrap_or(Role::Normal);
+            Line::from(Span::styled(text, theme::style(color, role)))
+        })
         .collect()
 }
 
@@ -111,6 +154,15 @@ fn no_repo_lines(path: &str) -> Vec<String> {
         "No repository".into(),
         path.to_string(),
         "Change to a git repository and run gitcko again.".into(),
+    ]
+}
+
+fn small_terminal_lines() -> Vec<Line<'static>> {
+    vec![
+        Line::from("Terminal too small"),
+        Line::from("Use at least 60 columns and 20 rows,"),
+        Line::from("or run: gitcko review --text"),
+        Line::from("Press any key to exit."),
     ]
 }
 
@@ -159,13 +211,15 @@ pub fn cell_fg(app: &App, cols: u16, rows: u16, needle: &str) -> Option<Color> {
     let height = buffer.area.height;
     for y in 0..height {
         let mut row = String::new();
+        let mut fg_at: Vec<Option<Color>> = Vec::new();
         for x in 0..width {
-            row.push_str(buffer[(x, y)].symbol());
+            let cell = &buffer[(x, y)];
+            row.push_str(cell.symbol());
+            fg_at.push(cell.style().fg);
         }
         if let Some(start) = row.find(needle) {
             let cell_x = row[..start].chars().count();
-            let x = u16::try_from(cell_x).unwrap_or(0);
-            return buffer[(x, y)].style().fg;
+            return fg_at.get(cell_x).copied().flatten();
         }
     }
     None

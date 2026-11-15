@@ -8,6 +8,8 @@ use std::collections::BTreeMap;
 use std::io::{self, stdout};
 use std::panic;
 use std::path::Path;
+use std::process::Command;
+use std::sync::mpsc::Receiver;
 
 use crossterm::cursor::{Hide, Show};
 use crossterm::event::{self, Event, KeyEventKind};
@@ -18,8 +20,12 @@ use crossterm::terminal::{
 use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
 
+use tokio_util::sync::CancellationToken;
+
+use crate::app::Effect;
 use crate::context;
 use crate::draw;
+use crate::drive::{self, DriveMsg};
 
 /// Something that can hand the terminal back. The live one calls crossterm; tests
 /// record the call.
@@ -73,6 +79,52 @@ fn install_panic_hook() {
     }));
 }
 
+/// Side effects after a key. A plain quit leaves the cancel token alone.
+pub fn apply_effect(
+    effect: &Effect,
+    cwd: &Path,
+    cancel: &CancellationToken,
+    env: &BTreeMap<String, String>,
+) {
+    match effect {
+        Effect::CancelReview | Effect::QuitAndCancel => cancel.cancel(),
+        Effect::OpenEditor { path, line } => open_editor(cwd, path, *line, env),
+        Effect::CopyFix(text) => copy_text(text, env),
+        Effect::None | Effect::Quit | Effect::StartReview => {}
+    }
+}
+
+fn open_editor(cwd: &Path, path: &str, line: u32, env: &BTreeMap<String, String>) {
+    let editor = env
+        .get("EDITOR")
+        .cloned()
+        .or_else(|| std::env::var("EDITOR").ok())
+        .unwrap_or_else(|| "vi".into());
+    let target = format!("+{line}");
+    let _ = Command::new(&editor)
+        .arg(&target)
+        .arg(cwd.join(path))
+        .spawn();
+}
+
+fn copy_text(text: &str, env: &BTreeMap<String, String>) {
+    #[cfg(target_os = "macos")]
+    {
+        let mut child = Command::new("pbcopy");
+        child.stdin(std::process::Stdio::piped());
+        if let Ok(mut proc) = child.spawn() {
+            use std::io::Write;
+            if let Some(stdin) = proc.stdin.as_mut() {
+                let _ = stdin.write_all(text.as_bytes());
+            }
+            let _ = proc.wait();
+            return;
+        }
+    }
+    let _ = env;
+    let _ = text;
+}
+
 /// Open the shell on this checkout and run until the user quits.
 pub fn run(cwd: &Path, env: &BTreeMap<String, String>) -> io::Result<u8> {
     let mut app = context::assemble(cwd, env);
@@ -81,7 +133,11 @@ pub fn run(cwd: &Path, env: &BTreeMap<String, String>) -> io::Result<u8> {
     execute!(stdout(), EnterAlternateScreen, Hide)?;
     let _guard = Guard::new(CrosstermRestorer);
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
+    let mut cancel = CancellationToken::new();
+    let mut inbox: Option<Receiver<DriveMsg>> = None;
     loop {
+        drive::pump(&mut app, &mut inbox);
+        app.tick();
         let size = terminal.size()?;
         app.resize(size.width, size.height);
         terminal.draw(|frame| draw::draw(frame, &app))?;
@@ -92,7 +148,13 @@ pub fn run(cwd: &Path, env: &BTreeMap<String, String>) -> io::Result<u8> {
             && let Event::Key(key) = event::read()?
             && key.kind != KeyEventKind::Release
         {
-            app.on_key(key);
+            match app.on_key(key) {
+                Effect::StartReview => {
+                    cancel = CancellationToken::new();
+                    inbox = Some(drive::start(cwd.to_path_buf(), env.clone(), cancel.clone()));
+                }
+                effect => apply_effect(&effect, cwd, &cancel, env),
+            }
         }
     }
     Ok(0)
