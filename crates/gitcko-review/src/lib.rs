@@ -31,6 +31,7 @@ mod suppress;
 mod symbols;
 mod validate;
 
+use gitcko_domain::RepoPath;
 use gitcko_git::{CommitId, Repo};
 use gitcko_model::{BudgetLimits, CallRecord, Router, Run, RunBudget};
 use gitcko_protocol::config::ModelRole;
@@ -51,6 +52,10 @@ pub use validate::Dropped;
 /// Base's bounds (REVIEW_ENGINE §9). Versioned as `review_policy@2`, recorded in the
 /// result, and not user config.
 pub const POLICY: &str = "review_policy@2";
+
+/// This crate's version. `gitcko version` prints it as the engine version so the
+/// line tracks the crate that produced the review, not a copy in the CLI.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Hypotheses one review investigates.
 pub const MAX_HYPOTHESES: usize = 8;
 /// Tool calls one hypothesis may run; then the model answers from what it has.
@@ -101,6 +106,12 @@ pub struct ReviewInput<'a> {
     pub head: CommitId,
     /// RFC 3339 time for events, passed in so results don't depend on the clock.
     pub now: &'a dyn Fn() -> String,
+    /// When non-empty, only these paths are reviewed. Empty means every change.
+    /// `--paths` is how a caller asks for that limit.
+    pub only_paths: &'a [RepoPath],
+    /// Held-back paths the user named with `--include`. They are sent anyway, and
+    /// the caller says so on stderr.
+    pub include_paths: &'a [RepoPath],
 }
 
 fn counts(events: &mut events::Events<'_>, step: &str, candidates: usize, dropped: usize) {

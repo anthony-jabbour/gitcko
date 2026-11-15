@@ -136,6 +136,8 @@ fn execute(
         base: at("base")?,
         head: at("main")?,
         now: &now,
+        only_paths: &[],
+        include_paths: &[],
     };
     let mut run = base_run(
         format!("rv_{}", case.name),

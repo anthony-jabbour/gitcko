@@ -13,4 +13,4 @@ mod store;
 
 pub use error::StoreError;
 pub use lifecycle::reconcile;
-pub use store::{ReviewStore, ReviewSummary, RunState, RunningMarker};
+pub use store::{ReviewStore, ReviewSummary, RunState, RunningMarker, StoredMarker};

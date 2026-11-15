@@ -1,0 +1,45 @@
+[package]
+name = "gitcko-cli"
+version = "0.0.0"
+description = "The gitcko binary: review a repository and print what was stored"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "gitcko"
+path = "src/main.rs"
+
+[dependencies]
+# Parser derive: https://docs.rs/clap/4.6.7/clap/_features/index.html
+clap = { workspace = true }
+gitcko-config = { path = "../gitcko-config", version = "0.0.0" }
+gitcko-domain = { path = "../gitcko-domain", version = "0.0.0" }
+gitcko-git = { path = "../gitcko-git", version = "0.0.0" }
+gitcko-index = { path = "../gitcko-index", version = "0.0.0" }
+gitcko-model = { path = "../gitcko-model", version = "0.0.0" }
+gitcko-model-ollama = { path = "../gitcko-model-ollama", version = "0.0.0" }
+gitcko-model-openai = { path = "../gitcko-model-openai", version = "0.0.0" }
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+gitcko-render = { path = "../gitcko-render", version = "0.0.0" }
+gitcko-review = { path = "../gitcko-review", version = "0.0.0" }
+gitcko-storage = { path = "../gitcko-storage", version = "0.0.0" }
+serde_json.workspace = true
+sha2.workspace = true
+# `rt-multi-thread` is the runtime the CLI owns; `signal` is Ctrl-C.
+# https://docs.rs/tokio/1.54.1/tokio/#feature-flags
+tokio = { workspace = true, features = ["rt-multi-thread", "signal"] }
+tokio-util.workspace = true
+
+[dev-dependencies]
+gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
+gitcko-review = { path = "../gitcko-review", version = "0.0.0" }
+gitcko-storage = { path = "../gitcko-storage", version = "0.0.0" }
+gitcko-test-support = { path = "../gitcko-test-support", version = "0.0.0" }
+# Default features fetch schemas over HTTP (reqwest + aws-lc). Validation is local.
+jsonschema = { version = "0.61", default-features = false }
+serde_json.workspace = true
+
+[lints]
+workspace = true
