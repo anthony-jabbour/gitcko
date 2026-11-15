@@ -3545,12 +3545,13 @@ async fn only_paths_drops_the_other_file_and_the_unfiltered_run_keeps_both() {
         "a path outside --paths must not be sent: {prompts}"
     );
     assert!(
-        !outcome
+        outcome
             .review
             .coverage
             .held_back
             .iter()
-            .any(|path| path == ".env")
+            .any(|path| path == ".env"),
+        "--paths must not skip TM-20 hold-back for out-of-scope secrets"
     );
 
     let open = scripted(|request, _| default_reply(request));

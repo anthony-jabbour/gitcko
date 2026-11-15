@@ -260,15 +260,13 @@ fn dispose(
     ignore: Option<&gitcko_config::IgnoreRules>,
 ) -> Disposition {
     let names = [file.old_path.as_ref(), file.new_path.as_ref()];
-    if !input.only_paths.is_empty() && !input.only_paths.iter().any(|p| p == path) {
-        return Disposition::Ignored;
-    }
     let included = input
         .include_paths
         .iter()
         .any(|wanted| wanted == path || names.iter().flatten().any(|name| *name == wanted));
     // Both names and both sides: a rename can move a secret under an innocent name.
     // `--include` is the user asking to send that path anyway.
+    // Hold-back runs before `--paths` so out-of-scope secrets still denylist tools (TM-20).
     if !included && names.into_iter().flatten().any(is_sensitive_name) {
         return Disposition::HeldBack;
     }
@@ -286,6 +284,9 @@ fn dispose(
         {
             return Disposition::HeldBack;
         }
+    }
+    if !input.only_paths.is_empty() && !input.only_paths.iter().any(|p| p == path) {
+        return Disposition::Ignored;
     }
     if ignore.is_some_and(|rules| rules.is_ignored(path)) {
         return Disposition::Ignored;
