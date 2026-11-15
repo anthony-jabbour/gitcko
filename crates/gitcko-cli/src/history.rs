@@ -156,7 +156,8 @@ where
         });
         let text = serde_json::to_string(&body)
             .map_err(|_| CmdError::new(1, "could not encode the review list"))?;
-        let _ = writeln!(lock(&io.stdout), "{text}");
+        writeln!(lock(&io.stdout), "{text}")
+            .map_err(|_| CmdError::new(1, "could not write the review list"))?;
     } else {
         let rows: Vec<ListItem> = items
             .iter()
@@ -166,7 +167,8 @@ where
                 head_sha: item.head_sha.clone(),
             })
             .collect();
-        let _ = write!(lock(&io.stdout), "{}", list(&rows));
+        write!(lock(&io.stdout), "{}", list(&rows))
+            .map_err(|_| CmdError::new(1, "could not write the review list"))?;
     }
     Ok(0)
 }
@@ -240,11 +242,11 @@ where
     })?;
     let commit = commit.to_string();
     let (repo_id, store) = open_store(cwd, env)?;
-    let reviews = store
-        .list(&repo_id)
-        .map_err(|_| CmdError::new(1, "could not read the review history"))?;
     let markers = store
         .list_markers(&repo_id)
+        .map_err(|_| CmdError::new(1, "could not read the review history"))?;
+    let reviews = store
+        .list(&repo_id)
         .map_err(|_| CmdError::new(1, "could not read the review history"))?;
     let Some(hit) = select(&reviews, &markers, &store, &repo_id, &commit)? else {
         present_missing(args, &commit, io)?;
@@ -267,9 +269,11 @@ where
         });
         let text = serde_json::to_string(&body)
             .map_err(|_| CmdError::new(1, "could not encode the status"))?;
-        let _ = writeln!(lock(&io.stdout), "{text}");
+        writeln!(lock(&io.stdout), "{text}")
+            .map_err(|_| CmdError::new(1, "could not write the status"))?;
     } else {
-        let _ = writeln!(lock(&io.stdout), "{}", hit.line);
+        writeln!(lock(&io.stdout), "{}", hit.line)
+            .map_err(|_| CmdError::new(1, "could not write the status"))?;
     }
     Ok(status_exit(hit.view))
 }
@@ -394,7 +398,8 @@ where
         });
         let text = serde_json::to_string(&body)
             .map_err(|_| CmdError::new(1, "could not encode the status"))?;
-        let _ = writeln!(lock(&io.stdout), "{text}");
+        writeln!(lock(&io.stdout), "{text}")
+            .map_err(|_| CmdError::new(1, "could not write the status"))?;
     } else {
         let _ = writeln!(lock(&io.stderr), "no review");
     }
@@ -424,9 +429,11 @@ where
     let parsed: Vec<RunEvent> = serde_json::from_slice(&bytes).unwrap_or_default();
     let rendered = events(&parsed);
     if json_mode {
-        let _ = write!(lock(&io.stderr), "{rendered}");
+        write!(lock(&io.stderr), "{rendered}")
+            .map_err(|_| CmdError::new(1, "could not write the events"))?;
     } else {
-        let _ = write!(lock(&io.stdout), "{rendered}");
+        write!(lock(&io.stdout), "{rendered}")
+            .map_err(|_| CmdError::new(1, "could not write the events"))?;
     }
     Ok(())
 }
