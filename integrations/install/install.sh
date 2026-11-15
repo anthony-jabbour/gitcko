@@ -22,7 +22,10 @@ script_dir() {
     sh|dash|bash|-sh|-dash|-bash|*/sh|*/dash|*/bash) return 1 ;;
   esac
   [ -f "$0" ] || return 1
-  CDPATH= cd -- "$(dirname -- "$0")" && pwd
+  case "$0" in
+    */*) CDPATH= cd -- "${0%/*}" && pwd ;;
+    *) pwd ;;
+  esac
 }
 
 if dir=$(script_dir); then

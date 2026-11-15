@@ -49,12 +49,13 @@ function Flip-Last([string]$Path) {
 
 function Invoke-Install([string]$Url, [string]$Dest, [string]$TestHome, [string]$Data, [string]$PathValue) {
     $saved = @{
-        URL = $env:GITCKO_DOWNLOAD_URL
-        DEST = $env:GITCKO_INSTALL_DIR
-        HOME = $env:USERPROFILE
-        DATA = $env:LOCALAPPDATA
-        PATH = $env:PATH
+        Url = $env:GITCKO_DOWNLOAD_URL
+        Dest = $env:GITCKO_INSTALL_DIR
+        Profile = $env:USERPROFILE
+        AppData = $env:LOCALAPPDATA
+        PathEnv = $env:PATH
     }
+    New-Item -ItemType Directory -Force -Path $TestHome, $Data | Out-Null
     $env:GITCKO_DOWNLOAD_URL = $Url
     $env:GITCKO_INSTALL_DIR = $Dest
     $env:USERPROFILE = $TestHome
@@ -63,8 +64,10 @@ function Invoke-Install([string]$Url, [string]$Dest, [string]$TestHome, [string]
     $id = [guid]::NewGuid().ToString('n')
     $outFile = Join-Path $env:TEMP "gitcko-install-out-$id.txt"
     $errFile = Join-Path $env:TEMP "gitcko-install-err-$id.txt"
-    & $HostExe -NoProfile -File $Install > $outFile 2> $errFile
-    $code = $LASTEXITCODE
+    $proc = Start-Process -FilePath $HostExe -ArgumentList @('-NoProfile', '-File', $Install) `
+        -RedirectStandardOutput $outFile -RedirectStandardError $errFile `
+        -NoNewWindow -Wait -PassThru
+    $code = $proc.ExitCode
     $out = ''
     $err = ''
     if (Test-Path -LiteralPath $outFile) { $out = [System.IO.File]::ReadAllText($outFile) }
@@ -72,11 +75,11 @@ function Invoke-Install([string]$Url, [string]$Dest, [string]$TestHome, [string]
     foreach ($name in @('GITCKO_DOWNLOAD_URL', 'GITCKO_INSTALL_DIR')) {
         Remove-Item "Env:$name" -ErrorAction SilentlyContinue
     }
-    if ($null -ne $saved.URL) { $env:GITCKO_DOWNLOAD_URL = $saved.URL }
-    if ($null -ne $saved.DEST) { $env:GITCKO_INSTALL_DIR = $saved.DEST }
-    if ($null -ne $saved.HOME) { $env:USERPROFILE = $saved.HOME }
-    if ($null -ne $saved.DATA) { $env:LOCALAPPDATA = $saved.DATA }
-    if ($null -ne $saved.PATH) { $env:PATH = $saved.PATH }
+    if ($null -ne $saved.Url) { $env:GITCKO_DOWNLOAD_URL = $saved.Url }
+    if ($null -ne $saved.Dest) { $env:GITCKO_INSTALL_DIR = $saved.Dest }
+    if ($null -ne $saved.Profile) { $env:USERPROFILE = $saved.Profile }
+    if ($null -ne $saved.AppData) { $env:LOCALAPPDATA = $saved.AppData }
+    if ($null -ne $saved.PathEnv) { $env:PATH = $saved.PathEnv }
     return @{ Code = $code; Out = $out; Err = $err }
 }
 
@@ -100,7 +103,7 @@ try {
     $data = Join-Path $tmp 'data with spaces'
     $testHome = Join-Path $tmp 'home-ok'
     $result = Invoke-Install $good $spaced $testHome $data $clean
-    if ($result.Code -ne 0) { Fail "good checksum should install: $($result.Err)" }
+    if ($result.Code -ne 0) { Fail "good checksum should install (exit $($result.Code)): err=$($result.Err) out=$($result.Out)" }
     if ($result.Out -notmatch '(?m)^installed:') { Fail 'missing installed line' }
     if ($result.Err -notmatch 'signature: not checked') { Fail 'should say the signature was not checked' }
     $installed = Join-Path $spaced 'gitcko.exe'
