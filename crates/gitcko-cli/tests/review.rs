@@ -187,6 +187,7 @@ fn go(
             env: &world.env,
             runner,
             stdout_is_tty: tty,
+            stdin_is_tty: false,
         },
         &io,
     );

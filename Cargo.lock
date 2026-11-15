@@ -1064,6 +1064,7 @@ dependencies = [
  "gitcko-config",
  "gitcko-domain",
  "gitcko-git",
+ "gitcko-index",
  "gitcko-model",
  "gitcko-model-ollama",
  "gitcko-model-openai",

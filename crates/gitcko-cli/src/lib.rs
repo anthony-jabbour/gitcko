@@ -3,6 +3,7 @@
 //! The `gitcko` binary's behaviour, separate from `main` so tests can run a command
 //! without a process. The binary's only job is to own the terminal and the runtime.
 
+mod cache;
 mod cli;
 mod clock;
 mod exit;
@@ -76,6 +77,8 @@ pub struct RunEnv<'a> {
     pub runner: Option<&'a dyn ReviewRunner>,
     /// True when stdout is a terminal, which selects the boxed layout.
     pub stdout_is_tty: bool,
+    /// True when stdin is a terminal. This build still requires `-f` to purge.
+    pub stdin_is_tty: bool,
 }
 
 /// Run `gitcko` with the process arguments, environment and working directory.
@@ -93,6 +96,7 @@ pub fn run_from_env() -> u8 {
         env: &env,
         runner: None,
         stdout_is_tty: io::stdout().is_terminal(),
+        stdin_is_tty: io::stdin().is_terminal(),
     };
     execute_at(&refs, &run, &io)
 }
@@ -107,6 +111,7 @@ pub fn execute(args: &[&str], io: &Io<Vec<u8>, Vec<u8>>) -> u8 {
         env: &env,
         runner: None,
         stdout_is_tty: false,
+        stdin_is_tty: false,
     };
     execute_at(args, &run, io)
 }
@@ -146,9 +151,9 @@ where
             Some(cli::ReviewCmd::Status(status)) => history::status(&status, run.cwd, run.env, io),
             None => review::run(&args, run.cwd, run.env, run.runner, run.stdout_is_tty, io),
         },
-        Some(cli::Command::Index(_) | cli::Command::Cache(_)) => {
-            let _ = writeln!(lock(&io.stderr), "not available in this build");
-            2
+        Some(cli::Command::Index(args)) => cache::index(&args, run.cwd, run.env, io),
+        Some(cli::Command::Cache(args)) => {
+            cache::cache(&args, run.cwd, run.env, run.stdin_is_tty, io)
         }
         None => {
             let mut command = Cli::command();
