@@ -287,13 +287,17 @@ where
             return Err(err);
         }
     };
-    if test_force_put_fail(env) || store.put(&repo_id, &outcome.review).is_err() {
-        let _ = store.clear_running(&repo_id, &review_id);
+    let stored = !test_force_put_fail(env) && store.put(&repo_id, &outcome.review).is_ok();
+    let _ = store.clear_running(&repo_id, &review_id);
+    if stored {
+        write_events(&store, &repo_id, &outcome.review.review_id, &outcome.events);
+    }
+    // Always show the in-memory result: a full cache must not discard the review the
+    // user just paid to run.
+    present(&outcome.review, args, tty, terminal_width(args, env), io)?;
+    if !stored {
         return Err(RunError::new(1, "could not store the review"));
     }
-    let _ = store.clear_running(&repo_id, &review_id);
-    write_events(&store, &repo_id, &outcome.review.review_id, &outcome.events);
-    present(&outcome.review, args, tty, terminal_width(args, env), io)?;
     Ok(review_exit(
         outcome.review.status,
         &outcome.review.findings,

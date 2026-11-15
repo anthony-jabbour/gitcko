@@ -520,6 +520,11 @@ fn store_put_failure_clears_the_marker_and_exits_1() {
         "{}",
         io.stderr_text()
     );
+    assert!(
+        io.stdout_text().contains(""schema_version""),
+        "present the review even when storage fails: {}",
+        io.stdout_text()
+    );
     let review_id = runner
         .seen
         .lock()
