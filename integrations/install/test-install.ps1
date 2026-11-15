@@ -64,7 +64,7 @@ function Invoke-Install([string]$Url, [string]$Dest, [string]$TestHome, [string]
     $id = [guid]::NewGuid().ToString('n')
     $outFile = Join-Path $env:TEMP "gitcko-install-out-$id.txt"
     $errFile = Join-Path $env:TEMP "gitcko-install-err-$id.txt"
-    $proc = Start-Process -FilePath $HostExe -ArgumentList @('-NoProfile', '-File', $Install) `
+    $proc = Start-Process -FilePath $HostExe -ArgumentList @('-NoProfile', '-File', "`"$Install`"") `
         -RedirectStandardOutput $outFile -RedirectStandardError $errFile `
         -NoNewWindow -Wait -PassThru
     $code = $proc.ExitCode

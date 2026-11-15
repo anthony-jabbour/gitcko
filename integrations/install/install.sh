@@ -174,7 +174,7 @@ fi
 expect_hash() {
   awk -v name="$1" '
     { gsub(/\r/, "") }
-    NF == 2 && $1 ~ /^[0-9A-Fa-f]{64}$/ && $2 ~ /^[*]?[A-Za-z0-9._-]+$/ {
+    NF == 2 && length($1) == 64 && $1 ~ /^[0-9A-Fa-f]+$/ && $2 ~ /^[*]?[A-Za-z0-9._-]+$/ {
       fname = $2
       sub(/^\*/, "", fname)
       if (fname == name) { print tolower($1); found = 1; exit }

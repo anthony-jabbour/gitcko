@@ -164,12 +164,18 @@ pub(crate) fn script_update(
         return Err(VerifyFailure::Checksum.into());
     }
     let version = parse_version(&version_bytes)?;
-    if check_only {
-        return Ok(if version == current_version {
-            format!("up to date: {version}")
-        } else {
-            format!("update available: {version}")
-        });
+    match version_cmp(&version, current_version) {
+        std::cmp::Ordering::Less => {
+            return Ok(format!("up to date: {current_version}"));
+        }
+        std::cmp::Ordering::Equal if check_only => {
+            return Ok(format!("up to date: {version}"));
+        }
+        std::cmp::Ordering::Equal => {}
+        std::cmp::Ordering::Greater if check_only => {
+            return Ok(format!("update available: {version}"));
+        }
+        std::cmp::Ordering::Greater => {}
     }
     let (archive_name, bin_name) = artifact_names(target)?;
     let archive = fetch(base, &archive_name)?;
@@ -523,6 +529,27 @@ fn commit_replace(tmp: &Path, target: &Path) -> Result<(), UpdateError> {
     }
 }
 
+fn version_cmp(remote: &str, current: &str) -> std::cmp::Ordering {
+    let remote_parts = remote
+        .split('.')
+        .map(|part| part.parse::<u64>().unwrap_or(0))
+        .collect::<Vec<_>>();
+    let current_parts = current
+        .split('.')
+        .map(|part| part.parse::<u64>().unwrap_or(0))
+        .collect::<Vec<_>>();
+    let slots = remote_parts.len().max(current_parts.len());
+    for index in 0..slots {
+        let remote = remote_parts.get(index).copied().unwrap_or(0);
+        let current = current_parts.get(index).copied().unwrap_or(0);
+        match remote.cmp(&current) {
+            std::cmp::Ordering::Equal => {}
+            other => return other,
+        }
+    }
+    std::cmp::Ordering::Equal
+}
+
 fn parse_version(bytes: &[u8]) -> Result<String, UpdateError> {
     let text = std::str::from_utf8(bytes).map_err(|_| UpdateError::Version)?;
     let mut lines = text.lines().filter(|line| !line.is_empty());
@@ -851,6 +878,15 @@ mod tests {
             script_update(&exe, &Base::Dir(release), target, "0.0.0", false, true).unwrap_err();
         assert_eq!(err, UpdateError::Verify(VerifyFailure::Checksum));
         assert_eq!(fs::read(&exe).unwrap(), b"stay");
+    }
+
+    #[test]
+    #[test]
+    fn version_cmp_orders_numeric_segments() {
+        use std::cmp::Ordering;
+        assert_eq!(super::version_cmp("0.0.1", "2.0.0"), Ordering::Less);
+        assert_eq!(super::version_cmp("9.9.9", "2.0.0"), Ordering::Greater);
+        assert_eq!(super::version_cmp("2.0.0", "2.0.0"), Ordering::Equal);
     }
 
     #[test]
