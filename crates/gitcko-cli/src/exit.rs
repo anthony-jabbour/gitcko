@@ -99,4 +99,46 @@ mod tests {
             "cancel outranks the findings gate"
         );
     }
+
+    #[test]
+    fn status_exit_codes_match_the_plan() {
+        assert_eq!(status_exit(StatusView::Complete), 0);
+        assert_eq!(status_exit(StatusView::Partial), 1);
+        assert_eq!(status_exit(StatusView::Missing), 1);
+        assert_eq!(status_exit(StatusView::Running), 3);
+        assert_eq!(status_exit(StatusView::Failed), 4);
+        assert_eq!(status_exit(StatusView::Canceled), 5);
+    }
+}
+
+/// What `review status` is looking at. Separate from [`review_exit`] because a stored
+/// failure is 4 here and 1 on the review command that just produced it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StatusView {
+    /// A complete stored review.
+    Complete,
+    /// A partial stored review.
+    Partial,
+    /// A failed stored review, or a marker whose process is gone.
+    Failed,
+    /// A canceled stored review.
+    Canceled,
+    /// A marker whose process is still alive.
+    Running,
+    /// Nothing stored for this commit.
+    Missing,
+    /// A newer head replaced the run.
+    Superseded,
+}
+
+/// Exit code for `review status` (P5_PLAN §5.1). Missing is 1, the same code as a
+/// partial review, so a hook does not treat "no review" as a clean commit.
+pub fn status_exit(view: StatusView) -> u8 {
+    match view {
+        StatusView::Complete => 0,
+        StatusView::Partial | StatusView::Missing | StatusView::Superseded => 1,
+        StatusView::Running => 3,
+        StatusView::Failed => 4,
+        StatusView::Canceled => 5,
+    }
 }

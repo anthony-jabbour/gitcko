@@ -6,7 +6,7 @@ use std::fs;
 
 use gitcko_protocol::review::Review;
 use gitcko_redact::canaries;
-use gitcko_storage::{ReviewStore, RunState, RunningMarker, StoreError};
+use gitcko_storage::{ReviewStore, RunState, RunningMarker, StoreError, StoredMarker};
 use gitcko_test_support::TempDir;
 
 const SAMPLE: &str = include_str!("../../gitcko-protocol/tests/data/review-full.json");
@@ -87,6 +87,8 @@ fn list_is_newest_first_and_skips_tmp_and_running() {
             &RunningMarker {
                 pid: std::process::id(),
                 started: "2026-01-01T00:00:00Z".into(),
+                head_sha: None,
+                base_sha: None,
             },
         )
         .unwrap();
@@ -106,6 +108,8 @@ fn a_live_pid_is_running_and_clearing_it_returns_idle() {
     let marker = RunningMarker {
         pid: std::process::id(),
         started: "2026-01-01T00:00:00Z".into(),
+        head_sha: None,
+        base_sha: None,
     };
     store.mark_running(REPO, id, &marker).unwrap();
     assert_eq!(
@@ -125,6 +129,8 @@ fn a_marker_whose_pid_is_gone_is_stale_not_running() {
     let marker = RunningMarker {
         pid: 4_194_304,
         started: "2026-01-01T00:00:00Z".into(),
+        head_sha: None,
+        base_sha: None,
     };
     store.mark_running(REPO, id, &marker).unwrap();
     assert_eq!(store.run_state(REPO, id).unwrap(), RunState::Stale(marker));
@@ -137,6 +143,8 @@ fn a_live_pid_control_proves_the_stale_check_can_see_a_process() {
     let marker = RunningMarker {
         pid: std::process::id(),
         started: "2026-01-01T00:00:00Z".into(),
+        head_sha: None,
+        base_sha: None,
     };
     store.mark_running(REPO, id, &marker).unwrap();
     match store.run_state(REPO, id).unwrap() {
@@ -243,5 +251,60 @@ fn review_id_in_the_file_must_match_the_name() {
             .get(REPO, "rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X")
             .unwrap_err(),
         StoreError::Corrupt { check: "id" }
+    );
+}
+
+#[test]
+fn list_markers_returns_a_live_pid_and_a_dead_one_is_stale() {
+    let (_dir, store) = store();
+    let live = "rv_01ZZZZZZZZZZZZZZ0000000000";
+    let dead = "rv_01AAAAAAAAAAAAAA0000000000";
+    store
+        .mark_running(
+            REPO,
+            live,
+            &RunningMarker {
+                pid: std::process::id(),
+                started: "2026-01-01T00:00:00Z".into(),
+                head_sha: Some("abc".into()),
+                base_sha: None,
+            },
+        )
+        .unwrap();
+    store
+        .mark_running(
+            REPO,
+            dead,
+            &RunningMarker {
+                pid: u32::MAX,
+                started: "2026-01-01T00:00:00Z".into(),
+                head_sha: None,
+                base_sha: None,
+            },
+        )
+        .unwrap();
+    let markers = store.list_markers(REPO).unwrap();
+    assert_eq!(
+        markers,
+        vec![
+            StoredMarker {
+                review_id: live.into(),
+                state: RunState::Running(RunningMarker {
+                    pid: std::process::id(),
+                    started: "2026-01-01T00:00:00Z".into(),
+                    head_sha: Some("abc".into()),
+                    base_sha: None,
+                }),
+            },
+            StoredMarker {
+                review_id: dead.into(),
+                state: RunState::Stale(RunningMarker {
+                    pid: u32::MAX,
+                    started: "2026-01-01T00:00:00Z".into(),
+                    head_sha: None,
+                    base_sha: None,
+                }),
+            },
+        ]
     );
 }

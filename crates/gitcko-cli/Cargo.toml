@@ -34,6 +34,7 @@ tokio-util.workspace = true
 [dev-dependencies]
 gitcko-protocol = { path = "../gitcko-protocol", version = "0.0.0" }
 gitcko-review = { path = "../gitcko-review", version = "0.0.0" }
+gitcko-storage = { path = "../gitcko-storage", version = "0.0.0" }
 gitcko-test-support = { path = "../gitcko-test-support", version = "0.0.0" }
 # Default features fetch schemas over HTTP (reqwest + aws-lc). Validation is local.
 jsonschema = { version = "0.61", default-features = false }

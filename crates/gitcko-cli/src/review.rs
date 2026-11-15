@@ -42,7 +42,8 @@ use crate::exit::review_exit;
 pub struct RunError {
     /// Process exit code.
     pub code: u8,
-    message: String,
+    /// Safe to print. Names a flag or a setup step, never a secret or model output.
+    pub(crate) message: String,
 }
 
 impl RunError {
@@ -239,7 +240,7 @@ where
     }
     disclose(&loaded.models, io);
     let paths = GitckoPaths::from_env(env).map_err(|err| RunError::new(2, err.to_string()))?;
-    let repo_id = repo_key(cwd)?;
+    let repo_id = repo_cache_id(cwd)?;
     let review_id = ReviewId::new().to_string();
     let store = ReviewStore::new(&paths.cache_dir);
     store
@@ -249,6 +250,8 @@ where
             &RunningMarker {
                 pid: std::process::id(),
                 started: now_rfc3339(),
+                head_sha: Some(head.to_string()),
+                base_sha: Some(base.to_string()),
             },
         )
         .map_err(|_| RunError::new(1, "could not record that the review is running"))?;
@@ -466,7 +469,10 @@ fn terminal_width(args: &ReviewArgs, env: &BTreeMap<String, String>) -> u16 {
         .clamp(40, 240)
 }
 
-fn repo_key(cwd: &Path) -> Result<String, RunError> {
+/// Cache key for this checkout: SHA-256 of the canonical working directory.
+/// `review`, `review show` and `review status` must agree, and the key is the path
+/// rather than a remote URL because the opened repo does not expose one.
+pub fn repo_cache_id(cwd: &Path) -> Result<String, RunError> {
     let canonical = cwd
         .canonicalize()
         .map_err(|_| RunError::new(2, "could not resolve the repository path"))?;

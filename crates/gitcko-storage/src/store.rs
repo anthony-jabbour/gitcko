@@ -14,13 +14,21 @@ pub struct ReviewStore {
     root: PathBuf,
 }
 
-/// Pid and start time written while a review is in flight.
+/// Pid and start time written while a review is in flight. `head_sha` and `base_sha`
+/// are optional so a marker written before those fields existed still loads; `review
+/// status --commit` can only match a run that recorded them.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct RunningMarker {
     /// OS process id of the `gitcko review` that created the marker.
     pub pid: u32,
     /// RFC 3339 start, for humans; liveness is the pid.
     pub started: String,
+    /// Head commit of the run, when the command knew it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub head_sha: Option<String>,
+    /// Merge base of the run, when the command knew it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_sha: Option<String>,
 }
 
 /// What `review status` should say about a review id.
@@ -47,6 +55,15 @@ pub struct ReviewSummary {
     pub base_sha: String,
     /// Bound head commit.
     pub head_sha: String,
+}
+
+/// A running marker `review status` can see without opening the review JSON.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StoredMarker {
+    /// Review id the marker file is named with.
+    pub review_id: String,
+    /// Live or stale. Idle markers are not listed.
+    pub state: RunState,
 }
 
 impl ReviewStore {
@@ -132,6 +149,48 @@ impl ReviewStore {
                 Err(StoreError::Corrupt { .. } | StoreError::NotFound) => continue,
                 Err(err) => return Err(err),
             }
+        }
+        out.sort_by(|a, b| b.review_id.cmp(&a.review_id));
+        Ok(out)
+    }
+
+    /// Every running marker in this repo, newest id first. A live pid is
+    /// [`RunState::Running`]; a gone pid is [`RunState::Stale`] and must not be
+    /// reported as still running.
+    pub fn list_markers(&self, repo_id: &str) -> Result<Vec<StoredMarker>, StoreError> {
+        let dir = self.reviews_dir(repo_id)?;
+        let entries = match fs::read_dir(&dir) {
+            Ok(entries) => entries,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(_) => {
+                return Err(StoreError::Io {
+                    op: "read the store",
+                });
+            }
+        };
+        let mut out = Vec::new();
+        for entry in entries {
+            let entry = entry.map_err(|_| StoreError::Io {
+                op: "read the store",
+            })?;
+            let name = entry.file_name();
+            let Some(name) = name.to_str() else {
+                continue;
+            };
+            let Some(id) = name.strip_suffix(".running") else {
+                continue;
+            };
+            if check_review_id(id).is_err() {
+                continue;
+            }
+            let state = self.run_state(repo_id, id)?;
+            if matches!(state, RunState::Idle) {
+                continue;
+            }
+            out.push(StoredMarker {
+                review_id: id.to_string(),
+                state,
+            });
         }
         out.sort_by(|a, b| b.review_id.cmp(&a.review_id));
         Ok(out)

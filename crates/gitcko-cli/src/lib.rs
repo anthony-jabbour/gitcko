@@ -6,6 +6,7 @@
 mod cli;
 mod clock;
 mod exit;
+mod history;
 mod review;
 
 use std::collections::BTreeMap;
@@ -15,8 +16,8 @@ use std::sync::{Arc, Mutex};
 
 use clap::{CommandFactory, FromArgMatches};
 
-use crate::cli::{Cli, ReviewCmd};
-pub use crate::review::{ReviewJob, ReviewRunner, RunError};
+use crate::cli::Cli;
+pub use crate::review::{ReviewJob, ReviewRunner, RunError, repo_cache_id};
 
 /// Where a command writes. Tests pass buffers; the binary passes the real terminal.
 /// The handles are shared so a progress callback can write while the command runs.
@@ -139,10 +140,10 @@ where
     match cli.command {
         Some(cli::Command::Version) => write_version(io),
         Some(cli::Command::Review(args)) => match args.action {
-            Some(ReviewCmd::Show(_) | ReviewCmd::Status(_)) => {
-                let _ = writeln!(lock(&io.stderr), "not available in this build");
-                2
+            Some(cli::ReviewCmd::Show(show)) => {
+                history::show(&show, run.cwd, run.env, run.stdout_is_tty, io)
             }
+            Some(cli::ReviewCmd::Status(status)) => history::status(&status, run.cwd, run.env, io),
             None => review::run(&args, run.cwd, run.env, run.runner, run.stdout_is_tty, io),
         },
         Some(cli::Command::Index(_) | cli::Command::Cache(_)) => {
