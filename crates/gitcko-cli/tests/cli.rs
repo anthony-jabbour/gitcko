@@ -2,24 +2,37 @@
 
 //! The command tree and the version line. Later tests cover what `review` does.
 
+use std::collections::BTreeMap;
 use std::io::Write;
 use std::process::Command;
 
-use gitcko_cli::{Io, execute, version_line};
+use gitcko_cli::{Io, RunEnv, execute_at, version_line};
 
 fn run(args: &[&str]) -> (u8, String, String) {
-    let mut out = Vec::new();
-    let mut err = Vec::new();
-    let code = execute(
+    let io = Io::capture();
+    // An empty config and a temp cache, so a parsed `review` flag cannot reach the
+    // user's models or start a run while these tests only check the command tree.
+    let dir = std::env::temp_dir().join(format!("gitcko-cli-tree-{}", std::process::id()));
+    let _ = std::fs::create_dir_all(&dir);
+    let env = BTreeMap::from([
+        (
+            "GITCKO_CONFIG".into(),
+            dir.join("missing.toml").display().to_string(),
+        ),
+        ("GITCKO_CACHE_DIR".into(), dir.display().to_string()),
+    ]);
+    let cwd = std::env::current_dir().expect("cwd");
+    let code = execute_at(
         args,
-        &mut Io {
-            stdout: &mut out,
-            stderr: &mut err,
+        &RunEnv {
+            cwd: &cwd,
+            env: &env,
+            runner: None,
+            stdout_is_tty: false,
         },
+        &io,
     );
-    let out = String::from_utf8(out).expect("stdout is utf-8");
-    let err = String::from_utf8(err).expect("stderr is utf-8");
-    (code, out, err)
+    (code, io.stdout_text(), io.stderr_text())
 }
 
 fn expected_version() -> String {

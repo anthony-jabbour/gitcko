@@ -31,6 +31,7 @@ mod suppress;
 mod symbols;
 mod validate;
 
+use gitcko_domain::RepoPath;
 use gitcko_git::{CommitId, Repo};
 use gitcko_model::{BudgetLimits, CallRecord, Router, Run, RunBudget};
 use gitcko_protocol::config::ModelRole;
@@ -105,6 +106,12 @@ pub struct ReviewInput<'a> {
     pub head: CommitId,
     /// RFC 3339 time for events, passed in so results don't depend on the clock.
     pub now: &'a dyn Fn() -> String,
+    /// When non-empty, only these paths are reviewed. Empty means every change.
+    /// `--paths` is how a caller asks for that limit.
+    pub only_paths: &'a [RepoPath],
+    /// Held-back paths the user named with `--include`. They are sent anyway, and
+    /// the caller says so on stderr.
+    pub include_paths: &'a [RepoPath],
 }
 
 fn counts(events: &mut events::Events<'_>, step: &str, candidates: usize, dropped: usize) {

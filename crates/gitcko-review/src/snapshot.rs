@@ -259,9 +259,17 @@ fn dispose(
     index: &Revision,
     ignore: Option<&gitcko_config::IgnoreRules>,
 ) -> Disposition {
-    // Both names and both sides: a rename can move a secret under an innocent name.
     let names = [file.old_path.as_ref(), file.new_path.as_ref()];
-    if names.into_iter().flatten().any(is_sensitive_name) {
+    if !input.only_paths.is_empty() && !input.only_paths.iter().any(|p| p == path) {
+        return Disposition::Ignored;
+    }
+    let included = input
+        .include_paths
+        .iter()
+        .any(|wanted| wanted == path || names.iter().flatten().any(|name| *name == wanted));
+    // Both names and both sides: a rename can move a secret under an innocent name.
+    // `--include` is the user asking to send that path anyway.
+    if !included && names.into_iter().flatten().any(is_sensitive_name) {
         return Disposition::HeldBack;
     }
     let sides = [
@@ -270,6 +278,9 @@ fn dispose(
     ];
     for (commit, side_path) in sides {
         let Some(side_path) = side_path else { continue };
+        if included {
+            continue;
+        }
         if let Ok(Some(blob)) = input.repo.read_blob(commit, side_path)
             && has_secret(&String::from_utf8_lossy(&blob.bytes))
         {

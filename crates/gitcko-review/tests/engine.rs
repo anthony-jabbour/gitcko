@@ -11,6 +11,7 @@ use std::time::Duration;
 
 use futures_util::StreamExt;
 use futures_util::stream;
+use gitcko_domain::RepoPath;
 use gitcko_git::Repo;
 use gitcko_model::{
     BudgetLimits, Destination, DestinationClass, ErrorKind, Event, EventStream, FinishReason,
@@ -228,6 +229,8 @@ async fn review_repo(dir: &Path, provider: Arc<Scripted>, run: Run) -> Outcome {
         base: at_rev(&repo, "base"),
         head: at_rev(&repo, "main"),
         now: &now,
+        only_paths: &[],
+        include_paths: &[],
     };
     review(input, &router(provider), run).await
 }
@@ -969,6 +972,8 @@ async fn a_review_that_cannot_read_the_repository_fails() {
         base: missing,
         head,
         now: &now,
+        only_paths: &[],
+        include_paths: &[],
     };
     let provider = scripted(|r, _| default_reply(r));
     let outcome = review(
@@ -2031,6 +2036,8 @@ async fn the_judge_goes_to_its_own_binding() {
         base: at_rev(&repo, "base"),
         head: at_rev(&repo, "main"),
         now: &now,
+        only_paths: &[],
+        include_paths: &[],
     };
     let outcome = review(input, &build(), run_with_budget(base_budget())).await;
     assert_eq!(outcome.review.findings.len(), 1);
@@ -2105,6 +2112,8 @@ async fn a_local_only_review_never_sends_the_judge_to_a_remote_binding() {
                 base: at_rev(&repo, "base"),
                 head: at_rev(&repo, "main"),
                 now: &now,
+                only_paths: &[],
+                include_paths: &[],
             };
             let mut run = run_with_budget(base_budget());
             run.local_only = local_only;
@@ -2388,6 +2397,8 @@ async fn a_dismissed_finding_stays_gone_unless_it_is_on_the_never_suppressed_lis
             base: at_rev(&repo, "base"),
             head: at_rev(&repo, "main"),
             now: &now,
+            only_paths: &[],
+            include_paths: &[],
         };
         review_with(
             input,
@@ -2852,6 +2863,8 @@ async fn review_dir_with(
         base: at_rev(&repo, "base"),
         head: at_rev(&repo, "main"),
         now: &now,
+        only_paths: &[],
+        include_paths: &[],
     };
     review_with(
         input,
@@ -3442,6 +3455,8 @@ async fn every_event_reaches_the_sink_while_the_run_is_still_going() {
         base: at_rev(&repo, "base"),
         head: at_rev(&repo, "main"),
         now: &now,
+        only_paths: &[],
+        include_paths: &[],
     };
     let sink = |event: &RunEvent| seen.lock().unwrap().push(event.clone());
     let outcome = review_streaming(
@@ -3460,4 +3475,133 @@ async fn every_event_reaches_the_sink_while_the_run_is_still_going() {
         "the sink held {first} events at the first reply"
     );
     assert!(first < outcome.events.len());
+}
+
+async fn review_filtered(
+    dir: &Path,
+    provider: Arc<Scripted>,
+    only: &[&str],
+    include: &[&str],
+) -> Outcome {
+    let repo = Repo::open(dir).unwrap();
+    let now = || "2026-01-01T00:00:00Z".to_string();
+    let only_paths: Vec<RepoPath> = only
+        .iter()
+        .map(|path| RepoPath::parse(path).unwrap())
+        .collect();
+    let include_paths: Vec<RepoPath> = include
+        .iter()
+        .map(|path| RepoPath::parse(path).unwrap())
+        .collect();
+    let input = ReviewInput {
+        repo: &repo,
+        base: at_rev(&repo, "base"),
+        head: at_rev(&repo, "main"),
+        now: &now,
+        only_paths: &only_paths,
+        include_paths: &include_paths,
+    };
+    review(input, &router(provider), run_with_budget(base_budget())).await
+}
+
+fn two_file_repo() -> gitcko_test_support::TempDir {
+    let scripts = TempDir::new("two-files");
+    let lib = workspace_root().join("tests/fixtures/review/lib.sh");
+    std::fs::copy(lib, scripts.path().join("lib.sh")).unwrap();
+    let script = scripts.path().join("make.sh");
+    let body = r#"#!/usr/bin/env bash
+set -euo pipefail
+. "${0%[/\\]*}/lib.sh"
+start_crate
+cat > src/kept.rs <<'GITCKO'
+pub fn kept() -> &'static str { "base" }
+GITCKO
+cat > src/other.rs <<'GITCKO'
+pub fn other() -> &'static str { "base" }
+GITCKO
+commit_base
+cat > src/kept.rs <<'GITCKO'
+pub fn kept() -> &'static str { "UNIQUE_KEPT" }
+GITCKO
+cat > src/other.rs <<'GITCKO'
+pub fn other() -> &'static str { "UNIQUE_OTHER" }
+GITCKO
+printf '%s\n' 'MARKER_INCLUDED' > .env
+commit_head "Change both files and add env"
+"#;
+    std::fs::write(&script, body).unwrap();
+    script_repo(&script, "two-files")
+}
+
+#[tokio::test]
+async fn only_paths_drops_the_other_file_and_the_unfiltered_run_keeps_both() {
+    let limited = scripted(|request, _| default_reply(request));
+    let dir = two_file_repo();
+    let outcome = review_filtered(dir.path(), limited.clone(), &["src/kept.rs"], &[]).await;
+    let prompts = all_prompt_text(&limited.requests.lock().unwrap());
+    assert!(prompts.contains("UNIQUE_KEPT"), "{prompts}");
+    assert!(
+        !prompts.contains("UNIQUE_OTHER"),
+        "a path outside --paths must not be sent: {prompts}"
+    );
+    assert!(
+        !outcome
+            .review
+            .coverage
+            .held_back
+            .iter()
+            .any(|path| path == ".env")
+    );
+
+    let open = scripted(|request, _| default_reply(request));
+    let outcome = review_filtered(dir.path(), open.clone(), &[], &[]).await;
+    let prompts = all_prompt_text(&open.requests.lock().unwrap());
+    assert!(prompts.contains("UNIQUE_KEPT"), "{prompts}");
+    assert!(
+        prompts.contains("UNIQUE_OTHER"),
+        "without --paths both changes are sent: {prompts}"
+    );
+    assert!(
+        outcome
+            .review
+            .coverage
+            .held_back
+            .iter()
+            .any(|path| path == ".env"),
+        "the env file is held back when it was not named"
+    );
+}
+
+#[tokio::test]
+async fn include_sends_a_held_back_file_the_default_run_omits() {
+    let closed = scripted(|request, _| default_reply(request));
+    let dir = two_file_repo();
+    let outcome = review_filtered(dir.path(), closed.clone(), &[], &[]).await;
+    let prompts = all_prompt_text(&closed.requests.lock().unwrap());
+    assert!(!prompts.contains("MARKER_INCLUDED"), "{prompts}");
+    assert!(
+        outcome
+            .review
+            .coverage
+            .held_back
+            .iter()
+            .any(|path| path == ".env")
+    );
+
+    let opened = scripted(|request, _| default_reply(request));
+    let outcome = review_filtered(dir.path(), opened.clone(), &[], &[".env"]).await;
+    let prompts = all_prompt_text(&opened.requests.lock().unwrap());
+    assert!(
+        prompts.contains("MARKER_INCLUDED"),
+        "--include must send the named file: {prompts}"
+    );
+    assert!(
+        !outcome
+            .review
+            .coverage
+            .held_back
+            .iter()
+            .any(|path| path == ".env"),
+        "an included path is not a hold-back"
+    );
 }
