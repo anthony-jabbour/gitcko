@@ -185,6 +185,16 @@ async fn review(
     if review.status != ReviewStatus::Complete {
         review.score = None;
     }
+    // The router may surface cancellation as the provider's own `Canceled`
+    // error. The client already dropped the request, so the stored review is
+    // canceled either way and no later role is authoritative.
+    if cancel.is_cancelled() {
+        review.status = ReviewStatus::Canceled;
+        if !review.reason_codes.iter().any(|code| code == "canceled") {
+            review.reason_codes.insert(0, "canceled".into());
+        }
+        review.score = None;
+    }
     if store.put(repo_key, &review).is_err() {
         let _ = store.clear_running(repo_key, &review_id);
         return Err(internal("could not store the review"));
