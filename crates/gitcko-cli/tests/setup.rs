@@ -19,7 +19,6 @@ use gitcko_test_support::{TempDir, empty_repo, git, workspace_root};
 
 struct World {
     repo: TempDir,
-    home: PathBuf,
     _home: TempDir,
     env: BTreeMap<String, String>,
     config: PathBuf,
@@ -48,7 +47,6 @@ fn home(user: &str) -> World {
     ]);
     World {
         repo,
-        home: home_path,
         _home: home,
         env,
         config,
