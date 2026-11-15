@@ -1,0 +1,183 @@
+# Signed GitHub Release for the five targets in dist-workspace.toml (P5_PLAN §5.4).
+#
+# Anthony, before the first real tag:
+#   1. minisign -G -W -p minisign.pub -s minisign.key
+#   2. Replace integrations/install/minisign.pub with that public key, and the
+#      two pinned halves in install.sh and install.ps1 (a test fails if they differ).
+#   3. Create a GitHub environment named `release`, with yourself as a required
+#      reviewer, and set the secret MINISIGN_SECRET_KEY to the contents of the
+#      secret key file. Do not commit that file. The testdata key is not this secret.
+# This workflow only names the secret. It never contains a private key.
+
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            cflags: "-target x86_64-apple-macosx11.0"
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - name: macOS SDK
+        if: runner.os == 'macOS'
+        run: echo "SDKROOT=$(xcrun --sdk macosx --show-sdk-path)" >> "$GITHUB_ENV"
+      - name: musl C compiler
+        if: contains(matrix.target, 'linux-musl')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+          cc_var="CC_${TARGET//-/_}"
+          echo "${cc_var}=musl-gcc" >> "$GITHUB_ENV"
+        env:
+          TARGET: ${{ matrix.target }}
+      - name: Rust target
+        run: rustup target add ${{ matrix.target }}
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }} -p gitcko-cli
+        env:
+          CFLAGS: ${{ matrix.cflags }}
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="${{ matrix.target }}"
+          stage="$(mktemp -d)"
+          mkdir -p dist-out
+          cp "target/${target}/release/gitcko" "${stage}/gitcko"
+          tar -C "${stage}" -czf "dist-out/gitcko-${target}.tar.gz" gitcko
+          (
+            cd dist-out
+            sha256sum "gitcko-${target}.tar.gz" > "gitcko-${target}.archive.sha"
+          )
+          (cd "${stage}" && sha256sum gitcko) | awk -v name="gitcko-${target}.bin" '{ print $1 "  " name }' > "dist-out/gitcko-${target}.bin.sha"
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $target = "${{ matrix.target }}"
+          $stage = Join-Path $env:RUNNER_TEMP 'gitcko-stage'
+          New-Item -ItemType Directory -Force -Path $stage, dist-out | Out-Null
+          $exe = Join-Path $stage 'gitcko.exe'
+          Copy-Item "target\$target\release\gitcko.exe" $exe
+          $archive = Join-Path (Join-Path (Get-Location) 'dist-out') "gitcko-$target.zip"
+          if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }
+          Add-Type -AssemblyName System.IO.Compression
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::Open($archive, 'Create')
+          try {
+            [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $exe, 'gitcko.exe')
+          } finally {
+            $zip.Dispose()
+          }
+          function Write-Sum([string]$Path, [string]$Name, [string]$Out) {
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLower()
+            $utf8 = New-Object System.Text.UTF8Encoding $false
+            [System.IO.File]::WriteAllText($Out, "$hash  $Name`n", $utf8)
+          }
+          Write-Sum $archive "gitcko-$target.zip" "dist-out/gitcko-$target.archive.sha"
+          Write-Sum (Join-Path $stage 'gitcko.exe') "gitcko-$target.bin" "dist-out/gitcko-$target.bin.sha"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist-${{ matrix.target }}
+          path: dist-out/
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: dist
+      - name: Install minisign
+        run: |
+          set -euo pipefail
+          curl -fsSL -o minisign.tar.gz https://github.com/jedisct1/minisign/releases/download/0.12/minisign-0.12-linux.tar.gz
+          echo "9a599b48ba6eb7b1e80f12f36b94ceca7c00b7a5173c95c3efc88d9822957e73  minisign.tar.gz" | sha256sum -c -
+          tar -xzf minisign.tar.gz
+          sudo install minisign-linux/x86_64/minisign /usr/local/bin/minisign
+      - name: Checksums and signature
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MINISIGN_SECRET_KEY:-}" ]; then
+            echo "MINISIGN_SECRET_KEY is not set on the release environment" >&2
+            exit 1
+          fi
+          cd dist
+          version="${GITHUB_REF_NAME#v}"
+          case "$version" in
+            ""|*[!0-9A-Za-z._+-]*)
+              echo "refusing a tag that is not a version token" >&2
+              exit 1
+              ;;
+          esac
+          printf '%s\n' "$version" > VERSION
+          cat ./*.archive.sha ./*.bin.sha | tr -d '\r' > SHA256SUMS
+          sha256sum VERSION | tr -d '\r' >> SHA256SUMS
+          LC_ALL=C sort -o SHA256SUMS SHA256SUMS
+          umask 077
+          key="${RUNNER_TEMP}/minisign.key"
+          printf '%s\n' "$MINISIGN_SECRET_KEY" > "$key"
+          minisign -S -W -s "$key" -m SHA256SUMS -x SHA256SUMS.minisig -t "gitcko ${version}"
+          rm -f "$key"
+          pub="$(awk 'NF && $1 != "untrusted" { print; exit }' "${GITHUB_WORKSPACE}/integrations/install/minisign.pub")"
+          minisign -Vm SHA256SUMS -x SHA256SUMS.minisig -P "$pub"
+          cp "${GITHUB_WORKSPACE}/integrations/install/install.sh" .
+          cp "${GITHUB_WORKSPACE}/integrations/install/install.ps1" .
+          cp "${GITHUB_WORKSPACE}/integrations/install/minisign.pub" .
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd dist
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "Gitcko ${GITHUB_REF_NAME}." \
+            SHA256SUMS SHA256SUMS.minisig VERSION \
+            install.sh install.ps1 minisign.pub \
+            gitcko-*.tar.gz gitcko-*.zip
