@@ -238,3 +238,21 @@ impl Write for StdErr {
         io::stderr().flush()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn the_tui_cache_id_matches_the_cli() {
+        let dir = gitcko_test_support::TempDir::new("tui-cli-id");
+        let other = gitcko_test_support::TempDir::new("tui-cli-id-other");
+        let cli = crate::repo_cache_id(dir.path()).expect("cli id");
+        let tui = gitcko_tui::repo_cache_id(dir.path()).expect("tui id");
+        assert_eq!(cli, tui);
+        assert_eq!(cli.len(), 64);
+        assert_ne!(
+            crate::repo_cache_id(other.path()).expect("other id"),
+            cli,
+            "a different checkout is a different cache id"
+        );
+    }
+}

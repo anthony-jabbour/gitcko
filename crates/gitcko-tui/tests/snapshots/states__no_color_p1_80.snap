@@ -1,0 +1,14 @@
+---
+source: crates/gitcko-tui/tests/states.rs
+expression: "render_text(app, cols, rows)"
+---
+Gitcko acme/api feat/auth→main idx:ready qwen3-coder local
+1 Review  [2 Findings]  3 History
+status: complete
+1 finding(s)
+> [P1] src/retry.ts:42 Timer is not cleared after the request settles
+[P1] Timer is not cleared after the request settles
+src/retry.ts:42
+The timer keeps the process alive after the request resolves.
+fix: clearTimeout(timer)
+? help   q quit

@@ -83,3 +83,28 @@ fn an_incomplete_findings_screen_is_red_and_not_the_clean_control() {
     assert!(!frame.contains("No issues found"), "{frame}");
     snap("findings_partial", &partial);
 }
+
+#[test]
+fn a_clean_review_uses_the_tui_sentence_and_a_missing_fix_is_not_copied() {
+    let mut clean = fixture();
+    clean.findings.clear();
+    let frame = render_text(&preview_with_review(clean), 80, 24);
+    assert!(
+        frame.contains("No issues found in what was reviewed"),
+        "{frame}"
+    );
+    assert!(frame.contains("changed files:"), "{frame}");
+    assert!(!frame.contains("safe to merge"), "{frame}");
+
+    let mut with_fix = preview_with_review(fixture());
+    assert!(
+        matches!(with_fix.on_key(key(KeyCode::Char('y'))), Effect::CopyFix(_)),
+        "a fix package is copied"
+    );
+
+    let mut bare = fixture();
+    bare.findings[0].fix_package = None;
+    let mut app = preview_with_review(bare);
+    assert_eq!(app.on_key(key(KeyCode::Char('y'))), Effect::None);
+    assert_eq!(app.status, "no fix package");
+}

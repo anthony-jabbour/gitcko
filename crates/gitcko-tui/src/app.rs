@@ -218,7 +218,7 @@ impl App {
         let Some(review) = self.active_review() else {
             return Effect::None;
         };
-        let Some(finding) = review.findings.get(self.findings.selected) else {
+        let Some(finding) = findings::selected_finding(&self.findings, review) else {
             return Effect::None;
         };
         let Some(repo) = &self.repo else {
@@ -243,7 +243,7 @@ impl App {
         let Some(review) = self.active_review() else {
             return Effect::None;
         };
-        let Some(finding) = review.findings.get(self.findings.selected) else {
+        let Some(finding) = findings::selected_finding(&self.findings, review) else {
             return Effect::None;
         };
         Effect::OpenEditor {
@@ -259,11 +259,11 @@ impl App {
         let Some(review) = self.active_review() else {
             return Effect::None;
         };
-        let Some(finding) = review.findings.get(self.findings.selected) else {
+        let Some(finding) = findings::selected_finding(&self.findings, review) else {
             return Effect::None;
         };
         let Some(text) = findings::fix_text(finding) else {
-            self.status = "no fix to copy".into();
+            self.status = "no fix package".into();
             return Effect::None;
         };
         self.status = "copied fix".into();

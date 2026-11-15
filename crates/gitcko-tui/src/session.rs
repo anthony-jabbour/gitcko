@@ -89,27 +89,8 @@ pub fn apply_effect(
     match effect {
         Effect::CancelReview | Effect::QuitAndCancel => cancel.cancel(),
         Effect::OpenEditor { path, line } => open_editor(cwd, path, *line, env),
-        Effect::CopyFix(text) => copy_text(text, env),
+        Effect::CopyFix(_) => {}
         Effect::None | Effect::Quit | Effect::StartReview => {}
-    }
-}
-
-fn copy_text(text: &str, _env: &BTreeMap<String, String>) {
-    #[cfg(target_os = "macos")]
-    {
-        let mut child = Command::new("pbcopy");
-        child.stdin(std::process::Stdio::piped());
-        if let Ok(mut proc) = child.spawn() {
-            use std::io::Write;
-            if let Some(stdin) = proc.stdin.as_mut() {
-                let _ = stdin.write_all(text.as_bytes());
-            }
-            let _ = proc.wait();
-        }
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let _ = text;
     }
 }
 

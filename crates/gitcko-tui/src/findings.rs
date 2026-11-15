@@ -72,13 +72,18 @@ pub fn lines(
         return out;
     }
     if review.findings.is_empty() {
-        let body = text(review);
-        for line in body.lines().skip(1) {
-            if line.is_empty() {
-                continue;
+        if review.status == ReviewStatus::Complete {
+            out.push(plain("No issues found in what was reviewed".into(), None));
+            out.extend(coverage_lines(review));
+        } else {
+            let body = text(review);
+            for line in body.lines().skip(1) {
+                if line.is_empty() {
+                    continue;
+                }
+                let problem = incomplete_phrase(line);
+                out.push(LineSpec::styled(line.to_string(), problem));
             }
-            let problem = incomplete_phrase(line);
-            out.push(LineSpec::styled(line.to_string(), problem));
         }
         return out;
     }
@@ -100,7 +105,7 @@ pub fn lines(
             },
         ));
     }
-    if let Some(finding) = review.findings.get(pane.selected) {
+    if let Some(finding) = selected_finding(pane, review) {
         out.push(plain(String::new(), None));
         for line in finding_card(finding).lines() {
             let problem = incomplete_phrase(line);
@@ -164,17 +169,13 @@ fn sorted_indices(findings: &[Finding]) -> Vec<usize> {
     order
 }
 
-fn severity_marker(severity: Severity, color: bool) -> String {
+fn severity_marker(severity: Severity, _color: bool) -> String {
     let label = match severity {
         Severity::P0 => "P0",
         Severity::P1 => "P1",
         Severity::P2 => "P2",
     };
-    if color {
-        format!("[{label}]")
-    } else {
-        format!("[{label}]")
-    }
+    format!("[{label}]")
 }
 
 fn incomplete_phrase(line: &str) -> Option<Role> {
@@ -203,10 +204,15 @@ fn plain(text: String, role: Option<Role>) -> LineSpec {
 
 pub use crate::theme::Role;
 
+pub fn selected_finding<'a>(pane: &FindingsPane, review: &'a Review) -> Option<&'a Finding> {
+    let order = sorted_indices(&review.findings);
+    let index = order.get(pane.selected).copied()?;
+    review.findings.get(index)
+}
+
 pub fn fix_text(finding: &Finding) -> Option<String> {
     finding
         .fix_package
         .as_ref()
         .and_then(|pkg| serde_json::to_string(pkg).ok())
-        .or_else(|| finding.suggestion.clone())
 }

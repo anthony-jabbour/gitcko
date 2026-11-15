@@ -34,11 +34,36 @@ fn a_small_terminal_asks_to_resize_and_any_key_quits() {
 
 #[test]
 fn no_color_keeps_p1_markers_on_findings() {
+    let mut review = fixture();
+    review.findings[0].severity = gitcko_protocol::review::Severity::P1;
+    let mut marked = gitcko_tui::preview_with_review(review);
+    marked.color = false;
+    let frame = render_text(&marked, 80, 24);
+    assert!(frame.contains("[P1]"), "{frame}");
+    assert_ne!(
+        gitcko_tui::cell_fg(&marked, 80, 24, "[P1]"),
+        Some(gitcko_tui::Color::Red),
+        "NO_COLOR does not paint the marker red"
+    );
+    snap("no_color_p1", &marked, 24);
+
     let mut partial = preview_partial();
+    assert_eq!(
+        gitcko_tui::cell_fg(&partial, 120, 24, "partial"),
+        Some(gitcko_tui::Color::Red),
+        "a coloured incomplete status is the control"
+    );
     partial.color = false;
     let frame = render_text(&partial, 120, 24);
     assert!(frame.contains("status: partial"), "{frame}");
+    assert!(frame.contains("incomplete"), "{frame}");
     assert!(!frame.contains("No issues found"), "{frame}");
+    assert!(!frame.contains("safe to merge"), "{frame}");
+    assert_ne!(
+        gitcko_tui::cell_fg(&partial, 120, 24, "partial"),
+        Some(gitcko_tui::Color::Red),
+        "NO_COLOR drops the red incomplete state"
+    );
     snap("no_color_partial", &partial, 24);
 }
 

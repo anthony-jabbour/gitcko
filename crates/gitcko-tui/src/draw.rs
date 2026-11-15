@@ -18,7 +18,7 @@ use crate::theme::{self, Role};
 
 pub fn draw(frame: &mut Frame<'_>, app: &App) {
     let area = frame.area();
-    if app.too_small() {
+    if area.width < 60 || area.height < 20 || app.too_small() {
         frame.render_widget(paragraph(small_terminal_lines(), true), area);
         return;
     }
