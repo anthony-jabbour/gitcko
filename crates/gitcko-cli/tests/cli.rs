@@ -57,6 +57,14 @@ fn version_line_names_the_binary_engine_and_schemas() {
 }
 
 #[test]
+fn review_flags_cannot_mix_with_show_subcommand() {
+    let (code, out, err) = run(&["review", "--json", "show", "rv_01AAAAAAAAAAAAAA0000000000"]);
+    assert_eq!(code, 2, "stdout={out} stderr={err}");
+    assert!(out.is_empty(), "{out}");
+    assert!(!err.is_empty(), "clap names the conflict");
+}
+
+#[test]
 fn a_version_command_with_an_extra_argument_is_rejected() {
     let (code, out, err) = run(&["version", "extra"]);
     assert_eq!(code, 2, "{out}{err}");
@@ -188,6 +196,23 @@ fn the_binary_version_and_bare_help_match_the_library() {
     assert!(bare.stdout.is_empty(), "non-tty help stays off stdout");
     let err = String::from_utf8(bare.stderr).unwrap();
     assert!(err.contains("Usage:"), "{err}");
+}
+
+#[cfg(unix)]
+#[test]
+fn non_utf8_environment_values_do_not_panic() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+
+    let mut cmd = bin();
+    cmd.env(
+        OsStr::from_bytes(b"GITCKO_\xff"),
+        OsStr::from_bytes(b"\xff\xff"),
+    );
+    cmd.arg("version");
+    let out = cmd.output().expect("run gitcko version");
+    assert!(out.status.success(), "{out:?}");
+    assert_eq!(String::from_utf8(out.stdout).unwrap(), expected_version());
 }
 
 fn bin() -> Command {
