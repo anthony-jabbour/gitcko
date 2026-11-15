@@ -21,6 +21,24 @@ fn snap(name: &str, app: &App) {
     }
 }
 
+/// Same Windows path vars as `gitcko-cli` integration tests (`HOME`, `APPDATA`, `LOCALAPPDATA`).
+fn load_env(
+    home: &std::path::Path,
+    cache: &std::path::Path,
+    config: &std::path::Path,
+) -> BTreeMap<String, String> {
+    BTreeMap::from([
+        ("HOME".into(), home.display().to_string()),
+        ("APPDATA".into(), home.display().to_string()),
+        (
+            "LOCALAPPDATA".into(),
+            home.join("local").display().to_string(),
+        ),
+        ("GITCKO_CACHE_DIR".into(), cache.display().to_string()),
+        ("GITCKO_CONFIG".into(), config.display().to_string()),
+    ])
+}
+
 #[test]
 fn the_shell_shows_the_header_tabs_and_word_or_mark() {
     let app = App::preview();
@@ -178,11 +196,7 @@ fn loading_a_repository_fills_the_branch_and_a_missing_model() {
     let cache = repo.path().join("cache");
     let config = repo.path().join("no-config.toml");
     std::fs::create_dir_all(&cache).unwrap();
-    let env = BTreeMap::from([
-        ("HOME".into(), repo.path().display().to_string()),
-        ("GITCKO_CACHE_DIR".into(), cache.display().to_string()),
-        ("GITCKO_CONFIG".into(), config.display().to_string()),
-    ]);
+    let env = load_env(repo.path(), &cache, &config);
     let missing = load(&bare, &env);
     assert!(missing.no_repo.is_some(), "{missing:?}");
     assert!(render_text(&missing, 80, 24).contains("No repository"));
@@ -191,11 +205,7 @@ fn loading_a_repository_fills_the_branch_and_a_missing_model() {
     let mut config_text = std::fs::read_to_string(git.path().join(".git/config")).unwrap();
     config_text.push_str("\n[remote \"origin\"]\n\turl = git@github.com:acme/api.git\n");
     std::fs::write(git.path().join(".git/config"), config_text).unwrap();
-    let env = BTreeMap::from([
-        ("HOME".into(), repo.path().display().to_string()),
-        ("GITCKO_CACHE_DIR".into(), cache.display().to_string()),
-        ("GITCKO_CONFIG".into(), config.display().to_string()),
-    ]);
+    let env = load_env(repo.path(), &cache, &config);
     let loaded = load(git.path(), &env);
     assert!(loaded.no_repo.is_none(), "{loaded:?}");
     assert_eq!(loaded.header.repo, "acme/api");
@@ -215,11 +225,8 @@ fn no_color_in_the_environment_turns_colour_off_and_force_color_is_the_control()
     let cache = dir.path().join("cache");
     let config = dir.path().join("no-config.toml");
     std::fs::create_dir_all(&cache).unwrap();
-    let mut off = BTreeMap::from([
-        ("GITCKO_CACHE_DIR".into(), cache.display().to_string()),
-        ("GITCKO_CONFIG".into(), config.display().to_string()),
-        ("NO_COLOR".into(), "1".into()),
-    ]);
+    let mut off = load_env(dir.path(), &cache, &config);
+    off.insert("NO_COLOR".into(), "1".into());
     let app = load(dir.path(), &off);
     assert!(!app.color);
     off.insert("FORCE_COLOR".into(), "1".into());
