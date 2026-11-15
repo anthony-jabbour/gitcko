@@ -21,10 +21,12 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use gitcko_protocol::event::RunEvent;
 use rmcp::ServiceExt;
 use rmcp::model::{
     CallToolRequestMethod, CallToolRequestParams, CallToolResponse, Implementation,
-    ListToolsResult, PaginatedRequestParams, ServerCapabilities, ServerConfig,
+    ListToolsResult, PaginatedRequestParams, ProgressNotificationParam, ServerCapabilities,
+    ServerConfig,
 };
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::{ErrorData as McpError, ServerHandler};
@@ -210,10 +212,36 @@ impl ServerHandler for GitckoServer {
                 return Ok(tool_error(err.code, err.message, err.retryable).into());
             }
         };
-        // `Repo` and the log callback are not `Send`. The SDK spawns this handler,
-        // so the call runs on a blocking thread with its own runtime. Cancellation
-        // still shares `context.ct`. Progress notifications are attached next.
+        // Events leave the blocking review on a channel. Notifications are sent on
+        // this runtime, which stays free while the review is in `spawn_blocking`.
+        // A missing progress token sends nothing (MCP progress spec). After
+        // `notifications/cancelled` the shared token is dropped and no further
+        // stage is reported.
         let cancel = context.ct.clone();
+        let stop_notes = cancel.clone();
+        let progress_token = context.meta.get_progress_token();
+        let peer = context.peer.clone();
+        let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+        let forward = tokio::spawn(async move {
+            let mut step = 0.0;
+            while let Some(event) = rx.recv().await {
+                if stop_notes.is_cancelled() {
+                    continue;
+                }
+                let Some(token) = progress_token.as_ref() else {
+                    continue;
+                };
+                let Some(message) = present::progress_note(&event) else {
+                    continue;
+                };
+                step += 1.0;
+                let _ = peer
+                    .notify_progress(
+                        ProgressNotificationParam::new(token.clone(), step).with_message(message),
+                    )
+                    .await;
+            }
+        });
         let root = self.root.clone();
         let env = self.env.clone();
         let engine = self.engine.clone();
@@ -235,15 +263,12 @@ impl ServerHandler for GitckoServer {
                             let _ = writeln!(guard, "{line}");
                         }
                     };
+                    let on_event: run::Report = Arc::new(move |event: &RunEvent| {
+                        let _ = tx.send(event.clone());
+                    });
                     Ok(
                         match run::dispatch(
-                            &root,
-                            &env,
-                            &engine,
-                            parsed,
-                            &cancel,
-                            &|_| {},
-                            &mut log,
+                            &root, &env, &engine, parsed, &cancel, &on_event, &mut log,
                         )
                         .await
                         {
@@ -256,6 +281,7 @@ impl ServerHandler for GitckoServer {
             .await
             .map_err(|_| McpError::internal_error("tool call failed", None))?
             .map_err(|_| McpError::internal_error("tool call failed", None))?;
+        let _ = forward.await;
         Ok(result.into())
     }
 }

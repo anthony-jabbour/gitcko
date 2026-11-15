@@ -4,6 +4,7 @@
 //! and finding (§4.3). `fix_package` is always null (P5 C3). An incomplete review's
 //! text starts with `INCOMPLETE review` so it cannot be read as a clean result.
 
+use gitcko_protocol::event::{RunEvent, RunEventKind};
 use gitcko_protocol::review::{Finding, Lifecycle, Review, ReviewStatus};
 use gitcko_render::text;
 use gitcko_storage::ReviewStore;
@@ -356,9 +357,65 @@ fn split_body(body: &str) -> (String, String) {
     (cause.to_string(), impact.to_string())
 }
 
+/// A progress line for a real stage. Other events are not a percentage and are not sent.
+pub fn progress_note(event: &RunEvent) -> Option<String> {
+    match &event.kind {
+        RunEventKind::StepStarted { step } => Some(format!("stage: {step}")),
+        RunEventKind::StepCompleted { step, counts, .. } => {
+            if counts.is_empty() {
+                Some(format!("stage: {step}"))
+            } else {
+                let extra = counts
+                    .iter()
+                    .map(|(name, count)| format!("{name}={count}"))
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                Some(format!("stage: {step} {extra}"))
+            }
+        }
+        _ => None,
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::split_body;
+    use super::{progress_note, split_body};
+    use gitcko_protocol::event::{RunEvent, RunEventKind, RunLifecycle};
+
+    #[test]
+    fn progress_notes_name_real_stages_only() {
+        let started = RunEvent {
+            run_id: "run".into(),
+            seq: 1,
+            at: "2026-01-01T00:00:00Z".into(),
+            kind: RunEventKind::StepStarted {
+                step: "plan".into(),
+            },
+        };
+        assert_eq!(progress_note(&started).as_deref(), Some("stage: plan"));
+        let done = RunEvent {
+            run_id: "run".into(),
+            seq: 2,
+            at: "2026-01-01T00:00:01Z".into(),
+            kind: RunEventKind::StepCompleted {
+                step: "plan".into(),
+                outcome: "ok".into(),
+                duration_ms: 1,
+                counts: [("files".into(), 2)].into(),
+            },
+        };
+        assert_eq!(progress_note(&done).as_deref(), Some("stage: plan files=2"));
+        let other = RunEvent {
+            run_id: "run".into(),
+            seq: 3,
+            at: "2026-01-01T00:00:02Z".into(),
+            kind: RunEventKind::LifecycleChanged {
+                from: RunLifecycle::ReviewingFiles,
+                to: RunLifecycle::Completed,
+            },
+        };
+        assert!(progress_note(&other).is_none());
+    }
 
     #[test]
     fn cause_and_impact_follow_the_stored_body() {

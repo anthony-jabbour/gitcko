@@ -38,6 +38,9 @@ use crate::present::{
 pub type ProviderMap = BTreeMap<String, Arc<dyn Provider>>;
 pub type Script = Arc<dyn Fn(&ReviewJob) -> Result<gitcko_review::Outcome, String> + Send + Sync>;
 
+/// Forwards a real engine event. `Send` so a review running off the handler task can report it.
+pub type Report = Arc<dyn Fn(&RunEvent) + Send + Sync>;
+
 #[derive(Clone)]
 pub enum Engine {
     /// Real router. `Some` replaces the adapters (tests); `None` builds them.
@@ -67,7 +70,7 @@ pub async fn dispatch(
     engine: &Engine,
     args: ToolArgs,
     cancel: &CancellationToken,
-    on_event: &dyn Fn(&RunEvent),
+    on_event: &Report,
     log: &mut dyn FnMut(&str),
 ) -> Result<rmcp::model::CallToolResult, Fail> {
     let repo_key = root_id(root).map_err(|_| internal("could not resolve the repository path"))?;
@@ -113,7 +116,7 @@ async fn review(
     head: Option<String>,
     paths: Vec<RepoPath>,
     cancel: &CancellationToken,
-    on_event: &dyn Fn(&RunEvent),
+    on_event: &Report,
     log: &mut dyn FnMut(&str),
 ) -> Result<rmcp::model::CallToolResult, Fail> {
     let head_ref = head.as_deref().unwrap_or("HEAD");
@@ -200,14 +203,20 @@ async fn execute(
     engine: &Engine,
     job: &ReviewJob,
     cancel: &CancellationToken,
-    on_event: &dyn Fn(&RunEvent),
+    on_event: &Report,
 ) -> Result<gitcko_review::Outcome, Fail> {
     match engine {
         Engine::Script(script) => {
             script(job).map_err(|_| internal("the review could not be completed"))
         }
         Engine::Live(providers) => {
-            live_blocking(job.clone(), providers.clone(), cancel.clone(), on_event).await
+            live_blocking(
+                job.clone(),
+                providers.clone(),
+                cancel.clone(),
+                Arc::clone(on_event),
+            )
+            .await
         }
     }
 }
@@ -216,9 +225,8 @@ async fn live_blocking(
     job: ReviewJob,
     providers: Option<ProviderMap>,
     cancel: CancellationToken,
-    on_event: &dyn Fn(&RunEvent),
+    on_event: Report,
 ) -> Result<gitcko_review::Outcome, Fail> {
-    let _ = on_event;
     let providers = match providers {
         Some(map) => map,
         None => build_providers(&job.models)?,
@@ -255,7 +263,7 @@ async fn live_blocking(
                 only_paths: &job.only_paths,
                 include_paths: &[],
             };
-            Ok(review_streaming(input, &router, run, &NoFeedback, &|_| {}).await)
+            Ok(review_streaming(input, &router, run, &NoFeedback, &|event| on_event(event)).await)
         })
     })
     .await
