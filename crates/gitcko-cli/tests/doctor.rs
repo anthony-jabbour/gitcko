@@ -184,9 +184,12 @@ fn git_and_cache_and_config_failures_stay_free_of_paths() {
     let mut env = world.env.clone();
     #[cfg(windows)]
     {
-        let shim = empty.path().join("git.cmd");
-        std::fs::write(&shim, "@echo off\nexit /b 1\n").unwrap();
-        env.insert("PATH".into(), empty.path().display().to_string());
+        // Fake git.exe so CreateProcess fails closed. Set both PATH spellings.
+        let shim = empty.path().join("git.exe");
+        std::fs::write(&shim, b"not a pe").unwrap();
+        let path = empty.path().display().to_string();
+        env.insert("PATH".into(), path.clone());
+        env.insert("Path".into(), path);
     }
     #[cfg(not(windows))]
     {
