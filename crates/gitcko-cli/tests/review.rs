@@ -221,6 +221,7 @@ fn go_prompt(
             runner: Some(runner),
             stdout_is_tty: false,
             stdin_is_tty,
+            tui: None,
             keychain: None,
             answers,
         },

@@ -230,6 +230,8 @@ fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
             stdout_is_tty: true,
             stdin_is_tty: true,
             tui: Some(&session),
+            keychain: None,
+            answers: None,
         },
         &io,
     );
@@ -252,6 +254,8 @@ fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
             stdout_is_tty: true,
             stdin_is_tty: false,
             tui: Some(&session),
+            keychain: None,
+            answers: None,
         },
         &io,
     );
