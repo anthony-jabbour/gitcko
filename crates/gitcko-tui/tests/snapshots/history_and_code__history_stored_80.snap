@@ -1,0 +1,9 @@
+---
+source: crates/gitcko-tui/tests/history_and_code.rs
+expression: "render_text(app, cols, 24)"
+---
+Gitcko acme/api feat/auth→main idx:ready qwen3-coder local
+1 Review  2 Findings  [3 History]
+> rv_01J9ZQ3V7K2M4N6P8R0S2T4V6X  complete  a71e5b0
+Enter opens in Findings.
+? help   q quit

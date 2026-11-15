@@ -189,6 +189,7 @@ fn go(
             runner,
             stdout_is_tty: tty,
             stdin_is_tty: false,
+            tui: None,
         },
         &io,
     );
@@ -481,6 +482,7 @@ fn a_broken_stdout_during_present_is_exit_1() {
             runner: Some(&runner),
             stdout_is_tty: false,
             stdin_is_tty: false,
+            tui: None,
         },
         &io,
     );
@@ -511,6 +513,7 @@ fn store_put_failure_clears_the_marker_and_exits_1() {
             runner: Some(&runner),
             stdout_is_tty: false,
             stdin_is_tty: false,
+            tui: None,
         },
         &io,
     );

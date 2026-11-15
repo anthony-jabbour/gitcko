@@ -1,0 +1,8 @@
+---
+source: crates/gitcko-tui/tests/states.rs
+expression: "render_text(app, cols, rows)"
+---
+Terminal too small
+Use at least 60 columns and 20 rows,
+or run: gitcko review --text
+Press any key to exit.

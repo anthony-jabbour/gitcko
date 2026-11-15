@@ -8,6 +8,7 @@ mod cli;
 mod clock;
 mod exit;
 mod history;
+mod launch;
 mod review;
 
 use std::collections::BTreeMap;
@@ -18,6 +19,7 @@ use std::sync::{Arc, Mutex};
 use clap::{CommandFactory, FromArgMatches};
 
 use crate::cli::Cli;
+pub use crate::launch::TuiSession;
 pub use crate::review::{ReviewJob, ReviewRunner, RunError, repo_cache_id};
 
 /// Where a command writes. Tests pass buffers; the binary passes the real terminal.
@@ -79,6 +81,9 @@ pub struct RunEnv<'a> {
     pub stdout_is_tty: bool,
     /// True when stdin is a terminal. This build still requires `-f` to purge.
     pub stdin_is_tty: bool,
+    /// When both streams are a terminal and there is no subcommand, bare `gitcko`
+    /// calls this. The binary sets it; a test that leaves it empty stays on help.
+    pub tui: Option<&'a dyn TuiSession>,
 }
 
 /// Copy the process environment without assuming every value is valid UTF-8.
@@ -103,12 +108,14 @@ pub fn run_from_env() -> u8 {
         stdout: Arc::new(Mutex::new(StdOut)),
         stderr: Arc::new(Mutex::new(StdErr)),
     };
+    let live = launch::LiveTui;
     let run = RunEnv {
         cwd: &cwd,
         env: &env,
         runner: None,
         stdout_is_tty: io::stdout().is_terminal(),
         stdin_is_tty: io::stdin().is_terminal(),
+        tui: Some(&live),
     };
     execute_at(&refs, &run, &io)
 }
@@ -124,15 +131,16 @@ pub fn execute(args: &[&str], io: &Io<Vec<u8>, Vec<u8>>) -> u8 {
         runner: None,
         stdout_is_tty: false,
         stdin_is_tty: false,
+        tui: None,
     };
     execute_at(args, &run, io)
 }
 
 /// Run one invocation with an explicit directory, environment and runner.
 ///
-/// A bare `gitcko` writes help to stderr and returns 2, because there is no TUI in
-/// this build and a pipe must not look like success. `--help` stays on stdout and
-/// returns 0, which is clap's own split
+/// A bare `gitcko` opens the TUI when stdin and stdout are both terminals. Otherwise
+/// it writes help to stderr and returns 2, so a pipe is never a successful empty run.
+/// `--help` stays on stdout and returns 0, which is clap's own split
 /// (<https://docs.rs/clap/4.6.7/clap/error/struct.Error.html#method.exit_code>).
 pub fn execute_at<O, E>(args: &[&str], run: &RunEnv<'_>, io: &Io<O, E>) -> u8
 where
@@ -168,6 +176,12 @@ where
             cache::cache(&args, run.cwd, run.env, run.stdin_is_tty, io)
         }
         None => {
+            if run.stdin_is_tty
+                && run.stdout_is_tty
+                && let Some(tui) = run.tui
+            {
+                return tui.run(run.cwd, run.env);
+            }
             let mut command = Cli::command();
             let mut help = Vec::new();
             let _ = command.write_long_help(&mut help);
@@ -222,5 +236,23 @@ impl Write for StdErr {
 
     fn flush(&mut self) -> io::Result<()> {
         io::stderr().flush()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn the_tui_cache_id_matches_the_cli() {
+        let dir = gitcko_test_support::TempDir::new("tui-cli-id");
+        let other = gitcko_test_support::TempDir::new("tui-cli-id-other");
+        let cli = crate::repo_cache_id(dir.path()).expect("cli id");
+        let tui = gitcko_tui::repo_cache_id(dir.path()).expect("tui id");
+        assert_eq!(cli, tui);
+        assert_eq!(cli.len(), 64);
+        assert_ne!(
+            crate::repo_cache_id(other.path()).expect("other id"),
+            cli,
+            "a different checkout is a different cache id"
+        );
     }
 }

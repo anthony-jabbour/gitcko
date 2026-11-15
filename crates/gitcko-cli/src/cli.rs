@@ -10,8 +10,8 @@
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
-/// The `gitcko` command. No subcommand means help on stderr and exit 2 when this
-/// isn't a TUI session (the TUI arrives later).
+/// The `gitcko` command. No subcommand opens the TUI when both streams are a
+/// terminal, and writes help to stderr with exit 2 otherwise.
 #[derive(Debug, Parser)]
 #[command(
     name = "gitcko",

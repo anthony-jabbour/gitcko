@@ -1,0 +1,13 @@
+---
+source: crates/gitcko-tui/tests/shell.rs
+expression: frame
+---
+▄▀▄ Gitcko  repo: acme/api  branch: feat/auth → main  index: ready  model: qwen3-coder (local)
+[1 Review]  2 Findings  3 History
+1 Review   2 Findings   3 History   Tab next
+j k move    g top    G bottom    Enter open
+Esc back or cancel    Ctrl+C cancel, again to quit
+y copy the fix    o editor    c coverage    d file or diff
+/review /findings /history /index /model /help /quit
+Screen readers: gitcko review --text
+? close   q quit
