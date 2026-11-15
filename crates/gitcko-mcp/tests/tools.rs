@@ -55,6 +55,11 @@ fn prepare(config: &str) -> World {
     std::fs::write(&config_path, config).unwrap();
     let env = std::collections::BTreeMap::from([
         ("HOME".into(), home_path.display().to_string()),
+        ("APPDATA".into(), home_path.display().to_string()),
+        (
+            "LOCALAPPDATA".into(),
+            home_path.join("local").display().to_string(),
+        ),
         ("GITCKO_CONFIG".into(), config_path.display().to_string()),
         ("GITCKO_CACHE_DIR".into(), cache.display().to_string()),
     ]);
