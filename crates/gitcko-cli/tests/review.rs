@@ -4,10 +4,11 @@
 //! A fake runner stands in for the engine. Nothing here opens a socket.
 
 use std::collections::BTreeMap;
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
-use gitcko_cli::{Io, ReviewJob, ReviewRunner, RunEnv, RunError, execute_at};
+use gitcko_cli::{Io, ReviewJob, ReviewRunner, RunEnv, RunError, execute_at, repo_cache_id};
 use gitcko_protocol::event::{RunEvent, RunEventKind};
 use gitcko_protocol::review::{Lifecycle, Review, ReviewStatus, Severity};
 use gitcko_review::Outcome;
@@ -372,8 +373,12 @@ model = "example/model-1"
         .expect("an acknowledged remote reaches the runner");
     assert!(!seen.local_only);
     assert!(
-        err.contains("remote: selected code is sent to openrouter"),
+        err.contains("remote (Review): selected code is sent to openrouter"),
         "{err}"
+    );
+    assert!(
+        err.contains("remote (Judge): selected code is sent to openrouter"),
+        "judge bindings are disclosed too: {err}"
     );
 }
 
@@ -446,7 +451,90 @@ fn no_models_exits_2_and_names_setup() {
     assert!(runner.seen.lock().unwrap().is_none());
 }
 
-#[cfg(unix)]
+struct BrokenStdout;
+
+impl Write for BrokenStdout {
+    fn write(&mut self, _: &[u8]) -> std::io::Result<usize> {
+        Err(std::io::Error::other("broken stdout"))
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
+
+#[test]
+fn a_broken_stdout_during_present_is_exit_1() {
+    let world = prepare(LOCAL);
+    let runner = Fake::status(ReviewStatus::Complete);
+    let owned = review_args(&["--json"]);
+    let refs: Vec<&str> = owned.iter().map(String::as_str).collect();
+    let io = Io {
+        stdout: Arc::new(Mutex::new(BrokenStdout)),
+        stderr: Arc::new(Mutex::new(Vec::new())),
+    };
+    let code = execute_at(
+        &refs,
+        &RunEnv {
+            cwd: world.repo.path(),
+            env: &world.env,
+            runner: Some(&runner),
+            stdout_is_tty: false,
+            stdin_is_tty: false,
+        },
+        &io,
+    );
+    assert_eq!(
+        code,
+        1,
+        "{}",
+        String::from_utf8_lossy(&io.stderr.lock().unwrap())
+    );
+}
+
+#[cfg(debug_assertions)]
+#[test]
+fn store_put_failure_clears_the_marker_and_exits_1() {
+    let mut world = prepare(LOCAL);
+    world.env.insert("GITCKO_TEST_PUT_FAIL".into(), "1".into());
+    let repo_id = repo_cache_id(world.repo.path()).unwrap();
+    let reviews = world.cache.join("repos").join(repo_id).join("reviews");
+    let runner = Fake::status(ReviewStatus::Complete);
+    let owned = review_args(&["--json"]);
+    let refs: Vec<&str> = owned.iter().map(String::as_str).collect();
+    let io = Io::capture();
+    let code = execute_at(
+        &refs,
+        &RunEnv {
+            cwd: world.repo.path(),
+            env: &world.env,
+            runner: Some(&runner),
+            stdout_is_tty: false,
+            stdin_is_tty: false,
+        },
+        &io,
+    );
+    assert_eq!(code, 1, "{}", io.stderr_text());
+    assert!(
+        io.stderr_text().contains("could not store the review"),
+        "{}",
+        io.stderr_text()
+    );
+    let review_id = runner
+        .seen
+        .lock()
+        .unwrap()
+        .as_ref()
+        .unwrap()
+        .review_id
+        .clone();
+    assert!(
+        !reviews.join(format!("{review_id}.running")).exists(),
+        "marker cleared after a failed put"
+    );
+}
+
+#[cfg(all(unix, debug_assertions))]
 #[test]
 fn the_binary_turns_ctrl_c_into_130() {
     use std::io::{BufRead, BufReader};

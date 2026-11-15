@@ -153,7 +153,7 @@ fn purge_without_force_keeps_the_cache_and_force_deletes_one_repo() {
 }
 
 #[test]
-fn index_publishes_a_revision_and_a_cancel_is_130() {
+fn index_publishes_a_revision() {
     let world = world();
     let (code, out, err) = go(&world, &["index"]);
     assert_eq!(code, 0, "{err}");
@@ -163,7 +163,12 @@ fn index_publishes_a_revision_and_a_cancel_is_130() {
     let (again, out2, err) = go(&world, &["index"]);
     assert_eq!(again, 0, "{err}");
     assert!(out2.starts_with("indexed "), "{out2}");
+}
 
+#[cfg(debug_assertions)]
+#[test]
+fn index_cancel_via_debug_seam_is_130() {
+    let world = world();
     let mut env = world.env.clone();
     env.insert("GITCKO_TEST_SEAM".into(), "1".into());
     env.insert("GITCKO_TEST_INDEX_CANCEL".into(), "1".into());
@@ -181,7 +186,11 @@ fn index_publishes_a_revision_and_a_cancel_is_130() {
     );
     assert_eq!(code, 130, "{}", io.stderr_text());
     assert!(io.stderr_text().contains("status: canceled"));
+}
 
+#[test]
+fn index_needs_a_repository() {
+    let world = world();
     let bare = TempDir::new("not-a-repo");
     let io = Io::capture();
     let code = execute_at(
