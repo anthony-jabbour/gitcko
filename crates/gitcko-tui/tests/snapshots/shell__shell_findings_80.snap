@@ -4,5 +4,5 @@ expression: frame
 ---
 Gitcko acme/api feat/auth→main idx:ready qwen3-coder local
 1 Review  [2 Findings]  3 History
-Findings
+Run a review or pick one from History.
 ? help   q quit
