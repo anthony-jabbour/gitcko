@@ -58,6 +58,7 @@ fn go(world: &World, args: &[&str], keychain: Option<&dyn Keychain>) -> (u8, Str
             tui: None,
             keychain,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -106,6 +107,7 @@ fn canary_a_relative_config_path_is_refused_without_its_value() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );

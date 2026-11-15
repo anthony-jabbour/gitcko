@@ -84,6 +84,7 @@ fn go(world: &World, args: &[&str], keychain: Option<&dyn Keychain>) -> (u8, Str
             tui: None,
             keychain,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -211,6 +212,7 @@ fn git_and_cache_and_config_failures_stay_free_of_paths() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -312,6 +314,7 @@ model = \"anthropic/claude-haiku-5.5\"
             tui: None,
             keychain: Some(&store),
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -408,6 +411,7 @@ model = \"anthropic/claude-haiku-5.5\"
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -486,6 +490,7 @@ model = \"fixture:1\"
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );

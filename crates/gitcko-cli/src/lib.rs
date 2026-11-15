@@ -15,6 +15,8 @@ mod launch;
 mod privacy;
 mod review;
 mod setup;
+mod update;
+mod verify;
 
 use std::collections::{BTreeMap, VecDeque};
 use std::io::{self, IsTerminal, Write};
@@ -28,6 +30,7 @@ use crate::cli::Cli;
 use crate::keychain::OsKeychain;
 pub use crate::launch::TuiSession;
 pub use crate::review::{ReviewJob, ReviewRunner, RunError, repo_cache_id};
+pub use crate::verify::{DoctorSignature, doctor_signature_check};
 
 /// Where a command writes. Tests pass buffers; the binary passes the real terminal.
 /// The handles are shared so a progress callback can write while the command runs.
@@ -97,6 +100,8 @@ pub struct RunEnv<'a> {
     /// Scripted answers for `setup` and a remote acknowledgement prompt. `None`
     /// reads stdin when it is a terminal. An empty queue is end of input.
     pub answers: Option<&'a Mutex<VecDeque<String>>>,
+    /// The binary `update` replaces. `None` is the running process.
+    pub exe: Option<&'a Path>,
 }
 
 /// Copy the process environment without assuming every value is valid UTF-8.
@@ -117,6 +122,7 @@ pub fn run_from_env() -> u8 {
     let refs: Vec<&str> = args.iter().map(String::as_str).collect();
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let env = collect_env();
+    let exe = std::env::current_exe().ok();
     let io = Io {
         stdout: Arc::new(Mutex::new(StdOut)),
         stderr: Arc::new(Mutex::new(StdErr)),
@@ -132,6 +138,7 @@ pub fn run_from_env() -> u8 {
         tui: Some(&live),
         keychain: Some(&keychain),
         answers: None,
+        exe: exe.as_deref(),
     };
     execute_at(&refs, &run, &io)
 }
@@ -150,6 +157,7 @@ pub fn execute(args: &[&str], io: &Io<Vec<u8>, Vec<u8>>) -> u8 {
         tui: None,
         keychain: None,
         answers: None,
+        exe: None,
     };
     execute_at(args, &run, io)
 }
@@ -222,6 +230,7 @@ where
         Some(cli::Command::Cache(args)) => {
             cache::cache(&args, run.cwd, run.env, run.stdin_is_tty, io)
         }
+        Some(cli::Command::Update(args)) => update::run(&args, run.exe, run.env, io),
         None => {
             if run.stdin_is_tty
                 && run.stdout_is_tty

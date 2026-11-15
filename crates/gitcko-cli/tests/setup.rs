@@ -119,6 +119,7 @@ fn go(
             tui: None,
             keychain,
             answers,
+            exe: None,
         },
         &io,
     );
@@ -177,6 +178,7 @@ fn no_input_lists_what_is_missing_and_writes_nothing() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -257,6 +259,7 @@ fn openrouter_setup_records_acknowledgement_and_not_the_key() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -328,6 +331,7 @@ fn ci_does_not_prompt_when_the_flags_are_complete() {
             tui: None,
             keychain: None,
             answers: Some(&answers),
+            exe: None,
         },
         &io,
     );
@@ -522,6 +526,7 @@ fn a_remote_ollama_host_is_refused_without_echoing_it() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -562,6 +567,7 @@ fn setup_outside_a_repository_exits_before_writing() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -672,6 +678,7 @@ fn a_setup_config_can_run_a_review_and_a_stored_key_is_not_printed() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -714,6 +721,7 @@ fn a_setup_config_can_run_a_review_and_a_stored_key_is_not_printed() {
             tui: None,
             keychain: Some(&store),
             answers: None,
+            exe: None,
         },
         &io,
     );
