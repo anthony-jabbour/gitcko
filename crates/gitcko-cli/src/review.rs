@@ -5,22 +5,21 @@
 //! [`gitcko_review::review_streaming`]; tests pass a runner that returns a stored
 //! shape, so exit codes do not need a model.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::fs;
 use std::io::Write;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use gitcko_config::{
-    Ceilings, FolderConfig, GitckoPaths, Keychain, RepoFiles, RunFlags, has_remote_acknowledgement,
-    resolve_repo, resolve_user,
+    Ceilings, FolderConfig, GitckoPaths, Keychain, RepoFiles, RunFlags, resolve_repo, resolve_user,
 };
 use gitcko_domain::{RepoPath, ReviewId};
 use gitcko_git::Repo;
 use gitcko_model::{DestinationClass, ModelProvider as DynProvider, ResolvedModels, resolve};
 use gitcko_model_ollama::Ollama;
 use gitcko_model_openai::OpenRouter;
-use gitcko_protocol::config::{ModelProvider, ModelRole, UserConfig};
+use gitcko_protocol::config::{ModelProvider, ModelRole};
 use gitcko_protocol::event::{RunEvent, RunEventKind};
 use gitcko_protocol::review::{Review, ReviewStatus, Severity};
 use gitcko_render::{boxed, status_line, text};
@@ -35,6 +34,11 @@ use crate::Io;
 use crate::cli::{FailOn, LayoutArg, ReviewArgs};
 use crate::clock::now_rfc3339;
 use crate::exit::review_exit;
+use crate::privacy::{
+    is_yes, missing_remote_acknowledgement, prompts_disabled, record_openrouter_ack,
+    write_review_disclosure,
+};
+use crate::read_answer;
 
 /// Why a review did not produce an exit code on its own. The message names a flag or
 /// a setup step, never a secret, repository text, or model output.
@@ -170,6 +174,8 @@ pub fn run<O, E>(
     keychain: &dyn Keychain,
     runner: Option<&dyn ReviewRunner>,
     tty: bool,
+    stdin_is_tty: bool,
+    answers: Option<&Mutex<VecDeque<String>>>,
     io: &Io<O, E>,
 ) -> u8
 where
@@ -179,7 +185,17 @@ where
     if let Some(code) = debug_seam(args, env, tty, io) {
         return code;
     }
-    match run_inner(args, cwd, env, keychain, runner, tty, io) {
+    match run_inner(
+        args,
+        cwd,
+        env,
+        keychain,
+        runner,
+        tty,
+        stdin_is_tty,
+        answers,
+        io,
+    ) {
         Ok(code) => code,
         Err(err) => {
             let _ = writeln!(lock(&io.stderr), "{}", err.message);
@@ -195,16 +211,17 @@ fn run_inner<O, E>(
     keychain: &dyn Keychain,
     runner: Option<&dyn ReviewRunner>,
     tty: bool,
+    stdin_is_tty: bool,
+    answers: Option<&Mutex<VecDeque<String>>>,
     io: &Io<O, E>,
 ) -> Result<u8, RunError>
 where
     O: Write + Send,
     E: Write + Send,
 {
-    // `--no-input` does not change this build: an unacknowledged remote is exit 2
-    // either way until setup can prompt. `--context` and the color flags parse, and
-    // this build prints neither source lines nor ANSI.
-    let _ = (args.no_input, args.context, args.color, args.no_color);
+    // `--context` and the color flags parse. This build prints neither source lines
+    // nor ANSI.
+    let _ = (args.context, args.color, args.no_color);
     let repo = Repo::open(cwd).map_err(|_| RunError::new(2, "not a git repository"))?;
     let head_ref = args.head.as_deref().unwrap_or("HEAD");
     let base_ref = args.base.as_deref().unwrap_or("origin/HEAD");
@@ -225,7 +242,9 @@ where
     let include_paths = parse_paths(&args.include)?;
     reject_repo_models(cwd)?;
     let loaded = load_models(env, keychain)?;
-    if let Some(provider) = loaded.unacked {
+    if let Some(provider) = loaded.unacked
+        && !accept_remote(provider, args.no_input, stdin_is_tty, env, answers, io)?
+    {
         return Err(RunError::new(
             2,
             format!("run `gitcko setup --accept-remote {provider}`"),
@@ -240,7 +259,7 @@ where
     for path in &include_paths {
         let _ = writeln!(lock(&io.stderr), "include: {}", path.as_str());
     }
-    disclose(&loaded.models, io);
+    write_review_disclosure(&loaded.models, io);
     let paths = GitckoPaths::from_env(env).map_err(|err| RunError::new(2, err.to_string()))?;
     let repo_id = repo_cache_id(cwd)?;
     let review_id = ReviewId::new().to_string();
@@ -312,6 +331,37 @@ struct Loaded {
     unacked: Option<&'static str>,
 }
 
+/// A headless run refuses. An interactive yes is stored, then the caller discloses
+/// and runs. A no, or a provider that cannot be acknowledged, does not call.
+fn accept_remote<O, E>(
+    provider: &str,
+    no_input: bool,
+    stdin_is_tty: bool,
+    env: &BTreeMap<String, String>,
+    answers: Option<&Mutex<VecDeque<String>>>,
+    io: &Io<O, E>,
+) -> Result<bool, RunError>
+where
+    O: Write,
+    E: Write,
+{
+    if prompts_disabled(no_input, stdin_is_tty, env) || provider != "openrouter" {
+        return Ok(false);
+    }
+    let _ = writeln!(
+        lock(&io.stderr),
+        "Acknowledge sending selected code to {provider}? [y/N]:"
+    );
+    let Some(answer) = read_answer(answers, stdin_is_tty) else {
+        return Ok(false);
+    };
+    if !is_yes(&answer) {
+        return Ok(false);
+    }
+    record_openrouter_ack(env).map_err(|message| RunError::new(2, message))?;
+    Ok(true)
+}
+
 fn load_models(
     env: &BTreeMap<String, String>,
     keychain: &dyn Keychain,
@@ -335,27 +385,8 @@ fn load_models(
     {
         return Err(RunError::new(2, "run `gitcko setup`"));
     }
-    let unacked = unacknowledged(&user, &models);
+    let unacked = missing_remote_acknowledgement(&user, &models);
     Ok(Loaded { models, unacked })
-}
-
-fn unacknowledged(user: &UserConfig, models: &ResolvedModels) -> Option<&'static str> {
-    models.bindings.values().find_map(|binding| {
-        if binding.destination.class != DestinationClass::CustomerRemote {
-            return None;
-        }
-        let name = match binding.provider {
-            ModelProvider::Openrouter => "openrouter",
-            ModelProvider::Ollama => "ollama",
-        };
-        if binding.provider == ModelProvider::Openrouter
-            && has_remote_acknowledgement(user, binding.provider)
-        {
-            None
-        } else {
-            Some(name)
-        }
-    })
 }
 
 fn reject_repo_models(cwd: &Path) -> Result<(), RunError> {
@@ -416,35 +447,6 @@ fn fail_on(args: &ReviewArgs) -> Option<Severity> {
         FailOn::P1 => Severity::P1,
         FailOn::P2 => Severity::P2,
     })
-}
-
-fn disclose<O, E>(models: &ResolvedModels, io: &Io<O, E>)
-where
-    O: Write,
-    E: Write,
-{
-    let mut disclosed = false;
-    for (role, binding_name) in &models.roles {
-        let Some(binding) = models.bindings.get(binding_name) else {
-            continue;
-        };
-        if binding.destination.class != DestinationClass::CustomerRemote {
-            continue;
-        }
-        disclosed = true;
-        let provider = match binding.provider {
-            ModelProvider::Openrouter => "openrouter",
-            ModelProvider::Ollama => "ollama",
-        };
-        let _ = writeln!(
-            lock(&io.stderr),
-            "remote ({role:?}): selected code is sent to {provider} ({})",
-            binding.model
-        );
-    }
-    if !disclosed {
-        let _ = writeln!(lock(&io.stderr), "local: code stays on this machine");
-    }
 }
 
 fn present<O, E>(

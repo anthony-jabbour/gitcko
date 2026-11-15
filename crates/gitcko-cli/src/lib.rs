@@ -11,6 +11,7 @@ mod exit;
 mod history;
 mod keychain;
 mod launch;
+mod privacy;
 mod review;
 mod setup;
 
@@ -192,6 +193,8 @@ where
                 keychain_or_empty(run.keychain),
                 run.runner,
                 run.stdout_is_tty,
+                run.stdin_is_tty,
+                run.answers,
                 io,
             ),
         },
@@ -205,6 +208,13 @@ where
             keychain_or_empty(run.keychain),
             run.stdin_is_tty,
             run.answers,
+            io,
+        ),
+        Some(cli::Command::Doctor(args)) => doctor::run(
+            args.json,
+            run.cwd,
+            run.env,
+            keychain_or_empty(run.keychain),
             io,
         ),
         Some(cli::Command::Index(args)) => cache::index(&args, run.cwd, run.env, io),
