@@ -89,7 +89,7 @@ pub fn apply_effect(
     match effect {
         Effect::CancelReview | Effect::QuitAndCancel => cancel.cancel(),
         Effect::OpenEditor { path, line } => open_editor(cwd, path, *line, env),
-        Effect::CopyFix(text) => copy_text(text, env),
+        Effect::CopyFix(_) => {}
         Effect::None | Effect::Quit | Effect::StartReview => {}
     }
 }
@@ -105,24 +105,6 @@ fn open_editor(cwd: &Path, path: &str, line: u32, env: &BTreeMap<String, String>
         .arg(&target)
         .arg(cwd.join(path))
         .spawn();
-}
-
-fn copy_text(text: &str, env: &BTreeMap<String, String>) {
-    #[cfg(target_os = "macos")]
-    {
-        let mut child = Command::new("pbcopy");
-        child.stdin(std::process::Stdio::piped());
-        if let Ok(mut proc) = child.spawn() {
-            use std::io::Write;
-            if let Some(stdin) = proc.stdin.as_mut() {
-                let _ = stdin.write_all(text.as_bytes());
-            }
-            let _ = proc.wait();
-            return;
-        }
-    }
-    let _ = env;
-    let _ = text;
 }
 
 /// Open the shell on this checkout and run until the user quits.
