@@ -881,7 +881,6 @@ mod tests {
     }
 
     #[test]
-    #[test]
     fn version_cmp_orders_numeric_segments() {
         use std::cmp::Ordering;
         assert_eq!(super::version_cmp("0.0.1", "2.0.0"), Ordering::Less);
