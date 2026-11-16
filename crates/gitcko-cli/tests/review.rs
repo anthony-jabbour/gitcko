@@ -210,7 +210,6 @@ fn go_prompt(
     runner: &Fake,
     stdin_is_tty: bool,
     answers: Option<&Mutex<VecDeque<String>>>,
-            exe: None,
 ) -> (u8, String, String) {
     let owned = review_args(extra);
     let refs: Vec<&str> = owned.iter().map(String::as_str).collect();

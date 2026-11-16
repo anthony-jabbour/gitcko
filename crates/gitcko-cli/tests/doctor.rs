@@ -350,6 +350,7 @@ model = \"anthropic/claude-haiku-5.5\"
                 tui: None,
                 keychain: Some(&store),
                 answers: None,
+                exe: None,
             },
             &io,
         );

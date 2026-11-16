@@ -231,11 +231,8 @@ fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
             stdout_is_tty: true,
             stdin_is_tty: true,
             tui: Some(&session),
-<<<<<<< HEAD
             keychain: None,
             answers: None,
-=======
->>>>>>> 247f003 (Add exe field to TUI RunEnv tests after B5 rebase.)
             exe: None,
         },
         &io,
@@ -259,11 +256,8 @@ fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
             stdout_is_tty: true,
             stdin_is_tty: false,
             tui: Some(&session),
-<<<<<<< HEAD
             keychain: None,
             answers: None,
-=======
->>>>>>> 247f003 (Add exe field to TUI RunEnv tests after B5 rebase.)
             exe: None,
         },
         &io,
