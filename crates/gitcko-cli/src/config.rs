@@ -716,7 +716,9 @@ pub fn env_with_openrouter(
             copy.insert("OPENROUTER_API_KEY".into(), secret.expose().to_string());
             Ok(copy)
         }
-        Ok(None) => Ok(copy),
+        // Linux CI (and hosts without a secret service) surface Keychain errors.
+        // Serving MCP still starts; reviews that need a key fail later.
+        Ok(None) | Err(CredError::Keychain) => Ok(copy),
         Err(err) => Err(err.to_string()),
     }
 }
