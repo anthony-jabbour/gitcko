@@ -27,12 +27,18 @@ pub struct Cli {
     pub command: Option<Command>,
 }
 
-/// Top-level commands this build ships. Later batches add config, setup, doctor,
-/// update and mcp on this enum.
+/// Top-level commands this build ships. Later batches add doctor, update and mcp
+/// on this enum.
 #[derive(Debug, Subcommand)]
 pub enum Command {
     /// Review committed changes, or look at a stored review.
     Review(ReviewArgs),
+    /// Print resolved settings, or change user settings.
+    Config(ConfigArgs),
+    /// Choose a model and record remote acknowledgement.
+    Setup(SetupArgs),
+    /// Check git, config, bindings and cache without running a review.
+    Doctor(DoctorArgs),
     /// Build or refresh this repository's local index.
     Index(IndexArgs),
     /// Show or delete local cache data.
@@ -196,6 +202,78 @@ pub enum CacheCmd {
     Stats,
     /// Delete one repository's cache, or the whole cache.
     Purge(PurgeArgs),
+}
+
+/// `gitcko config`. With no subcommand, print the resolved config and where each
+/// value came from. `get`, `set` and `unset` change user settings only.
+#[derive(Debug, Args)]
+pub struct ConfigArgs {
+    #[command(subcommand)]
+    pub command: Option<ConfigCmd>,
+    /// Repository-relative file. The printed repo config is the one that applies to it.
+    #[arg(value_name = "PATH", id = "file")]
+    pub path: Option<String>,
+    /// One JSON object on stdout. Warnings stay on stderr.
+    #[arg(long)]
+    pub json: bool,
+}
+
+/// User-config subcommands. Repository files are edited by hand, never here.
+#[derive(Debug, Subcommand)]
+pub enum ConfigCmd {
+    /// Print one user setting and the layer it came from.
+    Get {
+        /// Dotted key, such as `review.context`.
+        key: String,
+    },
+    /// Write one user setting into the user config file.
+    Set {
+        /// Dotted key. Secret keys are refused.
+        key: String,
+        /// The new value. Parsed as TOML when it is a bool, number or array.
+        value: String,
+    },
+    /// Remove one user setting so the default applies again.
+    Unset {
+        /// Dotted key.
+        key: String,
+    },
+    /// Print the user config file path.
+    Path,
+}
+
+/// `gitcko doctor`.
+#[derive(Debug, Args)]
+pub struct DoctorArgs {
+    /// One JSON object on stdout.
+    #[arg(long)]
+    pub json: bool,
+}
+
+/// `gitcko setup`. `--no-input` never prompts; a missing answer exits 2.
+#[derive(Debug, Args)]
+pub struct SetupArgs {
+    /// Where the model runs.
+    #[arg(long, value_enum)]
+    pub provider: Option<SetupProvider>,
+    /// Exact model id. Ollama is `name:tag`; OpenRouter is `vendor/model`.
+    #[arg(long)]
+    pub model: Option<String>,
+    /// Record consent to send selected code to this remote provider.
+    #[arg(long)]
+    pub accept_remote: Option<String>,
+    /// Never prompt. Missing answers exit 2.
+    #[arg(long)]
+    pub no_input: bool,
+}
+
+/// Providers `setup` can bind in this build.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum SetupProvider {
+    /// A loopback Ollama endpoint.
+    Ollama,
+    /// OpenRouter. Needs `OPENROUTER_API_KEY` and `--accept-remote openrouter`.
+    Openrouter,
 }
 
 /// `cache purge`. `--repo` and `--all` cannot be combined.

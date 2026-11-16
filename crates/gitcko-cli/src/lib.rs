@@ -6,19 +6,26 @@
 mod cache;
 mod cli;
 mod clock;
+mod config;
+mod doctor;
 mod exit;
 mod history;
+mod keychain;
 mod launch;
+mod privacy;
 mod review;
+mod setup;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use clap::{CommandFactory, FromArgMatches};
+use gitcko_config::Keychain;
 
 use crate::cli::Cli;
+use crate::keychain::OsKeychain;
 pub use crate::launch::TuiSession;
 pub use crate::review::{ReviewJob, ReviewRunner, RunError, repo_cache_id};
 
@@ -84,6 +91,12 @@ pub struct RunEnv<'a> {
     /// When both streams are a terminal and there is no subcommand, bare `gitcko`
     /// calls this. The binary sets it; a test that leaves it empty stays on help.
     pub tui: Option<&'a dyn TuiSession>,
+    /// Credential store. `None` is empty, so a test never opens the OS keychain.
+    /// The binary passes the OS store.
+    pub keychain: Option<&'a dyn Keychain>,
+    /// Scripted answers for `setup` and a remote acknowledgement prompt. `None`
+    /// reads stdin when it is a terminal. An empty queue is end of input.
+    pub answers: Option<&'a Mutex<VecDeque<String>>>,
 }
 
 /// Copy the process environment without assuming every value is valid UTF-8.
@@ -109,6 +122,7 @@ pub fn run_from_env() -> u8 {
         stderr: Arc::new(Mutex::new(StdErr)),
     };
     let live = launch::LiveTui;
+    let keychain = OsKeychain;
     let run = RunEnv {
         cwd: &cwd,
         env: &env,
@@ -116,6 +130,8 @@ pub fn run_from_env() -> u8 {
         stdout_is_tty: io::stdout().is_terminal(),
         stdin_is_tty: io::stdin().is_terminal(),
         tui: Some(&live),
+        keychain: Some(&keychain),
+        answers: None,
     };
     execute_at(&refs, &run, &io)
 }
@@ -132,6 +148,8 @@ pub fn execute(args: &[&str], io: &Io<Vec<u8>, Vec<u8>>) -> u8 {
         stdout_is_tty: false,
         stdin_is_tty: false,
         tui: None,
+        keychain: None,
+        answers: None,
     };
     execute_at(args, &run, io)
 }
@@ -169,8 +187,37 @@ where
                 history::show(&show, run.cwd, run.env, run.stdout_is_tty, io)
             }
             Some(cli::ReviewCmd::Status(status)) => history::status(&status, run.cwd, run.env, io),
-            None => review::run(&args, run.cwd, run.env, run.runner, run.stdout_is_tty, io),
+            None => review::run(
+                &args,
+                run.cwd,
+                run.env,
+                keychain_or_empty(run.keychain),
+                run.runner,
+                run.stdout_is_tty,
+                run.stdin_is_tty,
+                run.answers,
+                io,
+            ),
         },
+        Some(cli::Command::Config(args)) => {
+            config::run(&args, run.cwd, run.env, keychain_or_empty(run.keychain), io)
+        }
+        Some(cli::Command::Setup(args)) => setup::run(
+            &args,
+            run.cwd,
+            run.env,
+            keychain_or_empty(run.keychain),
+            run.stdin_is_tty,
+            run.answers,
+            io,
+        ),
+        Some(cli::Command::Doctor(args)) => doctor::run(
+            args.json,
+            run.cwd,
+            run.env,
+            keychain_or_empty(run.keychain),
+            io,
+        ),
         Some(cli::Command::Index(args)) => cache::index(&args, run.cwd, run.env, io),
         Some(cli::Command::Cache(args)) => {
             cache::cache(&args, run.cwd, run.env, run.stdin_is_tty, io)
@@ -192,6 +239,20 @@ where
     }
 }
 
+struct EmptyKeychain;
+
+impl Keychain for EmptyKeychain {
+    fn get(&self, _account: &str) -> Result<Option<String>, gitcko_config::CredError> {
+        Ok(None)
+    }
+}
+
+fn keychain_or_empty(keychain: Option<&dyn Keychain>) -> &dyn Keychain {
+    keychain.unwrap_or(&EMPTY_KEYCHAIN)
+}
+
+static EMPTY_KEYCHAIN: EmptyKeychain = EmptyKeychain;
+
 fn write_version<O: Write, E>(io: &Io<O, E>) -> u8 {
     let _ = writeln!(lock(&io.stdout), "{}", version_line());
     0
@@ -206,6 +267,28 @@ fn render_clap<O: Write, E: Write>(err: clap::Error, io: &Io<O, E>) -> u8 {
         let _ = write!(lock(&io.stderr), "{text}");
     }
     u8::try_from(code).unwrap_or(2)
+}
+
+/// Next scripted line, or one line from stdin when this is a terminal and no
+/// script was provided. `None` is end of input. The line is not logged.
+pub(crate) fn read_answer(
+    answers: Option<&Mutex<VecDeque<String>>>,
+    stdin_is_tty: bool,
+) -> Option<String> {
+    if let Some(answers) = answers {
+        return answers
+            .lock()
+            .unwrap_or_else(|err| err.into_inner())
+            .pop_front();
+    }
+    if !stdin_is_tty {
+        return None;
+    }
+    let mut line = String::new();
+    match io::stdin().read_line(&mut line) {
+        Ok(0) | Err(_) => None,
+        Ok(_) => Some(line.trim_end_matches(['\n', '\r']).to_string()),
+    }
 }
 
 fn lock<T>(mutex: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {

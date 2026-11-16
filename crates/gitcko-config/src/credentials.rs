@@ -182,6 +182,13 @@ fn account(provider: ModelProvider) -> &'static str {
 pub trait Keychain {
     /// `None` when the account has no entry.
     fn get(&self, account: &str) -> Result<Option<String>, CredError>;
+
+    /// Store a key. The default refuses; the OS store and test doubles override it.
+    /// Callers must not put `secret` into an error or a log.
+    fn set(&self, account: &str, secret: &str) -> Result<(), CredError> {
+        let _ = (account, secret);
+        Err(CredError::Keychain)
+    }
 }
 
 /// In-memory store for tests. Production surfaces supply the OS keychain.

@@ -3,7 +3,7 @@
 //! `gitcko review`: exit codes, output, and the checks that happen before a model runs.
 //! A fake runner stands in for the engine. Nothing here opens a socket.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex};
 use gitcko_cli::{Io, ReviewJob, ReviewRunner, RunEnv, RunError, execute_at, repo_cache_id};
 use gitcko_protocol::event::{RunEvent, RunEventKind};
 use gitcko_protocol::review::{Lifecycle, Review, ReviewStatus, Severity};
+use gitcko_redact::canaries;
 use gitcko_review::Outcome;
 use gitcko_test_support::{TempDir, empty_repo, git, workspace_root};
 
@@ -190,6 +191,39 @@ fn go(
             stdout_is_tty: tty,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
+            answers: None,
+        },
+        &io,
+    );
+    (code, io.stdout_text(), io.stderr_text())
+}
+
+fn script(lines: &[&str]) -> Mutex<VecDeque<String>> {
+    Mutex::new(lines.iter().copied().map(str::to_string).collect())
+}
+
+fn go_prompt(
+    world: &World,
+    extra: &[&str],
+    runner: &Fake,
+    stdin_is_tty: bool,
+    answers: Option<&Mutex<VecDeque<String>>>,
+) -> (u8, String, String) {
+    let owned = review_args(extra);
+    let refs: Vec<&str> = owned.iter().map(String::as_str).collect();
+    let io = Io::capture();
+    let code = execute_at(
+        &refs,
+        &RunEnv {
+            cwd: world.repo.path(),
+            env: &world.env,
+            runner: Some(runner),
+            stdout_is_tty: false,
+            stdin_is_tty,
+            tui: None,
+            keychain: None,
+            answers,
         },
         &io,
     );
@@ -483,6 +517,8 @@ fn a_broken_stdout_during_present_is_exit_1() {
             stdout_is_tty: false,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
+            answers: None,
         },
         &io,
     );
@@ -514,6 +550,8 @@ fn store_put_failure_clears_the_marker_and_exits_1() {
             stdout_is_tty: false,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
+            answers: None,
         },
         &io,
     );
@@ -588,4 +626,97 @@ fn the_binary_turns_ctrl_c_into_130() {
         Some(130),
         "expected exit 130, got {finished:?} (signal kill means the handler raced)"
     );
+}
+
+#[test]
+fn a_headless_remote_does_not_call_and_an_interactive_yes_does() {
+    let remote = r#"
+color = true
+[models.bindings.smart]
+provider = "openrouter"
+model = "example/model-1"
+"#;
+    let key = canaries()[3].clone();
+    let mut world = prepare(remote);
+    world.env.insert("OPENROUTER_API_KEY".into(), key.clone());
+    let config = world.env.get("GITCKO_CONFIG").expect("config path").clone();
+
+    let runner = Fake::status(ReviewStatus::Complete);
+    let yes = script(&["y"]);
+    let (code, out, err) = go_prompt(&world, &["--no-input", "--json"], &runner, true, Some(&yes));
+    assert_eq!(code, 2, "{err}{out}");
+    assert!(runner.seen.lock().unwrap().is_none());
+    assert!(!err.contains("selected code is sent to"), "{err}");
+    assert!(!out.contains("remote:"), "{out}");
+    assert!(!err.contains(&key) && !out.contains(&key));
+    assert!(
+        !std::fs::read_to_string(&config)
+            .unwrap()
+            .contains("remote_acknowledged")
+    );
+
+    world.env.insert("CI".into(), "1".into());
+    let runner = Fake::status(ReviewStatus::Complete);
+    let yes = script(&["y"]);
+    let (code, out, err) = go_prompt(&world, &["--json"], &runner, true, Some(&yes));
+    assert_eq!(code, 2, "{err}");
+    assert!(runner.seen.lock().unwrap().is_none());
+    assert!(
+        !err.contains("selected code is sent to") && !out.contains(&key) && !err.contains(&key)
+    );
+    world.env.remove("CI");
+
+    let runner = Fake::status(ReviewStatus::Complete);
+    let no = script(&["n"]);
+    let (code, out, err) = go_prompt(&world, &["--json"], &runner, true, Some(&no));
+    assert_eq!(code, 2, "{err}");
+    assert!(runner.seen.lock().unwrap().is_none());
+    assert!(err.contains("Acknowledge"), "{err}");
+    assert!(!err.contains("selected code is sent to"), "{err}");
+    assert!(!out.contains("remote:") && !out.contains(&key));
+
+    let runner = Fake::status(ReviewStatus::Complete);
+    let blank = script(&[""]);
+    let (code, _, err) = go_prompt(&world, &[], &runner, true, Some(&blank));
+    assert_eq!(code, 2, "{err}");
+    assert!(runner.seen.lock().unwrap().is_none());
+    assert!(!err.contains("selected code is sent to"), "{err}");
+
+    let runner = Fake::status(ReviewStatus::Complete);
+    let yes = script(&["yes"]);
+    let (code, out, err) = go_prompt(&world, &["--json"], &runner, true, Some(&yes));
+    assert_eq!(code, 0, "{err}{out}");
+    let seen = runner.seen.lock().unwrap();
+    assert!(!seen.as_ref().expect("yes reaches the runner").local_only);
+    assert!(!out.contains("remote:"), "{out}");
+    assert!(!out.contains(&key) && !err.contains(&key));
+    let remote_at = err.find("selected code is sent to").expect("disclosure");
+    let stage_at = err.find("stage:").expect("progress");
+    assert!(remote_at < stage_at, "{err}");
+    let text = std::fs::read_to_string(&config).unwrap();
+    assert!(text.contains("remote_acknowledged"), "{text}");
+    assert!(text.contains("example/model-1"), "{text}");
+    assert!(text.contains("true"), "{text}");
+    assert!(!text.contains(&key));
+
+    let ollama = r#"
+[models.bindings.smart]
+provider = "ollama"
+model = "fixture:1"
+"#;
+    let mut remote_ollama = prepare(ollama);
+    remote_ollama.env.insert(
+        "OLLAMA_HOST".into(),
+        "https://ollama.example.test:11434".into(),
+    );
+    let runner = Fake::status(ReviewStatus::Complete);
+    let yes = script(&["y"]);
+    let (code, out, err) = go_prompt(&remote_ollama, &[], &runner, true, Some(&yes));
+    assert_eq!(code, 2, "{err}{out}");
+    assert!(runner.seen.lock().unwrap().is_none());
+    assert!(
+        !err.contains("example.test") && !out.contains("example.test"),
+        "{err}"
+    );
+    assert!(!err.contains("selected code is sent to"), "{err}");
 }

@@ -32,6 +32,8 @@ fn run(args: &[&str]) -> (u8, String, String) {
             stdout_is_tty: false,
             stdin_is_tty: false,
             tui: None,
+            keychain: None,
+            answers: None,
         },
         &io,
     );
@@ -162,6 +164,10 @@ fn index_and_cache_are_in_the_tree() {
     assert!(out.contains("stats"), "{out}");
     assert!(out.contains("purge"), "{out}");
 
+    let (code, out, err) = run(&["doctor", "--help"]);
+    assert_eq!(code, 0, "{err}");
+    assert!(out.contains("--json"), "{out}");
+
     let (code, out, err) = run(&["cache", "purge", "--help"]);
     assert_eq!(code, 0, "{err}");
     assert!(out.contains("--repo"), "{out}");
@@ -224,6 +230,8 @@ fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
             stdout_is_tty: true,
             stdin_is_tty: true,
             tui: Some(&session),
+            keychain: None,
+            answers: None,
         },
         &io,
     );
@@ -246,6 +254,8 @@ fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
             stdout_is_tty: true,
             stdin_is_tty: false,
             tui: Some(&session),
+            keychain: None,
+            answers: None,
         },
         &io,
     );
