@@ -1,0 +1,17 @@
+# Phase 5 Milestone M — 60 s fuzz per target
+
+Tip: f5a92ab (main). Command: `cargo xtask fuzz --run 60`.
+Full compiler + libFuzzer transcript: local `evals/reports/p5-m-fuzz-60s.log` (not committed).
+
+| Target | Result | Runs | Wall |
+|---|---|---|---|
+| config_load | clean | 356810 | 61 s |
+| diff_parse | clean | 3328848 | 61 s |
+| mcp_args | clean | 163278 | 61 s |
+| model_output | clean | 1467827 | 61 s |
+| provider_stream | clean | 484031 | 61 s |
+| syntax_extract | clean | 129116 | 61 s |
+| tool_args | clean | 238856 | 61 s |
+| user_config | clean | 896197 | 61 s |
+
+**8/8 clean.** No crashes, no artifacts under `fuzz/artifacts/`.
