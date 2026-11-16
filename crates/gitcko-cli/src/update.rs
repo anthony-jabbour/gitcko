@@ -578,6 +578,14 @@ where
     }
     let mut cmd = Command::new("npm");
     cmd.args(["i", "-g", "gitcko@latest"]);
+    apply_subprocess_env(env, &mut cmd);
+    match cmd.status() {
+        Ok(status) if status.success() => ok(io, "updated: npm"),
+        _ => fail(io, "npm update failed"),
+    }
+}
+
+fn apply_subprocess_env(env: &BTreeMap<String, String>, cmd: &mut Command) {
     cmd.env_clear();
     for (key, value) in env {
         if key == "GITCKO_DOWNLOAD_URL" {
@@ -585,10 +593,16 @@ where
         }
         cmd.env(key, value);
     }
-    mirror_path_env(env, &mut cmd);
-    match cmd.status() {
-        Ok(status) if status.success() => ok(io, "updated: npm"),
-        _ => fail(io, "npm update failed"),
+    mirror_path_env(env, cmd);
+    #[cfg(windows)]
+    {
+        for key in ["PATHEXT", "SystemRoot", "ComSpec"] {
+            if !env.contains_key(key)
+                && let Ok(value) = std::env::var(key)
+            {
+                cmd.env(key, value);
+            }
+        }
     }
 }
 
