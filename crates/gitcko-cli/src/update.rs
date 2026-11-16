@@ -651,27 +651,43 @@ mod tests {
     #[test]
     fn install_method_follows_the_path_and_a_script_receipt_wins() {
         let root = tempfile::tempdir().unwrap();
-        let brew = root.path().join("homebrew/Cellar/gitcko/0.0.0/bin/gitcko");
+        let brew = root
+            .path()
+            .join("homebrew")
+            .join("Cellar")
+            .join("gitcko")
+            .join("0.0.0")
+            .join("bin")
+            .join("gitcko");
         fs::create_dir_all(brew.parent().unwrap()).unwrap();
         fs::write(&brew, b"brew").unwrap();
         assert_eq!(detect_install_method(&brew), InstallMethod::Homebrew);
 
-        let cargo = root.path().join(".cargo/bin/gitcko");
+        let cargo = root.path().join(".cargo").join("bin").join("gitcko");
         fs::create_dir_all(cargo.parent().unwrap()).unwrap();
         fs::write(&cargo, b"cargo").unwrap();
         assert_eq!(detect_install_method(&cargo), InstallMethod::Cargo);
 
-        let npm = root.path().join("node_modules/gitcko/gitcko");
+        let npm = root
+            .path()
+            .join("node_modules")
+            .join("gitcko")
+            .join("gitcko");
         fs::create_dir_all(npm.parent().unwrap()).unwrap();
         fs::write(&npm, b"npm").unwrap();
         assert_eq!(detect_install_method(&npm), InstallMethod::Npm);
 
-        let plugin = root.path().join(".cursor/extensions/gitcko/gitcko");
+        let plugin = root
+            .path()
+            .join(".cursor")
+            .join("extensions")
+            .join("gitcko")
+            .join("gitcko");
         fs::create_dir_all(plugin.parent().unwrap()).unwrap();
         fs::write(&plugin, b"plugin").unwrap();
         assert_eq!(detect_install_method(&plugin), InstallMethod::Plugin);
 
-        let copied = root.path().join("copied/gitcko");
+        let copied = root.path().join("copied").join("gitcko");
         fs::create_dir_all(copied.parent().unwrap()).unwrap();
         fs::write(&copied, b"copied").unwrap();
         assert_eq!(detect_install_method(&copied), InstallMethod::Unknown);
@@ -994,7 +1010,7 @@ mod tests {
         let root = tempfile::tempdir().unwrap();
         let io = Io::capture();
         let env = BTreeMap::new();
-        let exe = root.path().join("copied/gitcko");
+        let exe = root.path().join("copied").join("gitcko");
         fs::create_dir_all(exe.parent().unwrap()).unwrap();
         fs::write(&exe, b"x").unwrap();
         let code = run(&UpdateArgs { check: false }, Some(&exe), &env, &io);
@@ -1002,14 +1018,25 @@ mod tests {
         assert!(io.stderr_text().contains("cannot be updated"));
         assert!(io.stdout_text().is_empty());
 
-        let brew = root.path().join("homebrew/Cellar/gitcko/1/bin/gitcko");
+        let brew = root
+            .path()
+            .join("homebrew")
+            .join("Cellar")
+            .join("gitcko")
+            .join("1")
+            .join("bin")
+            .join("gitcko");
         fs::create_dir_all(brew.parent().unwrap()).unwrap();
         fs::write(&brew, b"x").unwrap();
         let io = Io::capture();
         assert_eq!(run(&UpdateArgs { check: true }, Some(&brew), &env, &io), 0);
         assert_eq!(io.stdout_text().trim(), "brew upgrade gitcko");
 
-        let npm = root.path().join("node_modules/gitcko/gitcko");
+        let npm = root
+            .path()
+            .join("node_modules")
+            .join("gitcko")
+            .join("gitcko");
         fs::create_dir_all(npm.parent().unwrap()).unwrap();
         fs::write(&npm, b"x").unwrap();
         let log = root.path().join("npm.log");
