@@ -2,20 +2,35 @@
 
 //! `gitcko mcp serve` must merge keychain credentials like `gitcko review`.
 
-use std::collections::BTreeMap;
-
 use gitcko_cli::env_with_openrouter;
 use gitcko_config::{CredError, Keychain, MemoryKeychain};
+use gitcko_test_support::TempDir;
+use std::collections::BTreeMap;
+
+fn home_env(home: &TempDir) -> BTreeMap<String, String> {
+    let home_path = home
+        .path()
+        .canonicalize()
+        .unwrap_or_else(|_| home.path().to_path_buf());
+    let config = home_path.join("config.toml");
+    let cache = home_path.join("cache");
+    let _ = std::fs::create_dir_all(&cache);
+    BTreeMap::from([
+        ("HOME".into(), home_path.display().to_string()),
+        ("APPDATA".into(), home_path.display().to_string()),
+        (
+            "LOCALAPPDATA".into(),
+            home_path.join("local").display().to_string(),
+        ),
+        ("GITCKO_CONFIG".into(), config.display().to_string()),
+        ("GITCKO_CACHE_DIR".into(), cache.display().to_string()),
+    ])
+}
 
 #[test]
 fn mcp_serve_path_merges_openrouter_from_the_keychain() {
-    let mut env = BTreeMap::from([
-        ("HOME".into(), "/home/dev".into()),
-        ("APPDATA".into(), "/home/dev".into()),
-        ("LOCALAPPDATA".into(), "/home/dev/local".into()),
-        ("GITCKO_CONFIG".into(), "/home/dev/config.toml".into()),
-        ("GITCKO_CACHE_DIR".into(), "/home/dev/cache".into()),
-    ]);
+    let home = TempDir::new("mcp-env-home");
+    let mut env = home_env(&home);
     let chain = MemoryKeychain {
         entries: BTreeMap::from([("openrouter".into(), "keychain-secret".into())]),
     };
@@ -46,13 +61,8 @@ impl Keychain for BrokenKeychain {
 
 #[test]
 fn unavailable_keychain_does_not_block_mcp_env_merge() {
-    let env = BTreeMap::from([
-        ("HOME".into(), "/home/dev".into()),
-        ("APPDATA".into(), "/home/dev".into()),
-        ("LOCALAPPDATA".into(), "/home/dev/local".into()),
-        ("GITCKO_CONFIG".into(), "/home/dev/config.toml".into()),
-        ("GITCKO_CACHE_DIR".into(), "/home/dev/cache".into()),
-    ]);
+    let home = TempDir::new("mcp-env-broken");
+    let env = home_env(&home);
     let merged = env_with_openrouter(&env, &BrokenKeychain).expect("merge");
     assert!(!merged.contains_key("OPENROUTER_API_KEY"));
 }
