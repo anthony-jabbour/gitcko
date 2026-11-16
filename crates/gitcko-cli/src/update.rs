@@ -576,12 +576,29 @@ where
     if check {
         return ok(io, "npm i -g gitcko@latest");
     }
-    let mut cmd = Command::new("npm");
+    let mut cmd = npm_command();
     cmd.args(["i", "-g", "gitcko@latest"]);
     apply_subprocess_env(env, &mut cmd);
     match cmd.status() {
         Ok(status) if status.success() => ok(io, "updated: npm"),
         _ => fail(io, "npm update failed"),
+    }
+}
+
+/// Windows CreateProcess does not run `.cmd` shims found via PATH; `cmd /C npm`
+/// resolves `npm.cmd` the same way an interactive shell would. Launch via
+/// `ComSpec` so `cmd.exe` itself is still found after `env_clear` narrows Path.
+fn npm_command() -> Command {
+    #[cfg(windows)]
+    {
+        let shell = std::env::var_os("ComSpec").unwrap_or_else(|| "cmd.exe".into());
+        let mut cmd = Command::new(shell);
+        cmd.arg("/C").arg("npm");
+        cmd
+    }
+    #[cfg(not(windows))]
+    {
+        Command::new("npm")
     }
 }
 
