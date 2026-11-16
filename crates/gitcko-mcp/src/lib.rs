@@ -14,6 +14,7 @@ mod paths;
 mod present;
 mod run;
 mod schema;
+mod scope;
 
 use std::collections::BTreeMap;
 use std::io::Write;

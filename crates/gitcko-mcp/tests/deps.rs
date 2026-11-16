@@ -56,22 +56,19 @@ fn reqwest_is_reached_only_through_a_model_adapter() {
             .collect();
         graph.insert(name, deps);
     }
+    const ADAPTERS: &[&str] = &["gitcko-model-ollama", "gitcko-model-openai"];
     let mut queue = VecDeque::from([("gitcko-mcp".to_string(), Vec::<String>::new())]);
     let mut seen = BTreeSet::from(["gitcko-mcp".to_string()]);
     let mut found_reqwest = false;
     while let Some((name, path)) = queue.pop_front() {
         if name == "reqwest" {
             found_reqwest = true;
-            let through_adapter = path
-                .iter()
-                .any(|step| step == "gitcko-model-ollama" || step == "gitcko-model-openai");
-            assert!(
-                through_adapter,
-                "reqwest reached gitcko-mcp without a model adapter: {path:?}"
-            );
             continue;
         }
         for dep in graph.get(&name).into_iter().flatten() {
+            if ADAPTERS.contains(&dep.as_str()) {
+                continue;
+            }
             if seen.insert(dep.clone()) {
                 let mut next = path.clone();
                 next.push(dep.clone());
@@ -79,7 +76,10 @@ fn reqwest_is_reached_only_through_a_model_adapter() {
             }
         }
     }
-    let _ = found_reqwest;
+    assert!(
+        !found_reqwest,
+        "reqwest must not be reachable from gitcko-mcp without opening a model adapter"
+    );
 }
 
 fn manifest() -> PathBuf {

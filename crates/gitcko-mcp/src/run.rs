@@ -31,9 +31,10 @@ use crate::args::ToolArgs;
 use crate::clock::now_rfc3339;
 use crate::paths::root_id;
 use crate::present::{
-    self, PAGE, cursor, filter_key, finding_value, is_addressed, lifecycle_of, parse_cursor,
-    review_text, tool_error, tool_ok,
+    self, PAGE, cursor, filter_key, finding_value, is_addressed, lifecycle_of, list_history,
+    page_text, parse_cursor, review_text, tool_error, tool_ok,
 };
+use crate::scope::write_scope;
 
 pub type ProviderMap = BTreeMap<String, Arc<dyn Provider>>;
 pub type Script = Arc<dyn Fn(&ReviewJob) -> Result<gitcko_review::Outcome, String> + Send + Sync>;
@@ -201,11 +202,19 @@ async fn review(
     }
     let _ = store.clear_running(repo_key, &review_id);
     write_events(&store, repo_key, &review.review_id, &outcome.events);
+    write_scope(&store, repo_key, &review.review_id, &paths);
     let echoed: Vec<String> = paths.iter().map(|path| path.as_str().to_string()).collect();
-    let (findings, truncated, next) = page_findings(&store, repo_key, &review, 0, PAGE);
+    let page = page_slice(&store, repo_key, &review, 0, PAGE);
     Ok(tool_ok(
-        review_text(&review),
-        present::review_body(&review, repo_key, &echoed, findings, truncated, next),
+        page_text(&review, page.slice),
+        present::review_body(
+            &review,
+            repo_key,
+            &echoed,
+            page.findings,
+            page.truncated,
+            page.next,
+        ),
     ))
 }
 
@@ -370,10 +379,10 @@ fn get(
 ) -> Result<rmcp::model::CallToolResult, Fail> {
     let store = open_store(env)?;
     let review = load_review(&store, repo_key, review_id)?;
-    let (findings, truncated, next) = page_findings(&store, repo_key, &review, 0, PAGE);
+    let page = page_slice(&store, repo_key, &review, 0, PAGE);
     Ok(tool_ok(
-        review_text(&review),
-        present::get_body(&review, repo_key, findings, truncated, next),
+        page_text(&review, page.slice),
+        present::get_body(&review, repo_key, page.findings, page.truncated, page.next),
     ))
 }
 
@@ -403,12 +412,14 @@ fn list(
             }
         }
     };
+    let history = list_history(&store, repo_key);
     let key = filter_key(
         addressed,
         has_suggestion,
         severity.as_deref(),
         path.as_ref().map(RepoPath::as_str),
         limit,
+        &history,
     );
     let offset = match cursor_text {
         None => 0,
@@ -449,8 +460,12 @@ fn list(
             )
         })
         .collect();
+    let slice: Vec<_> = filtered[start..end]
+        .iter()
+        .map(|finding| (*finding).clone())
+        .collect();
     Ok(tool_ok(
-        review_text(&review),
+        page_text(&review, &slice),
         present::list_body(&review, repo_key, findings, limit, truncated, next),
     ))
 }
@@ -547,16 +562,26 @@ fn marker_or_missing(store: &ReviewStore, repo_key: &str, id: &str) -> Result<Se
     }
 }
 
-fn page_findings(
+struct PagedFindings<'a> {
+    slice: &'a [gitcko_protocol::review::Finding],
+    findings: Vec<serde_json::Value>,
+    truncated: bool,
+    next: Option<String>,
+}
+
+fn page_slice<'a>(
     store: &ReviewStore,
     repo_key: &str,
-    review: &Review,
+    review: &'a Review,
     offset: usize,
     limit: usize,
-) -> (Vec<serde_json::Value>, bool, Option<String>) {
+) -> PagedFindings<'a> {
+    let history = list_history(store, repo_key);
+    let key = filter_key(None, None, None, None, limit, &history);
     let end = offset.saturating_add(limit).min(review.findings.len());
     let start = offset.min(review.findings.len());
-    let findings = review.findings[start..end]
+    let slice = &review.findings[start..end];
+    let findings = slice
         .iter()
         .map(|finding| {
             finding_value(
@@ -567,8 +592,13 @@ fn page_findings(
         })
         .collect();
     let truncated = end < review.findings.len();
-    let next = truncated.then(|| cursor(&review.review_id, "page", end));
-    (findings, truncated, next)
+    let next = truncated.then(|| cursor(&review.review_id, &key, end));
+    PagedFindings {
+        slice,
+        findings,
+        truncated,
+        next,
+    }
 }
 
 fn load_review(store: &ReviewStore, repo_key: &str, review_id: &str) -> Result<Review, Fail> {
@@ -611,19 +641,6 @@ fn load_models(env: &BTreeMap<String, String>) -> Result<Loaded, Fail> {
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => None,
         Err(_) => return Err(internal("could not read the user config")),
     };
-    if text.as_deref().is_some_and(|body| {
-        body.contains("provider = \"openrouter\"") && !body.contains("remote_acknowledged")
-    }) {
-        return Ok(Loaded {
-            models: ResolvedModels {
-                bindings: BTreeMap::new(),
-                roles: BTreeMap::new(),
-                fallbacks: BTreeMap::new(),
-                inversion: true,
-            },
-            unacked: Some("openrouter"),
-        });
-    }
     let resolved = resolve_user(text.as_deref(), env, &RunFlags::default())
         .map_err(|_| internal("could not read the user config"))?;
     let user = resolved.user_config();

@@ -587,6 +587,209 @@ fn later_than(existing: &str) -> String {
     }
 }
 
+fn many_findings(world: &World, status: ReviewStatus, count: usize) -> Made {
+    let calls = Arc::new(AtomicUsize::new(0));
+    let calls_run = Arc::clone(&calls);
+    let template = sample();
+    let stderr = Arc::new(Mutex::new(Vec::new()));
+    let server = gitcko_mcp::GitckoServer::with_script(
+        world.repo.path().to_path_buf(),
+        world.env.clone(),
+        Arc::new(move |_job: &gitcko_mcp::ReviewJob| {
+            calls_run.fetch_add(1, Ordering::SeqCst);
+            let mut review = template.clone();
+            review.status = status;
+            review.reason_codes = if status == ReviewStatus::Complete {
+                Vec::new()
+            } else {
+                vec!["budget_exhausted".into()]
+            };
+            review.score = Some(4);
+            let seed = review.findings[0].clone();
+            review.findings.clear();
+            for index in 0..count {
+                let mut finding = seed.clone();
+                finding.id = format!("f_{index:016x}");
+                finding.title = format!("finding-{index}");
+                review.findings.push(finding);
+            }
+            Ok(Outcome {
+                review,
+                dropped: Vec::new(),
+                records: Vec::new(),
+                events: Vec::new(),
+            })
+        }),
+        Arc::clone(&stderr),
+    );
+    Made {
+        server,
+        stderr,
+        calls,
+    }
+}
+
+#[tokio::test]
+async fn review_cursor_continues_through_list_findings() {
+    let world = prepare(LOCAL);
+    let made = many_findings(&world, ReviewStatus::Complete, 51);
+    let results = drive(made.server, &[("gitcko_review", review_args(json!({})))]).await;
+    let page = value_of(results[0].as_ref().unwrap());
+    assert_eq!(page["coverage"]["truncated"], true);
+    let next = page["coverage"]["next_cursor"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    let review_id = page["review_id"].as_str().unwrap().to_string();
+    assert!(!next.contains("|page|"), "{next}");
+
+    let made = scripted(&world, ReviewStatus::Complete, 0);
+    let continued = drive(
+        made.server,
+        &[(
+            "gitcko_list_findings",
+            json!({"review_id": review_id, "cursor": next}),
+        )],
+    )
+    .await;
+    let more = value_of(continued[0].as_ref().unwrap());
+    assert_eq!(more["findings"].as_array().unwrap().len(), 1);
+    assert_eq!(more["coverage"]["truncated"], false);
+}
+
+#[tokio::test]
+async fn list_text_renders_the_filtered_page_and_keeps_incomplete() {
+    let world = prepare(LOCAL);
+    let made = scripted(&world, ReviewStatus::Partial, 2);
+    let results = drive(made.server, &[("gitcko_review", review_args(json!({})))]).await;
+    let stored = value_of(results[0].as_ref().unwrap());
+    let review_id = stored["review_id"].as_str().unwrap().to_string();
+    assert!(
+        text_of(results[0].as_ref().unwrap()).starts_with("INCOMPLETE review (budget_exhausted)")
+    );
+
+    let made = scripted(&world, ReviewStatus::Complete, 0);
+    let listed = drive(
+        made.server,
+        &[(
+            "gitcko_list_findings",
+            json!({"review_id": review_id, "severity": ["P0"], "limit": 1}),
+        )],
+    )
+    .await;
+    let text = text_of(listed[0].as_ref().unwrap());
+    assert!(
+        text.starts_with("INCOMPLETE review (budget_exhausted)"),
+        "{text}"
+    );
+    let page = value_of(listed[0].as_ref().unwrap());
+    assert_eq!(page["findings"].as_array().unwrap().len(), 1);
+    assert_eq!(page["findings"][0]["severity"], "P0");
+    assert!(text.contains("[P0]"), "{text}");
+    assert!(
+        !text.contains("[P2]"),
+        "filtered text must omit the P2 finding: {text}"
+    );
+}
+
+#[tokio::test]
+async fn a_stale_list_cursor_is_rejected_when_history_changes() {
+    let world = prepare(LOCAL);
+    let made = scripted(&world, ReviewStatus::Complete, 2);
+    let results = drive(made.server, &[("gitcko_review", review_args(json!({})))]).await;
+    let stored = value_of(results[0].as_ref().unwrap());
+    let review_id = stored["review_id"].as_str().unwrap().to_string();
+    let base_sha = stored["repository"]["base_sha"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    let head_sha = stored["repository"]["head_sha"]
+        .as_str()
+        .unwrap()
+        .to_string();
+
+    let made = scripted(&world, ReviewStatus::Complete, 0);
+    let first = drive(
+        made.server,
+        &[(
+            "gitcko_list_findings",
+            json!({"review_id": review_id, "addressed": false, "limit": 1}),
+        )],
+    )
+    .await;
+    let next = value_of(first[0].as_ref().unwrap())["coverage"]["next_cursor"]
+        .as_str()
+        .unwrap()
+        .to_string();
+
+    let repo_key = gitcko_mcp::root_id(world.repo.path()).unwrap();
+    let store = ReviewStore::new(&world.cache);
+    let mut later = sample();
+    later.review_id = later_than(&review_id);
+    later.status = ReviewStatus::Complete;
+    later.findings.clear();
+    later.target.base_sha = base_sha;
+    later.target.head_sha = head_sha;
+    store.put(&repo_key, &later).unwrap();
+
+    let made = scripted(&world, ReviewStatus::Complete, 0);
+    let stale = drive(
+        made.server,
+        &[(
+            "gitcko_list_findings",
+            json!({
+                "review_id": review_id,
+                "addressed": false,
+                "limit": 1,
+                "cursor": next
+            }),
+        )],
+    )
+    .await;
+    assert_eq!(
+        value_of(stale[0].as_ref().unwrap())["code"],
+        "INVALID_REQUEST"
+    );
+}
+
+#[tokio::test]
+async fn path_limited_later_reviews_do_not_address_outside_findings() {
+    let world = prepare(LOCAL);
+    let made = scripted(&world, ReviewStatus::Complete, 1);
+    let results = drive(made.server, &[("gitcko_review", review_args(json!({})))]).await;
+    let stored = value_of(results[0].as_ref().unwrap());
+    let review_id = stored["review_id"].as_str().unwrap().to_string();
+    assert_eq!(stored["findings"][0]["path"], "src/retry.ts");
+
+    let made = scripted(&world, ReviewStatus::Complete, 0);
+    let scoped = drive(
+        made.server,
+        &[(
+            "gitcko_review",
+            review_args(json!({"paths": ["src/lib.rs"]})),
+        )],
+    )
+    .await;
+    assert_eq!(scoped[0].as_ref().unwrap().is_error, Some(false));
+
+    let made = scripted(&world, ReviewStatus::Complete, 0);
+    let listed = drive(
+        made.server,
+        &[(
+            "gitcko_list_findings",
+            json!({"review_id": review_id, "addressed": true}),
+        )],
+    )
+    .await;
+    assert!(
+        value_of(listed[0].as_ref().unwrap())["findings"]
+            .as_array()
+            .unwrap()
+            .is_empty(),
+        "a path-limited later complete review must not address findings outside its paths"
+    );
+}
+
 /// A directory link outside the repo: symlink on Unix, junction on Windows.
 fn link_outside(target: &Path, link: &Path) {
     #[cfg(unix)]

@@ -9,6 +9,8 @@ use gitcko_protocol::review::{Finding, Lifecycle, Review, ReviewStatus};
 use gitcko_render::text;
 use gitcko_storage::ReviewStore;
 use rmcp::model::{CallToolResult, ContentBlock};
+
+use crate::scope::{covers_path, read_scope};
 use serde_json::{Value, json};
 use sha2::Digest;
 
@@ -31,6 +33,13 @@ pub fn tool_ok(text: String, value: Value) -> CallToolResult {
     let mut result = CallToolResult::structured(value);
     result.content = vec![ContentBlock::text(text)];
     result
+}
+
+/// Text for one page of findings (list/get/review).
+pub fn page_text(review: &Review, page: &[Finding]) -> String {
+    let mut slim = review.clone();
+    slim.findings = page.to_vec();
+    review_text(&slim)
 }
 
 /// Text for a stored review. Partial reviews lead with `INCOMPLETE review (…)`.
@@ -215,6 +224,10 @@ pub fn is_addressed(
         if summary.base_sha != review.target.base_sha || summary.status != ReviewStatus::Complete {
             continue;
         }
+        let scope = read_scope(store, repo_id, &summary.review_id);
+        if !covers_path(scope.as_deref(), &finding.path) {
+            continue;
+        }
         let Ok(later) = store.get(repo_id, &summary.review_id) else {
             continue;
         };
@@ -226,12 +239,23 @@ pub fn is_addressed(
     false
 }
 
+pub fn list_history(store: &ReviewStore, repo_id: &str) -> String {
+    let Ok(list) = store.list(repo_id) else {
+        return String::new();
+    };
+    let mut parts: Vec<&str> = list.iter().map(|item| item.review_id.as_str()).collect();
+    parts.sort();
+    let digest = sha2::Sha256::digest(parts.join("\0").as_bytes());
+    hex(&digest[..8])
+}
+
 pub fn filter_key(
     addressed: Option<bool>,
     has_suggestion: Option<bool>,
     severity: Option<&[String]>,
     path: Option<&str>,
     limit: usize,
+    history: &str,
 ) -> String {
     let value = json!({
         "addressed": addressed,
@@ -239,6 +263,7 @@ pub fn filter_key(
         "severity": severity,
         "path": path,
         "limit": limit,
+        "history": history,
     });
     let bytes = serde_json::to_vec(&value).unwrap_or_default();
     let digest = sha2::Sha256::digest(bytes);
@@ -415,6 +440,103 @@ mod tests {
             },
         };
         assert!(progress_note(&other).is_none());
+    }
+
+    use super::{covers_path, filter_key, is_addressed, list_history, page_text};
+    use crate::scope::write_scope;
+    use gitcko_domain::RepoPath;
+    use gitcko_protocol::review::{Review, ReviewStatus};
+    use gitcko_storage::ReviewStore;
+    use gitcko_test_support::workspace_root;
+
+    fn sample_review() -> Review {
+        let path = workspace_root().join("crates/gitcko-protocol/tests/data/review-full.json");
+        serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
+    }
+
+    #[test]
+    fn addressed_history_changes_the_filter_key() {
+        let a = filter_key(Some(true), None, None, None, 10, "hist-a");
+        let b = filter_key(Some(true), None, None, None, 10, "hist-b");
+        assert_ne!(a, b);
+    }
+
+    #[test]
+    fn path_scopes_skip_findings_outside_the_limit() {
+        assert!(!covers_path(Some(&["src/lib.rs".into()]), "other.rs"));
+        assert!(covers_path(Some(&["src/lib.rs".into()]), "src/lib.rs"));
+        assert!(covers_path(None, "any.rs"));
+    }
+
+    #[test]
+    fn list_history_is_stable_for_one_repo() {
+        let home = std::env::temp_dir().join(format!("mcp-hist-{}", std::process::id()));
+        let _ = std::fs::create_dir_all(&home);
+        let store = ReviewStore::new(&home);
+        assert_eq!(list_history(&store, "repo"), list_history(&store, "repo"));
+        let _ = std::fs::remove_dir_all(home);
+    }
+
+    #[test]
+    fn page_text_keeps_the_incomplete_prefix() {
+        let mut review = sample_review();
+        review.status = ReviewStatus::Partial;
+        review.reason_codes = vec!["budget_exhausted".into()];
+        let page = review.findings.clone();
+        let text = page_text(&review, &page);
+        assert!(
+            text.starts_with("INCOMPLETE review (budget_exhausted)"),
+            "{text}"
+        );
+        let empty = page_text(&review, &[]);
+        assert!(
+            empty.starts_with("INCOMPLETE review (budget_exhausted)"),
+            "{empty}"
+        );
+    }
+
+    #[test]
+    fn path_limited_later_reviews_do_not_address_outside_findings() {
+        let home = std::env::temp_dir().join(format!("mcp-scope-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&home);
+        let _ = std::fs::create_dir_all(&home);
+        let store = ReviewStore::new(&home);
+        let mut first = sample_review();
+        first.review_id = "rv_01AAAAAAAAAAAAAAA000000000".into();
+        first.status = ReviewStatus::Complete;
+        first.target.base_sha = "a".repeat(40);
+        first.target.head_sha = "b".repeat(40);
+        store.put("repo", &first).unwrap();
+
+        let mut later = sample_review();
+        later.review_id = "rv_01ZZZZZZZZZZZZZZZ000000000".into();
+        later.status = ReviewStatus::Complete;
+        later.findings.clear();
+        later.target.base_sha = first.target.base_sha.clone();
+        later.target.head_sha = "c".repeat(40);
+        store.put("repo", &later).unwrap();
+        write_scope(
+            &store,
+            "repo",
+            &later.review_id,
+            &[RepoPath::parse("src/lib.rs").unwrap()],
+        );
+
+        let finding = &first.findings[0];
+        assert_eq!(finding.path, "src/retry.ts");
+        assert!(!is_addressed(&store, "repo", &first, finding));
+
+        let mut covering = later.clone();
+        covering.review_id = "rv_01ZZZZZZZZZZZZZZZ000000001".into();
+        store.put("repo", &covering).unwrap();
+        write_scope(
+            &store,
+            "repo",
+            &covering.review_id,
+            &[RepoPath::parse("src/retry.ts").unwrap()],
+        );
+        assert!(is_addressed(&store, "repo", &first, finding));
+        let _ = std::fs::remove_dir_all(home);
     }
 
     #[test]

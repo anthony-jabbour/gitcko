@@ -228,6 +228,57 @@ remote_acknowledged = ["openrouter"]
 }
 
 #[tokio::test]
+async fn a_commented_openrouter_line_does_not_block_local_reviews() {
+    let repo = fixture_repo();
+    let local = r#"
+# provider = "openrouter"
+[models.bindings.smart]
+provider = "ollama"
+model = "fixture:1"
+endpoint = "http://127.0.0.1:11434"
+context = 131072
+
+[models.bindings.judge]
+provider = "ollama"
+model = "fixture:1"
+endpoint = "http://127.0.0.1:11434"
+context = 131072
+"#;
+    let (_local_home, env) = home_env(local);
+    let reached = Arc::new(AtomicBool::new(false));
+    let probe = reached.clone();
+    let script: Script = Arc::new(move |_job: &ReviewJob| {
+        probe.store(true, Ordering::SeqCst);
+        Ok(Outcome {
+            review: complete_review(),
+            dropped: Vec::new(),
+            records: Vec::new(),
+            events: Vec::new(),
+        })
+    });
+    let server = GitckoServer::with_script(
+        repo.path().to_path_buf(),
+        env,
+        script,
+        Arc::new(Mutex::new(Vec::new())),
+    );
+    let (server_io, client_io) = tokio::io::duplex(256 * 1024);
+    let server_task = tokio::spawn(async move {
+        let running = server.serve(server_io).await.expect("serve");
+        let _ = running.waiting().await;
+    });
+    let client = ().serve(client_io).await.expect("client");
+    let mut params = CallToolRequestParams::new("gitcko_review");
+    params.arguments = Some(review_args());
+    let result = client.peer().call_tool(params).await.expect("call");
+    assert_eq!(result.is_error, Some(false), "{result:?}");
+    assert!(reached.load(Ordering::SeqCst));
+    drop(_local_home);
+    drop(client);
+    server_task.abort();
+}
+
+#[tokio::test]
 async fn local_binding_reaches_the_script_with_local_only_true() {
     let repo = fixture_repo();
     let local = r#"

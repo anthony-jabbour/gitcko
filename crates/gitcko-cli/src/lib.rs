@@ -27,6 +27,7 @@ use clap::{CommandFactory, FromArgMatches};
 use gitcko_config::Keychain;
 
 use crate::cli::Cli;
+pub use crate::config::env_with_openrouter;
 use crate::keychain::OsKeychain;
 pub use crate::launch::TuiSession;
 pub use crate::review::{ReviewJob, ReviewRunner, RunError, repo_cache_id};
@@ -231,7 +232,19 @@ where
             cache::cache(&args, run.cwd, run.env, run.stdin_is_tty, io)
         }
         Some(cli::Command::Mcp(args)) => match args.command {
-            cli::McpCmd::Serve => gitcko_mcp::serve_stdio(run.cwd, run.env),
+            cli::McpCmd::Serve => {
+                let env = match crate::config::env_with_openrouter(
+                    run.env,
+                    keychain_or_empty(run.keychain),
+                ) {
+                    Ok(env) => env,
+                    Err(message) => {
+                        let _ = writeln!(lock(&io.stderr), "{message}");
+                        return 2;
+                    }
+                };
+                gitcko_mcp::serve_stdio(run.cwd, &env)
+            }
         },
         Some(cli::Command::Update(args)) => update::run(&args, run.exe, run.env, io),
         None => {
