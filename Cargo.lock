@@ -1698,7 +1698,7 @@ dependencies = [
  "gitcko-test-support",
  "rmcp",
  "serde_json",
- "sha2",
+ "sha2 0.11.1",
  "tokio",
  "tokio-util",
 ]
