@@ -155,6 +155,70 @@ fn context_outside_0_to_60_exits_2_and_15_is_accepted() {
 }
 
 #[test]
+fn mcp_serve_is_in_the_tree() {
+    let (code, out, err) = run(&["mcp", "serve", "--help"]);
+    assert_eq!(code, 0, "{err}");
+    assert!(out.contains("stdio"), "{out}");
+    assert!(err.is_empty(), "{err}");
+    let (code, _, err) = run(&["mcp"]);
+    assert_eq!(code, 2, "{err}");
+}
+
+#[test]
+fn mcp_serve_exits_when_stdin_closes_and_writes_no_protocol_on_stderr() {
+    let dir = std::env::temp_dir().join(format!("gitcko-mcp-stdio-{}", std::process::id()));
+    let _ = std::fs::create_dir_all(&dir);
+    let mut child = Command::new(env!("CARGO_BIN_EXE_gitcko"))
+        .args(["mcp", "serve"])
+        .current_dir(&dir)
+        .env("HOME", &dir)
+        .env("APPDATA", &dir)
+        .env("LOCALAPPDATA", dir.join("local"))
+        .env("GITCKO_CONFIG", dir.join("missing.toml"))
+        .env("GITCKO_CACHE_DIR", &dir)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("spawn gitcko");
+    let started = std::time::Instant::now();
+    let status = loop {
+        if let Some(status) = child.try_wait().expect("poll gitcko") {
+            break status;
+        }
+        if started.elapsed() > std::time::Duration::from_secs(5) {
+            let _ = child.kill();
+            panic!("mcp serve did not exit after stdin closed");
+        }
+        std::thread::sleep(std::time::Duration::from_millis(20));
+    };
+    let mut out = String::new();
+    let mut err = String::new();
+    use std::io::Read;
+    child
+        .stdout
+        .take()
+        .unwrap()
+        .read_to_string(&mut out)
+        .unwrap();
+    child
+        .stderr
+        .take()
+        .unwrap()
+        .read_to_string(&mut err)
+        .unwrap();
+    assert_eq!(status.code(), Some(0), "{err}");
+    assert!(
+        out.is_empty(),
+        "a client that sends nothing gets no protocol bytes: {out}"
+    );
+    assert!(
+        !err.contains("jsonrpc"),
+        "protocol messages stay off stderr: {err}"
+    );
+}
+
+#[test]
 fn index_and_cache_are_in_the_tree() {
     let (code, out, err) = run(&["index", "--help"]);
     assert_eq!(code, 0, "{err}");

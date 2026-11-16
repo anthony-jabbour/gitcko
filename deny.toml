@@ -59,6 +59,9 @@ exceptions = [
     { crate = "gitcko-model", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-model-ollama", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-model-openai", allow = ["AGPL-3.0-or-later"] },
+    # rmcp, the MCP SDK this crate links, is Apache-2.0 and needs no exception.
+    # Its HTTP and reqwest features stay off: Server A is stdio only.
+    { crate = "gitcko-mcp", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-prompts", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-redact", allow = ["AGPL-3.0-or-later"] },
     { crate = "gitcko-render", allow = ["AGPL-3.0-or-later"] },

@@ -696,8 +696,10 @@ pub(crate) fn openrouter_secret(
 
 /// A copy of `env` with `OPENROUTER_API_KEY` filled from the keychain or the
 /// credentials file when the variable is unset. The returned map is for the model
-/// resolver; callers must not print it.
-pub(crate) fn env_with_openrouter(
+/// resolver; callers must not print it. The MCP serve arm uses this so a
+/// keychain-only OpenRouter key reaches `gitcko mcp serve` the same way as
+/// `gitcko review`.
+pub fn env_with_openrouter(
     env: &BTreeMap<String, String>,
     keychain: &dyn Keychain,
 ) -> Result<BTreeMap<String, String>, String> {
@@ -714,7 +716,9 @@ pub(crate) fn env_with_openrouter(
             copy.insert("OPENROUTER_API_KEY".into(), secret.expose().to_string());
             Ok(copy)
         }
-        Ok(None) => Ok(copy),
+        // Linux CI (and hosts without a secret service) surface Keychain errors.
+        // Serving MCP still starts; reviews that need a key fail later.
+        Ok(None) | Err(CredError::Keychain) => Ok(copy),
         Err(err) => Err(err.to_string()),
     }
 }

@@ -22,6 +22,7 @@ gitcko-model-openai = { path = "../crates/gitcko-model-openai" }
 gitcko-prompts = { path = "../crates/gitcko-prompts" }
 gitcko-syntax = { path = "../crates/gitcko-syntax" }
 gitcko-tools = { path = "../crates/gitcko-tools" }
+gitcko-mcp = { path = "../crates/gitcko-mcp" }
 
 # Its own workspace, so the main one doesn't try to build it on stable.
 [workspace]
@@ -71,6 +72,13 @@ bench = false
 [[bin]]
 name = "user_config"
 path = "fuzz_targets/user_config.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "mcp_args"
+path = "fuzz_targets/mcp_args.rs"
 test = false
 doc = false
 bench = false

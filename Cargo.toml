@@ -36,6 +36,11 @@ minisign-verify = "0.2"
 keyring = "4.2"
 proptest = "1.12"
 regex = "1.13"
+# Official Rust MCP SDK. Stdio server only: do not enable `reqwest` or the HTTP
+# transports. Apache-2.0, already on the deny allow-list.
+# https://docs.rs/rmcp/3.10.0/rmcp/ — published 3.10.0 (2026-11-12). P5_PLAN named
+# 3.8; 3.10.0 is the current 3.x on crates.io.
+rmcp = { version = "3.10.0", default-features = false, features = ["server", "transport-io"] }
 # HTTP for the two model adapters only: rustls with ring instead of reqwest's default
 # aws-lc-rs. The adapter installs the crypto provider; certificates come from the OS.
 reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "json", "stream"] }
