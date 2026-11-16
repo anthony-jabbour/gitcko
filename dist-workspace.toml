@@ -1,0 +1,28 @@
+[workspace]
+members = ["cargo:."]
+
+# cargo-dist 0.34 reads this file
+# (https://axodotdev.github.io/cargo-dist/book/reference/config.html).
+# release.yml is hand-written so the minisign step and integrations/install
+# stay in this repo. `ci` is unset on purpose: `dist generate` would replace
+# that workflow, and dist's own installers do not implement §5.4.
+[dist]
+cargo-dist-version = "0.34.0"
+packages = ["gitcko-cli"]
+targets = [
+  "aarch64-apple-darwin",
+  "x86_64-apple-darwin",
+  "x86_64-unknown-linux-musl",
+  "aarch64-unknown-linux-musl",
+  "x86_64-pc-windows-msvc",
+]
+installers = []
+unix-archive = ".tar.gz"
+windows-archive = ".zip"
+install-path = "~/.local/bin"
+install-updater = false
+pr-run-mode = "skip"
+# Keyless GitHub attestations name the repo in the public Rekor log, and a
+# private repo cannot use them (P5_PLAN C6). Minisign covers this phase.
+github-attestations = false
+hosting = "github"

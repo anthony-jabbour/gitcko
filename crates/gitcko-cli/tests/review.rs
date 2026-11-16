@@ -193,6 +193,7 @@ fn go(
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -224,6 +225,7 @@ fn go_prompt(
             tui: None,
             keychain: None,
             answers,
+            exe: None,
         },
         &io,
     );
@@ -519,6 +521,7 @@ fn a_broken_stdout_during_present_is_exit_1() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -552,6 +555,7 @@ fn store_put_failure_clears_the_marker_and_exits_1() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );

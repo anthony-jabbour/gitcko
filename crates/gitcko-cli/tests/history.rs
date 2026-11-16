@@ -110,6 +110,7 @@ fn go(world: &World, args: &[&str]) -> (u8, String, String) {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );

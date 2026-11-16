@@ -79,6 +79,7 @@ fn go(world: &World, args: &[&str]) -> (u8, String, String) {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -187,6 +188,7 @@ fn index_cancel_via_debug_seam_is_130() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -210,6 +212,7 @@ fn index_needs_a_repository() {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );

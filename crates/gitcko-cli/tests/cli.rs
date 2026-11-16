@@ -34,6 +34,7 @@ fn run(args: &[&str]) -> (u8, String, String) {
             tui: None,
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -232,6 +233,7 @@ fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
             tui: Some(&session),
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
@@ -256,6 +258,7 @@ fn bare_gitcko_on_a_tty_opens_the_tui_and_a_pipe_stays_on_help() {
             tui: Some(&session),
             keychain: None,
             answers: None,
+            exe: None,
         },
         &io,
     );
