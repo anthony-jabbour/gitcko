@@ -585,9 +585,23 @@ where
         }
         cmd.env(key, value);
     }
+    mirror_path_env(env, &mut cmd);
     match cmd.status() {
         Ok(status) if status.success() => ok(io, "updated: npm"),
         _ => fail(io, "npm update failed"),
+    }
+}
+
+/// CreateProcess on Windows reads `Path`; Unix shells use `PATH`. After `env_clear`
+/// only what we set is visible, so mirror whichever spelling the caller provided.
+fn mirror_path_env(env: &BTreeMap<String, String>, cmd: &mut Command) {
+    let path = env
+        .get("PATH")
+        .or_else(|| env.get("Path"))
+        .or_else(|| env.get("path"));
+    if let Some(path) = path {
+        cmd.env("PATH", path);
+        cmd.env("Path", path);
     }
 }
 
@@ -1050,7 +1064,9 @@ mod tests {
         let bin = root.path().join("fakebin");
         fs::create_dir_all(&bin).unwrap();
         write_fake_npm(&bin, &log);
-        env.insert("PATH".into(), bin.display().to_string());
+        let path = bin.display().to_string();
+        env.insert("PATH".into(), path.clone());
+        env.insert("Path".into(), path);
         let io = Io::capture();
         assert_eq!(run(&UpdateArgs { check: true }, Some(&npm), &env, &io), 0);
         assert_eq!(io.stdout_text().trim(), "npm i -g gitcko@latest");
