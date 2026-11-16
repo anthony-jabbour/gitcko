@@ -54,5 +54,5 @@ fn unavailable_keychain_does_not_block_mcp_env_merge() {
         ("GITCKO_CACHE_DIR".into(), "/home/dev/cache".into()),
     ]);
     let merged = env_with_openrouter(&env, &BrokenKeychain).expect("merge");
-    assert!(merged.get("OPENROUTER_API_KEY").is_none());
+    assert!(!merged.contains_key("OPENROUTER_API_KEY"));
 }
