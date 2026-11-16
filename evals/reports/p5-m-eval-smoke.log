@@ -1,0 +1,79 @@
+golden: 108 cases ok
+
+## Suite P
+
+Honest runs: 100.0 % (30/30, 95 % CI 88.6–100.0 %)
+
+| Case | Labels | Problems |
+|---|---|---|
+| p/binary_beside_rust | [] |  |
+| p/binary_changed | [] |  |
+| p/binary_only | [] |  |
+| p/held_back_credentials | [] |  |
+| p/held_back_env | [] |  |
+| p/held_back_pem | [] |  |
+| p/held_back_secret_in_rust | [] |  |
+| p/held_back_ssh_key | [] |  |
+| p/index_gap_over_parse_limit | [] |  |
+| p/index_gap_over_read_limit | [] |  |
+| p/index_gap_unchanged_big_callee | [] |  |
+| p/parse_garbage | [Tp(0)] |  |
+| p/parse_not_utf8 | [Tp(0)] |  |
+| p/parse_stray_delimiter | [Tp(0)] |  |
+| p/parse_truncated_mid_item | [] |  |
+| p/parse_unclosed_brace | [Tp(0)] |  |
+| p/rename_across_folders | [] |  |
+| p/rename_case_only | [] |  |
+| p/rename_pure | [] |  |
+| p/rename_with_edit | [] |  |
+| p/truncated_long_lines | [] |  |
+| p/truncated_many_files | [] |  |
+| p/truncated_many_hunks | [] |  |
+| p/truncated_one_huge_hunk | [] |  |
+| p/unsupported_beside_rust | [] |  |
+| p/unsupported_c | [] |  |
+| p/unsupported_go | [] |  |
+| p/unsupported_java | [] |  |
+| p/unsupported_python | [] |  |
+| p/unsupported_typescript | [] |  |
+
+## Suite F
+
+Honest runs: 100.0 % (30/30, 95 % CI 88.6–100.0 %)
+
+| Case | Labels | Problems |
+|---|---|---|
+| f/cancel_investigate | [] |  |
+| f/cancel_judge | [] |  |
+| f/cancel_plan | [] |  |
+| f/cancel_risk | [] |  |
+| f/deadline_investigate | [] |  |
+| f/deadline_judge | [] |  |
+| f/deadline_plan | [] |  |
+| f/invalid_repair_investigate | [Tp(0), Dup(0)] |  |
+| f/invalid_repair_judge | [] |  |
+| f/invalid_repair_plan | [Tp(0)] |  |
+| f/invalid_repair_risk | [Tp(0)] |  |
+| f/malformed_investigate | [Tp(0), Dup(0)] |  |
+| f/malformed_judge | [Tp(0)] |  |
+| f/malformed_plan | [Tp(0)] |  |
+| f/malformed_risk | [Tp(0)] |  |
+| f/refusal_investigate | [] |  |
+| f/refusal_judge | [] |  |
+| f/refusal_plan | [] |  |
+| f/refusal_risk | [Tp(0)] |  |
+| f/timeout_investigate | [] |  |
+| f/timeout_judge | [] |  |
+| f/timeout_plan | [] |  |
+| f/timeout_risk | [] |  |
+| f/tokens_investigate | [] |  |
+| f/tokens_judge | [] |  |
+| f/tokens_plan | [] |  |
+| f/unavailable_investigate | [] |  |
+| f/unavailable_judge | [] |  |
+| f/unavailable_plan | [] |  |
+| f/unavailable_risk | [] |  |
+
+Provider-reported spend: $0.05
+
+eval: every gate passed
